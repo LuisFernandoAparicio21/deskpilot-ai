@@ -236,7 +236,7 @@ Criterios de aceptación:
 
 **RAG (por PR)**
 - T12 [CÓDIGO] 15 artículos de base de conocimiento + test de formato — subagente: docs-writer — cubre S4 — commit: f2752e2 (PR #10)
-- T13 [CÓDIGO] src/ingestion (Markdown/PDF/CSV) + src/chunking por sección con metadatos — subagente: rag-engineer — cubre S7 — commit:
+- T13 [CÓDIGO] src/ingestion (Markdown/PDF/CSV) + src/chunking por sección con metadatos — subagente: rag-engineer — cubre S7 — commit: e1ffbb6 (PR #12)
 - T14 [CÓDIGO] src/embeddings (fastembed + fake) + src/vectordb (Chroma tras interfaz) + `main.py index` — subagente: rag-engineer — cubre S7, S17 — commit:
 - T15 [CÓDIGO] [ALTO RIESGO] src/retrieval (umbral) + src/prompts + src/llm (none/Claude/OpenAI/Gemini) + servicio de respuesta con cita + integración RAG — subagente: rag-engineer — cubre S7, S16 — commit:
 
@@ -967,3 +967,7 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 ### L11 — T12 base de conocimiento (docs-writer) · PR #10
 - 15 artículos `data/knowledge_base/KB-001…KB-015` (260–324 palabras): contraseña, desbloqueo, token, VPN, impresoras, SAP, core bancario, carpetas compartidas, equipo lento, escáner de cheques, sistema de caja, correo, Teams, telefonía, software. Front matter con palabras_clave ES/EN.
 - RN-01 (prioridad sugerida), RN-03 (KB-011 caja y la sospecha de acceso no autorizado escalan siempre) y RN-05 (identidad por número de empleado, advertencia de no compartir) verificados por `tests/unit/test_knowledge_base.py`. 367 tests, 99.34% de cobertura.
+
+### L12 — T13 ingestion + chunking (rag-engineer) · PR #12
+- `src/ingestion/documents.py` (KBArticle; loaders de Markdown, PDF con pypdf 7.1.1 y CSV), `src/chunking/section_chunker.py` (chunk por sección, ids `KB-001#pasos#0`, subdivisión con overlap). La KB real da 64 chunks (sección más larga: 735 caracteres, menor que chunk_size 800). 420 tests, 100% de cobertura en los módulos nuevos.
+- Decisión: el texto anterior al primer `##` se guarda como sección "introduccion", porque ahí están las advertencias de RN-05 (KB-001, 002, 003, 011). El orquestador la mantiene.
