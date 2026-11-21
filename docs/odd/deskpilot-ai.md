@@ -229,10 +229,10 @@ Criterios de aceptación:
 - T7 [CÓDIGO] Commit de la base, `gh repo create` público con descripción y topics, push — subagente: orquestador — cubre S15 — commit:
 
 **Datos y SQL (por PR)**
-- T8 [CÓDIGO] src/utils: config Pydantic (config.yaml + env, fail-fast), logging JSON con request_id, helpers — subagente: repo-architect — cubre S17 — commit:
-- T9 [CÓDIGO] Generador de tickets sintéticos en src/ingestion + `main.py generate-data` + data/sample (test primero) — subagente: data-engineer — cubre S3 — commit:
-- T10 [CÓDIGO] Carga a SQLite + `main.py load-db` + 10 consultas SQL portables + tests de integración SQL — subagente: data-engineer — cubre S5 — commit:
-- T11 [CÓDIGO] [ALTO RIESGO] Notebook PySpark → Delta, DDL del Warehouse, conexión Fabric por variables de entorno (mocks) — subagente: data-engineer — cubre S6, S16 — commit:
+- T8 [CÓDIGO] src/utils: config Pydantic (config.yaml + env, fail-fast), logging JSON con request_id, helpers — subagente: repo-architect — cubre S17 — commit: 177c447 (PR #2)
+- T9 [CÓDIGO] Generador de tickets sintéticos en src/ingestion + `main.py generate-data` + data/sample (test primero) — subagente: data-engineer — cubre S3 — commit: 0de821b (PR #4)
+- T10 [CÓDIGO] Carga a SQLite + `main.py load-db` + 10 consultas SQL portables + tests de integración SQL — subagente: data-engineer — cubre S5 — commit: da04fc0 (PR #6)
+- T11 [CÓDIGO] [ALTO RIESGO] Notebook PySpark → Delta, DDL del Warehouse, conexión Fabric por variables de entorno (mocks) — subagente: data-engineer — cubre S6, S16 — commit: d567cb3 (PR #8)
 
 **RAG (por PR)**
 - T12 [CÓDIGO] 15 artículos de base de conocimiento + test de formato — subagente: docs-writer — cubre S4 — commit:
@@ -956,3 +956,10 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - Cifras finales (semilla 42): repetitivo 39.9%, automatizables 51.24% (2,562), quincena 1.90×, SLA 79.5% local vs 60.6% foránea (brecha 18.9 pp), inglés 9.6%.
 - RN-06 implementado como: subcategoría con artículo de KB (CTE `kb`) + estado resuelto/cerrado + solución que no empieza con "Escalado a L2".
 - Pendientes: (T11) flags como enteros 0/1 en Delta; (T29) la consulta 07 usa SUBSTRING(CAST(fecha_apertura AS VARCHAR(19)),9,2) — ⚠ verificar en Fabric que la columna llega como datetime2.
+
+### L10 — T11 Fabric (data-engineer + security-verifier) · PR #8 · merge 6dc6c90
+- `src/utils/fabric.py`: token de Entra ID (azure-identity) pasado por `attrs_before` (1256), sin secretos en la cadena de conexión; `ClientSecretCredential` si están las 3 variables AZURE_*, si no `DefaultAzureCredential`; validación fail-fast; imports perezosos. `integrations/fabric/sql/warehouse_ddl.sql` (varchar, datetime2(6), PK NONCLUSTERED NOT ENFORCED). Notebook `01_load_tickets_delta.ipynb` (flags como int 0/1). 269 tests, 99.34% de cobertura.
+- Verificado en Microsoft Learn: el SQL analytics endpoint es de solo lectura y el Warehouse admite INSERT; solo Entra ID con ODBC 18; tipos del Warehouse. Local: ODBC Driver 17 y 18 instalados.
+- ⚠ No verificado: scope `https://database.windows.net/.default` contra un tenant real (T30); ejecución del notebook en Spark (T29); DDL en el Warehouse (T29); precisión del datetime2 que expone Delta.
+- security-verifier: **APROBADO**. Bajas: (#4) faltaba un assert de que el texto AADSTS no aparece en FabricAuthError → corregido por el orquestador (commit test(fabric)); (#3) en T16/T17, registrar los errores de Fabric sin `exc_info`.
+- La unicidad de ticket_id en el Warehouse (PK NOT ENFORCED) la debe garantizar T17.
