@@ -220,8 +220,9 @@ def test_fabric_mode_without_variables_lists_every_missing_name(
         load_settings(env_file=env_file)
     message = str(excinfo.value)
     assert "fabric" in message
+    missing = message.split("empty:")[1].split(".")[0]
     for name in FABRIC_VARS:
-        assert (name in message) is (name != "AZURE_TENANT_ID")
+        assert (name in missing) is (name != "AZURE_TENANT_ID")
     assert API_KEY not in message
 
 
@@ -234,6 +235,34 @@ def test_fabric_mode_with_variables_builds_credentials(tmp_path: Path) -> None:
     assert fabric.sql_endpoint == FABRIC_VARS["FABRIC_SQL_ENDPOINT"]
     assert fabric.client_secret.get_secret_value() == FABRIC_VARS["AZURE_CLIENT_SECRET"]
     assert FABRIC_VARS["AZURE_CLIENT_SECRET"] not in repr(settings)
+    assert fabric.uses_service_principal
+
+
+SERVICE_PRINCIPAL_VARS = ("AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET")
+ENDPOINT_VARS = {k: v for k, v in FABRIC_VARS.items() if k not in SERVICE_PRINCIPAL_VARS}
+
+
+def test_fabric_mode_without_service_principal_uses_default_credential(
+    tmp_path: Path,
+) -> None:
+    env_file = _env_file(tmp_path, {"DESKPILOT_MODE": "fabric", **ENDPOINT_VARS})
+    fabric = load_settings(env_file=env_file).secrets.fabric
+    assert fabric is not None
+    assert fabric.warehouse_database == ENDPOINT_VARS["FABRIC_WAREHOUSE_DATABASE"]
+    assert (fabric.tenant_id, fabric.client_id, fabric.client_secret) == (None, None, None)
+    assert not fabric.uses_service_principal
+
+
+@pytest.mark.parametrize("present", SERVICE_PRINCIPAL_VARS)
+def test_fabric_mode_with_partial_service_principal_fails(tmp_path: Path, present: str) -> None:
+    values = {"DESKPILOT_MODE": "fabric", **ENDPOINT_VARS, present: FABRIC_VARS[present]}
+    with pytest.raises(ConfigError) as excinfo:
+        load_settings(env_file=_env_file(tmp_path, values))
+    message = str(excinfo.value)
+    for name in SERVICE_PRINCIPAL_VARS:
+        assert (name in message.split("empty:")[1].split(".")[0]) is (name != present)
+    assert "DefaultAzureCredential" in message
+    assert FABRIC_VARS["AZURE_CLIENT_SECRET"] not in message
 
 
 def test_llm_provider_requires_its_key_and_model(

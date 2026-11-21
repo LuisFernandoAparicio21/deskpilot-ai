@@ -24,12 +24,14 @@ warn_unreachable = true
 pretty = true
 show_error_codes = true
 
-# Todas las dependencias directas traen py.typed (o stubs, como pyodbc y types-PyYAML),
-# así que no se ignoran imports de forma global. Si una librería nueva no trae tipos,
-# se agrega aquí su módulo, nunca ignore_missing_imports global:
-# [[tool.mypy.overrides]]
-# module = ["libreria_sin_tipos.*"]
-# ignore_missing_imports = true
+# Las dependencias directas traen py.typed (o stubs, como types-PyYAML), así que no se
+# ignoran imports de forma global. Si una librería no trae tipos utilizables, se agrega
+# aquí su módulo, nunca ignore_missing_imports global.
+# pyodbc (T11): instala pyodbc.pyi suelto en site-packages, sin paquete ni py.typed, y
+# mypy no lo encuentra (import-not-found, comprobado con mypy 2.4.1).
+[[tool.mypy.overrides]]
+module = ["pyodbc"]
+ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["src"]

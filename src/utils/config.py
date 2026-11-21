@@ -168,13 +168,23 @@ class FileConfig(_Section):
 
 
 class FabricCredentials(_Section):
+    """Fabric endpoints plus an optional service principal (all three values or none).
+
+    Without a service principal, ``src.utils.fabric`` falls back to
+    ``DefaultAzureCredential`` (for example, the identity of ``az login``).
+    """
+
     sql_endpoint: str
     lakehouse_database: str
     warehouse_endpoint: str
     warehouse_database: str
-    tenant_id: str
-    client_id: str
-    client_secret: SecretStr
+    tenant_id: str | None = None
+    client_id: str | None = None
+    client_secret: SecretStr | None = None
+
+    @property
+    def uses_service_principal(self) -> bool:
+        return self.client_secret is not None
 
 
 class Secrets(_Section):
@@ -269,20 +279,37 @@ def _override(data: dict[str, Any], section: str, key: str, value: str | None) -
         data[section][key] = value
 
 
+_SERVICE_PRINCIPAL_FIELDS = ("tenant_id_env", "client_id_env", "client_secret_env")
+
+
 def _fabric_credentials(fabric: FabricConfig, env_file: Path) -> FabricCredentials:
-    """Read the fabric variables by the names configured in ``config.yaml``."""
+    """Read the fabric variables by the names configured in ``config.yaml``.
+
+    The four endpoint variables are required. The service principal variables go
+    together: all three set, or all three empty (then ``DefaultAzureCredential`` is used).
+    """
     values: dict[str, str | None] = dict(dotenv_values(env_file)) if env_file.is_file() else {}
     values.update(os.environ)
     names = fabric.model_dump()
-    missing = [name for name in names.values() if not values.get(name)]
+    missing = [
+        name
+        for field, name in names.items()
+        if field not in _SERVICE_PRINCIPAL_FIELDS and not values.get(name)
+    ]
+    sp_missing = [names[f] for f in _SERVICE_PRINCIPAL_FIELDS if not values.get(names[f])]
+    if 0 < len(sp_missing) < len(_SERVICE_PRINCIPAL_FIELDS):
+        missing += sp_missing
     if missing:
+        sp_names = ", ".join(names[f] for f in _SERVICE_PRINCIPAL_FIELDS)
         raise ConfigError(
             "Mode 'fabric' requires these environment variables, which are missing or "
-            f"empty: {', '.join(missing)}. Set them in .env (see .env.example) or use "
-            "DESKPILOT_MODE=local."
+            f"empty: {', '.join(missing)}. The service principal variables ({sp_names}) "
+            "go together: set all three, or leave all three empty to use "
+            "DefaultAzureCredential (az login). Set them in .env (see .env.example) or "
+            "use DESKPILOT_MODE=local."
         )
     return FabricCredentials.model_validate(
-        {field.removesuffix("_env"): values[name] for field, name in names.items()}
+        {field.removesuffix("_env"): values.get(name) or None for field, name in names.items()}
     )
 
 

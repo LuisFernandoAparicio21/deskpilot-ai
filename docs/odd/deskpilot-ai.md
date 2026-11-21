@@ -949,3 +949,10 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - `src/ingestion/ticket_generator.py` + `ticket_catalog.py` (120 sucursales en 45 ciudades, de ellas 80 foráneas; 20 subcategorías, 15 con artículo de KB y 5 sin artículo). `main.py generate-data [--seed --n]`. Muestra sistemática de 1 de cada 25 filas en `data/sample/tickets_sample.csv`.
 - Cifras reales (semilla 42): repetitivo 39.9%, desbloqueo en quincena 1.90×, SLA 85.8% en CDMX/Guadalajara/Monterrey vs 69.9% en foráneas (brecha 15.9 pp), inglés 9.6%, 14 abiertos. 127 tests, 99.10% de cobertura. Hash reproducible verificado.
 - Nota: con `core.autocrlf` local la copia de trabajo puede tener CRLF; no afecta lo que se versiona (LF).
+
+### L9 — T10 SQLite + SQL (data-engineer) · PR #6 · merge 941923b
+- `src/utils/db.py`, `src/ingestion/sqlite_loader.py` (tablas tickets, sucursales y tickets_nuevos; `tickets_nuevos` = 17 columnas + descripcion), `main.py load-db [--run-sql]`, 10 consultas en `integrations/fabric/sql/` parseadas sin errores por sqlglot 30.33.0 como tsql y sqlite. 210 tests, 99.25% de cobertura.
+- Corrección durante la revisión del orquestador: los automatizables daban 76.68% (el generador casi no escalaba a L2) ⇒ tasas de escalamiento por subcategoría (repetitivas 8–12%, resto con artículo 60–65%, sin artículo 70–85%, caja y fraude 100% por RN-03).
+- Cifras finales (semilla 42): repetitivo 39.9%, automatizables 51.24% (2,562), quincena 1.90×, SLA 79.5% local vs 60.6% foránea (brecha 18.9 pp), inglés 9.6%.
+- RN-06 implementado como: subcategoría con artículo de KB (CTE `kb`) + estado resuelto/cerrado + solución que no empieza con "Escalado a L2".
+- Pendientes: (T11) flags como enteros 0/1 en Delta; (T29) la consulta 07 usa SUBSTRING(CAST(fecha_apertura AS VARCHAR(19)),9,2) — ⚠ verificar en Fabric que la columna llega como datetime2.
