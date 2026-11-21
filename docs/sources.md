@@ -68,6 +68,8 @@ Lo que agregó el usuario (L2) como estándar de producción, únicas adiciones 
 | fastembed (qdrant/fastembed) | https://github.com/qdrant/fastembed | Librería de embeddings locales sin llaves. Verificada: responde. |
 | FastEmbed: Supported Models | https://qdrant.github.io/fastembed/examples/Supported_Models/ | Catálogo de modelos; `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (el de `config.yaml`) aparece en la lista. La carga real se confirma ejecutando en T14. |
 | PyPI — versiones verificadas con pip freeze el 2026-11-21 | https://pypi.org/ | Origen de cada dependencia fijada en `requirements.txt` y `requirements-dev.txt`. Instaladas en `.venv` (Python 3.13.2) y fijadas con la salida de `pip freeze`. Ejemplo comprobado: https://pypi.org/project/fastembed/ muestra 0.9.1 como versión actual. |
+| pydantic-settings (Pydantic docs) | https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/ | T8: carga de secretos y del modo desde variables de entorno y `.env` con `SecretStr`. |
+| python-stdnum — `stdnum/mx/curp.py` | https://github.com/arthurdejong/python-stdnum/blob/master/stdnum/mx/curp.py | T8: lista de claves de estado para la regex de CURP en `src/utils/redaction.py`. No verificado contra el instructivo oficial de RENAPO (DOF); no se valida el dígito verificador. |
 
 ## Fuentes por agregar en tareas siguientes
 
