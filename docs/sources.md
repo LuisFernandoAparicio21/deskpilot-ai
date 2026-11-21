@@ -71,7 +71,14 @@ Lo que agregó el usuario (L2) como estándar de producción, únicas adiciones 
 | pydantic-settings (Pydantic docs) | https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/ | T8: carga de secretos y del modo desde variables de entorno y `.env` con `SecretStr`. |
 | python-stdnum — `stdnum/mx/curp.py` | https://github.com/arthurdejong/python-stdnum/blob/master/stdnum/mx/curp.py | T8: lista de claves de estado para la regex de CURP en `src/utils/redaction.py`. No verificado contra el instructivo oficial de RENAPO (DOF); no se valida el dígito verificador. |
 
-## Fuentes por agregar en tareas siguientes
+## SQL portable y SQLite (T10)
+
+| Título | URL | Para qué se usó |
+| --- | --- | --- |
+| sqlglot — `sqlglot.errors` (API docs) | https://sqlglot.com/sqlglot/errors.html | Validación de portabilidad en `tests/unit/test_sql_files.py`. `ErrorLevel` tiene IGNORE ("Ignore all errors"), WARN ("Log all errors"), RAISE ("Collect all errors and raise a single exception") e IMMEDIATE ("Immediately raise an exception on the first error found"); los errores llegan como `ParseError` con la lista `errors`. Se usa `error_level=ErrorLevel.RAISE`. Versión instalada y fijada: `sqlglot==30.33.0` (comprobado en `.venv`). |
+| CAST and CONVERT (Transact-SQL) — Microsoft Learn | https://learn.microsoft.com/en-us/sql/t-sql/functions/cast-and-convert-transact-sql | Aplica al SQL analytics endpoint y al Warehouse de Fabric. El estilo 121 (`yyyy-MM-dd HH:mm:ss.fff`) es el predeterminado para **datetime2**; `07_efecto_quincena.sql` usa `SUBSTRING(CAST(fecha_apertura AS VARCHAR(19)), 9, 2)` para el día del mes. ⚠ Verificar en T29 que la columna Delta llegue al endpoint como datetime2 (con **datetime** el estilo predeterminado es 0 y la consulta fallaría). |
+| SQLite — Built-in scalar SQL functions | https://sqlite.org/lang_corefunc.html | "substring() is an alias for substr() beginning with SQLite version 3.34" (el `.venv` trae SQLite 3.45.3). `round(X,Y)` devuelve un número de punto flotante. |
+
 
 Las URLs de abajo respondieron con WebFetch el 2026-11-21. Todavía no se usaron: cada tarea debe confirmar el detalle técnico y pasar la fila a su sección.
 
