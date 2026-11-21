@@ -220,12 +220,12 @@ Criterios de aceptación:
 ### Fase A: Claude Code (automática)
 
 **Base del repo (directo a main, solo hasta T7)**
-- T1 [CÓDIGO] Inicializar git con rama main en C:\Users\HP\Proyectos\deskpilot-ai — subagente: repo-architect — cubre S1 — commit: (base)
-- T2 [CÓDIGO] Crear `.claude/agents/` con los 8 subagentes — subagente: repo-architect — cubre S2 — commit: (base)
-- T3 [CÓDIGO] Estructura base: archivos raíz (README esqueleto, requirements*.txt verificados, .gitignore, config.yaml, main.py CLI esqueleto, .env.example, pyproject.toml, LICENSE, CHANGELOG, CONTRIBUTING), .github (ci.yml, PR template, ISSUE_TEMPLATE), carpetas con __init__/README/.gitkeep — subagente: repo-architect — cubre S1, S14, S16, S19 — commit: (base)
-- T4 [CÓDIGO] CLAUDE.md (ODD + todo por subagentes) y docs/sources.md — subagente: docs-writer — cubre S2, S19 — commit: (base)
-- T5 [CÓDIGO] Este documento de feature — subagente: orquestador — cubre todos — commit: (base)
-- T6 [CÓDIGO] [ALTO RIESGO] Revisión de la base: árbol vs S1, secretos, .gitignore, archivos sobrantes — subagente: security-verifier — cubre S1, S16, S20 — commit: (base)
+- T1 [CÓDIGO] Inicializar git con rama main en C:\Users\HP\Proyectos\deskpilot-ai — subagente: repo-architect — cubre S1 — commit: 7376681
+- T2 [CÓDIGO] Crear `.claude/agents/` con los 8 subagentes — subagente: repo-architect — cubre S2 — commit: 7376681
+- T3 [CÓDIGO] Estructura base: archivos raíz (README esqueleto, requirements*.txt verificados, .gitignore, config.yaml, main.py CLI esqueleto, .env.example, pyproject.toml, LICENSE, CHANGELOG, CONTRIBUTING), .github (ci.yml, PR template, ISSUE_TEMPLATE), carpetas con __init__/README/.gitkeep — subagente: repo-architect — cubre S1, S14, S16, S19 — commit: 7376681
+- T4 [CÓDIGO] CLAUDE.md (ODD + todo por subagentes) y docs/sources.md — subagente: docs-writer — cubre S2, S19 — commit: 7376681
+- T5 [CÓDIGO] Este documento de feature — subagente: orquestador — cubre todos — commit: 7376681
+- T6 [CÓDIGO] [ALTO RIESGO] Revisión de la base: árbol vs S1, secretos, .gitignore, archivos sobrantes — subagente: security-verifier — cubre S1, S16, S20 — commit: 7376681
 - T7 [CÓDIGO] Commit de la base, `gh repo create` público con descripción y topics, push — subagente: orquestador — cubre S15 — commit:
 
 **Datos y SQL (por PR)**
@@ -937,3 +937,5 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - **T6** (security-verifier): **APROBADO**. Árbol conforme a S1/L2 (62 archivos), sin secretos y `.gitignore` completo; el CI usa `permissions: contents: read` y no usa `pull_request_target`. Hallazgos: (1, media) el `user.email` global es el correo universitario y quedaría público para siempre en la historia; (2, baja) `.gitignore` no cubría variantes como `.env.local`.
 - **Correcciones del orquestador:** (2) se agregaron `.env.*` y `!.env.example` y se verificó con `git check-ignore`. (1) Decisión no bloqueante: `user.email` local del repo = correo noreply de GitHub. Evita publicar el correo personal y mantiene los commits ligados a la cuenta. Se puede cambiar con `git config user.email`.
 - **T7:** commit de la base en main, repo público con `gh repo create` y push. Desde aquí, todo entra por PR.
+
+- **T7** ✓ `7376681`: https://github.com/LuisFernandoAparicio21/deskpilot-ai (público, 10 topics). CI de main verde (run 44956376221).
