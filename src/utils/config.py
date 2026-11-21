@@ -93,8 +93,19 @@ class ChunkingConfig(_Section):
 
 
 class EmbeddingsConfig(_Section):
+    """``cache_dir`` (optional) is where fastembed keeps the downloaded model."""
+
     provider: Literal["fastembed", "fake"]
     model: str = Field(min_length=1)
+    cache_dir: Path | None = None
+
+    @field_validator("cache_dir", mode="after")
+    @classmethod
+    def _resolve_cache_dir(cls, value: Path | None, info: ValidationInfo) -> Path | None:
+        root: Path = (info.context or {}).get("root", PROJECT_ROOT)
+        if value is None or value.is_absolute():
+            return value
+        return (root / value).resolve()
 
 
 class VectorDBConfig(_Section):

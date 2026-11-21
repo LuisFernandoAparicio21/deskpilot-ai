@@ -14,7 +14,10 @@ known-first-party = ["src", "main"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-ra --import-mode=importlib"
+# Los tests "slow" descargan el modelo real de fastembed (~250 MB): el CI no los corre.
+# Para correrlos en local: pytest -m slow (el último -m de la línea de comandos manda).
+addopts = "-ra --import-mode=importlib -m \"not slow\""
+markers = ["slow: downloads the real fastembed model; skipped unless run with -m slow"]
 
 [tool.mypy]
 python_version = "3.11"

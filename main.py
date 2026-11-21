@@ -5,7 +5,7 @@ Every pipeline step runs through a subcommand:
     python main.py generate-data | load-db | index | serve | eval | export-openapi
 
 Subcommands without a handler yet only report which task will implement them and exit
-with code 2. Implemented so far: ``generate-data`` (T9) and ``load-db`` (T10).
+with code 2. Implemented so far: ``generate-data`` (T9), ``load-db`` (T10) and ``index`` (T14).
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from src.ingestion.documents import DocumentError
 from src.ingestion.sqlite_loader import MissingDataError, load_sqlite
 from src.ingestion.ticket_generator import generate_dataset
 from src.utils.config import PROJECT_ROOT, ConfigError, load_settings
@@ -129,9 +130,42 @@ def cmd_load_db(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_index(args: argparse.Namespace) -> int:
+    """Chunk, embed and index the knowledge base into a new index version (T14, S7, RF-15).
+
+    Runs offline only: it builds ``paths.vectordb/<version>/`` and then swaps the
+    ``CURRENT`` pointer, so a running API keeps answering and picks up the new version.
+    """
+    # Imported here: chromadb takes ~1 s to import and only this command needs it.
+    from src.vectordb.indexer import IndexBuildError, build_index
+
+    try:
+        settings = load_settings()
+    except ConfigError as exc:
+        print(f"index: {exc}", file=sys.stderr)
+        return EXIT_CONFIG_ERROR
+    configure_logging_from_settings(settings, console=False)
+    try:
+        result = build_index(settings)
+    except (DocumentError, IndexBuildError) as exc:
+        print(f"index: {exc}", file=sys.stderr)
+        return EXIT_DATA_ERROR
+    embeddings = settings.embeddings
+    print(f"index: {_display(result.path)}")
+    print(f"  {result.n_articles} articles -> {result.n_chunks} chunks")
+    model = embeddings.model if embeddings.provider == "fastembed" else "token hashing"
+    print(f"  embeddings: {embeddings.provider} {model} (dim {result.dimension})")
+    print(f"  CURRENT -> {result.version}")
+    removed = ", ".join(result.removed) if result.removed else "none"
+    print(f"  old versions removed: {removed}")
+    print(f"  elapsed: {result.elapsed_s:.1f} s")
+    return EXIT_OK
+
+
 HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "generate-data": cmd_generate_data,
     "load-db": cmd_load_db,
+    "index": cmd_index,
 }
 
 

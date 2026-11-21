@@ -114,11 +114,21 @@ Consultadas con WebFetch el 2026-11-21. "⚠" marca lo que las fuentes no confir
 | pypdf — Extract Text from a PDF | https://pypdf.readthedocs.io/en/stable/user/extract-text.html | `src/ingestion/documents.py`: `PdfReader(path)`, `reader.pages` y `page.extract_text()`. Comprobado con pypdf 7.1.1 instalado: `PdfReader.metadata` expone `title`, `modification_date` y `creation_date`; los errores de lectura heredan de `pypdf.errors.PyPdfError`; `PdfWriter.add_blank_page(width, height)` crea la página sin texto del test. El PDF con texto del test se escribe a mano (xref calculado), sin binarios versionados. |
 
 
+## Embeddings y base vectorial (T14)
+
+| Título | URL | Para qué se usó |
+| --- | --- | --- |
+| FastEmbed — Supported Models | https://qdrant.github.io/fastembed/examples/Supported_Models/ | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` está soportado: 384 dimensiones, multilingüe, 0.22 GB. Comprobado con fastembed 0.9.1 instalado (`TextEmbedding.list_supported_models()`): trunca la entrada a 128 tokens y no usa prefijos de consulta/documento. `TextEmbedding(model_name, cache_dir)`; `embed` y `query_embed` devuelven generadores de `numpy.ndarray` float32 sin normalizar; `get_embedding_size(model)` da la dimensión sin cargar el modelo. Descarga real: ~241 MB en disco, ~60 s. |
+| Chroma — Configure (collections) | https://docs.trychroma.com/docs/collections/configure | En 1.x el espacio se declara con `configuration={"hnsw": {"space": "cosine"}}`; distancia coseno `d = 1 - cos(A, B)`. Comprobado con chromadb 1.5.9: la clave antigua de metadata `hnsw:space` también funciona, `query` devuelve distancias en 0..2 y el nombre de colección necesita 3–512 caracteres. |
+| Chroma — Metadata filtering | https://docs.trychroma.com/docs/querying-collections/metadata-filtering | `where={"campo": "valor"}` equivale a `$eq`; varias condiciones se combinan con `{"$and": [...]}` (así lo traduce `chroma_where`). |
+| Chroma — Python client reference | https://docs.trychroma.com/reference/python/client | `PersistentClient(path, settings, tenant, database)`: "This client is intended for local development and testing. For production, prefer a server-backed Chroma instance." La documentación oficial no dice nada sobre varios procesos con la misma ruta. Comprobado con 1.5.9: un segundo cliente en la misma ruta con otros `Settings` falla, `Client.close()` libera los archivos y, en Windows, un índice abierto no se puede renombrar ni borrar (WinError 32). |
+| Chroma Cookbook — System constraints (Amikos Tech, colaboradores de Chroma; no es la documentación oficial) | https://cookbook.chromadb.dev/core/system_constraints/ | "Chroma is thread-safe" y "Chroma is not process-safe for concurrent writers sharing the same local persistence path". Por eso RF-15 usa directorios versionados y un puntero `CURRENT` atómico: ningún proceso escribe donde otro lee. |
+| Python — `os.replace` | https://docs.python.org/3/library/os.html#os.replace | "If *dst* exists and is a file, it will be replaced silently if the user has permission" y "If successful, the renaming will be an atomic operation (this is a POSIX requirement)". Se usa para publicar el puntero `CURRENT`; la atomicidad solo está documentada para POSIX, así que en Windows el lector tolera un puntero ausente o inválido y `write_current` reintenta si el archivo está en uso. |
+
 Las URLs de abajo respondieron con WebFetch el 2026-11-21. Todavía no se usaron: cada tarea debe confirmar el detalle técnico y pasar la fila a su sección.
 
 | Tecnología | URL | Tarea | Nota |
 | --- | --- | --- | --- |
-| ChromaDB | https://docs.trychroma.com/ | T14 | Cliente persistente local. Falta confirmar la API exacta y el comportamiento con dos procesos (RF-15). |
 | MCP Python SDK | https://github.com/modelcontextprotocol/python-sdk | T18 | SDK oficial ("Python SDK for Model Context Protocol servers and clients"). |
 | FastMCP | (por verificar en T18) | T18 | La página del repo del SDK no menciona FastMCP. Hay que confirmar con `mcp==2.3.0` instalado cuál es la API para declarar herramientas y montar el servidor por HTTP. |
 | OpenAPI para Copilot Studio (REST API tools) | https://learn.microsoft.com/microsoft-copilot-studio/agent-extend-action-rest-api | T19 | Función en preview. La página dice que la especificación debe ser OpenAPI v2 en JSON y que una v3 se traduce automáticamente a v2. Hay que confirmarlo al generar `openapi.yaml`. |
