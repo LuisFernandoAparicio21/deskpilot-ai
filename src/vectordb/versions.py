@@ -12,7 +12,8 @@ production; it does not support several processes sharing one path (the Chroma
 Cookbook says "Chroma is not process-safe for concurrent writers sharing the same local
 persistence path"). So no process ever writes into the directory another one reads:
 ``index`` builds a new directory, validates it, swaps ``CURRENT`` with ``os.replace``
-(atomic on Windows and POSIX) and prunes old versions. The API keeps serving the old
+(documented as atomic on POSIX; readers ignore a missing or invalid pointer) and prunes
+old versions. The API keeps serving the old
 version until ``CurrentStore`` notices the new pointer and reopens, without a restart.
 """
 
