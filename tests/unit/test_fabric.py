@@ -275,8 +275,9 @@ def test_token_failure_raises_auth_error(
     fake_pyodbc: types.SimpleNamespace, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(azure.identity, "ClientSecretCredential", FailingCredential)
-    with pytest.raises(FabricAuthError, match="service_principal"):
+    with pytest.raises(FabricAuthError, match="service_principal") as excinfo:
         FabricConnectionFactory(_credentials()).connect_lakehouse()
+    assert "AADSTS" not in str(excinfo.value)
     assert fake_pyodbc.calls == []
 
 
