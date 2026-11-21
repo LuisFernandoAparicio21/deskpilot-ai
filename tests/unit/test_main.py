@@ -159,3 +159,72 @@ def test_run_business_queries_without_sql_files(
 ) -> None:
     assert main.run_business_queries(tmp_path / "x.db", tmp_path) == main.EXIT_DATA_ERROR
     assert "no queries found" in capsys.readouterr().err
+
+
+@pytest.fixture
+def index_settings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> Iterator[Callable[[Path], Settings]]:
+    """Real config with the fake embedder and the index in tmp_path; KB path is a parameter."""
+
+    def _patch(knowledge_base: Path) -> Settings:
+        settings = load_settings(env_file=tmp_path / "missing.env")
+        paths = settings.paths.model_copy(
+            update={
+                "knowledge_base": knowledge_base,
+                "vectordb": tmp_path / "vectordb",
+                "logs": tmp_path / "logs",
+            }
+        )
+        embeddings = settings.embeddings.model_copy(update={"provider": "fake"})
+        patched = settings.model_copy(update={"paths": paths, "embeddings": embeddings})
+        monkeypatch.setattr(main, "load_settings", lambda: patched)
+        return patched
+
+    yield _patch
+    shutdown_logging()
+
+
+def test_index_builds_the_vector_index(
+    index_settings: Callable[[Path], Settings], capsys: pytest.CaptureFixture[str]
+) -> None:
+    settings = index_settings(main.PROJECT_ROOT / "data" / "knowledge_base")
+    assert main.main(["index"]) == main.EXIT_OK
+    out = capsys.readouterr().out
+    assert "15 articles -> " in out
+    assert "embeddings: fake" in out
+    assert "CURRENT ->" in out
+    assert (settings.paths.vectordb / "CURRENT").is_file()
+
+
+def test_index_without_knowledge_base_is_a_data_error(
+    index_settings: Callable[[Path], Settings],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    index_settings(tmp_path / "missing_kb")
+    assert main.main(["index"]) == main.EXIT_DATA_ERROR
+    assert "index:" in capsys.readouterr().err
+
+
+def test_index_with_empty_knowledge_base_is_a_data_error(
+    index_settings: Callable[[Path], Settings],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    empty = tmp_path / "kb"
+    empty.mkdir()
+    index_settings(empty)
+    assert main.main(["index"]) == main.EXIT_DATA_ERROR
+    assert "no chunks" in capsys.readouterr().err
+
+
+def test_index_reports_config_errors(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def broken() -> Settings:
+        raise ConfigError("Configuration file not found: config.yaml")
+
+    monkeypatch.setattr(main, "load_settings", broken)
+    assert main.main(["index"]) == main.EXIT_CONFIG_ERROR
+    assert "Configuration file not found" in capsys.readouterr().err
