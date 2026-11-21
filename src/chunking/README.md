@@ -1,3 +1,3 @@
 # chunking
-Divide cada artículo de la base de conocimiento en chunks por sección (síntoma, causa, pasos, escalar).
-Cada chunk conserva metadatos (artículo, sección, categoría) para filtrar y citar la fuente.
+`section_chunker.py` divide cada artículo en un chunk por sección (síntoma, causa, pasos, escalar) con id `KB-001#pasos#0`.
+Subdivide las secciones mayores a `chunk_size` con `chunk_overlap` y guarda metadatos planos (artículo, sección, categoría, fuente).
