@@ -31,7 +31,9 @@ chunking:
 # --- Embeddings ---
 embeddings:
   provider: fastembed    # fastembed | fake (fake = determinista, para tests y CI)
-  model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2  # ⚠ verificar en T14
+  # Verificado en T14 con fastembed 0.9.1: modelo soportado, 384 dimensiones, ~250 MB.
+  model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  cache_dir: data/vectordb/models   # descarga del modelo (ignorada por git)
 
 # --- Base vectorial ---
 vectordb:

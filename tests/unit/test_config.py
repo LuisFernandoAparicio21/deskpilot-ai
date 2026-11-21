@@ -106,6 +106,16 @@ def test_absolute_paths_are_kept(write_config: ConfigWriter, no_env_file: Path) 
     assert load_settings(path, env_file=no_env_file).paths.logs == absolute
 
 
+def test_embeddings_cache_dir_is_resolved_against_project_root(no_env_file: Path) -> None:
+    settings = load_settings(env_file=no_env_file)
+    assert settings.embeddings.cache_dir == PROJECT_ROOT / "data" / "vectordb" / "models"
+
+
+def test_embeddings_cache_dir_is_optional(write_config: ConfigWriter, no_env_file: Path) -> None:
+    path = write_config(lambda d: d["embeddings"].pop("cache_dir"))
+    assert load_settings(path, env_file=no_env_file).embeddings.cache_dir is None
+
+
 def test_settings_are_immutable(no_env_file: Path) -> None:
     settings = load_settings(env_file=no_env_file)
     with pytest.raises(ValidationError):
