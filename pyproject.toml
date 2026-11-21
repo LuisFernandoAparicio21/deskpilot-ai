@@ -1,0 +1,48 @@
+# Solo configuración de herramientas (S1). Las dependencias viven en requirements*.txt.
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["scratch"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "main"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --import-mode=importlib"
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src", "main.py"]
+strict = true
+warn_unreachable = true
+pretty = true
+show_error_codes = true
+
+# Todas las dependencias directas traen py.typed (o stubs, como pyodbc y types-PyYAML),
+# así que no se ignoran imports de forma global. Si una librería nueva no trae tipos,
+# se agrega aquí su módulo, nunca ignore_missing_imports global:
+# [[tool.mypy.overrides]]
+# module = ["libreria_sin_tipos.*"]
+# ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_empty = true
+exclude_also = [
+    'if TYPE_CHECKING:',
+    'if __name__ == .__main__.:',
+    'raise NotImplementedError',
+    '@(abc\.)?abstractmethod',
+    '^\s*\.\.\.$',
+]

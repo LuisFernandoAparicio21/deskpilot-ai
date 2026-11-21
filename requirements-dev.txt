@@ -1,0 +1,10 @@
+# Dependencias de desarrollo: pruebas, cobertura, lint y tipos.
+# Versiones instaladas y verificadas en .venv con Python 3.13.2 (Windows) el 2026-11-21 (S19, RNF-11).
+-r requirements.txt
+pytest==9.2.0
+pytest-cov==7.1.0
+ruff==0.17.6
+mypy==2.4.1
+# Stubs: PyYAML no trae tipos propios. pyodbc ya incluye pyodbc.pyi; el resto de las
+# dependencias directas trae py.typed, así que no requieren stubs adicionales.
+types-PyYAML==6.0.12.20261113

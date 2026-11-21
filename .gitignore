@@ -1,0 +1,32 @@
+# --- Secretos (S16): nunca se versionan ---
+.env
+.env.*
+!.env.example
+
+# --- Entorno virtual ---
+.venv/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+
+# --- Logs: solo se versiona logs/.gitkeep ---
+logs/*.log
+
+# --- Datos generados (data/sample/ y data/knowledge_base/ sí se versionan) ---
+data/raw/*
+!data/raw/.gitkeep
+data/vectordb/*
+!data/vectordb/.gitkeep
+data/*.db
+
+# --- Experimentos locales (S20): se borran al cerrar cada tarea ---
+scratch/
+
+# --- Caches de herramientas y cobertura ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/

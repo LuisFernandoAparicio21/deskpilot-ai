@@ -1,0 +1,79 @@
+# Configuración de DeskPilot AI (sin secretos).
+# Los secretos y las credenciales viven en .env (ver .env.example).
+# T8 valida este archivo con Pydantic al arrancar: si falta algo, falla con un mensaje claro (S17).
+
+# --- Aplicación ---
+app:
+  name: deskpilot-ai
+  mode: local            # local | fabric. Se puede sobrescribir con DESKPILOT_MODE.
+  log_level: INFO        # DEBUG | INFO | WARNING | ERROR
+
+# --- Rutas (relativas a la raíz del repo) ---
+paths:
+  knowledge_base: data/knowledge_base   # 15 artículos .md (se versionan)
+  sample: data/sample                   # 200 tickets de muestra (se versionan)
+  raw: data/raw                         # CSV completo de tickets (ignorado por git)
+  sqlite_db: data/deskpilot.db          # base SQLite del modo local (ignorada por git)
+  vectordb: data/vectordb               # índice persistente de Chroma (ignorado por git)
+  logs: logs                            # logs JSON (*.log ignorados por git)
+
+# --- Datos sintéticos (S3, RNF-11) ---
+data:
+  seed: 42               # semilla fija para reproducibilidad
+  n_tickets: 5000
+
+# --- Chunking de la base de conocimiento ---
+chunking:
+  strategy: section      # un chunk por sección: síntoma / causa / pasos / escalar
+  chunk_size: 800        # máximo de caracteres por chunk si una sección es muy larga
+  chunk_overlap: 100     # caracteres compartidos entre chunks consecutivos
+
+# --- Embeddings ---
+embeddings:
+  provider: fastembed    # fastembed | fake (fake = determinista, para tests y CI)
+  model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2  # ⚠ verificar en T14
+
+# --- Base vectorial ---
+vectordb:
+  provider: chroma
+  collection: deskpilot_kb
+
+# --- Recuperación ---
+retrieval:
+  top_k: 3
+  similarity_threshold: 0.5   # debajo de este valor se responde "no lo sé" — calibrar en T15
+
+# --- LLM ---
+llm:
+  provider: none         # none | anthropic | openai | gemini. Se puede sobrescribir con LLM_PROVIDER.
+  timeout_s: 30
+  models:                # modelo por proveedor; se define al activar cada uno (vacío = sin configurar)
+    anthropic: ""
+    openai: ""
+    gemini: ""
+
+# --- API ---
+api:
+  host: 127.0.0.1
+  port: 8000
+  request_timeout_s: 30
+  max_query_chars: 500          # longitud máxima de la consulta en buscar_solucion
+  max_description_chars: 2000   # longitud máxima de la descripción en crear_ticket
+
+# --- SLA en horas por prioridad (RN-02, ilustrativo) ---
+sla_horas:
+  P1: 4
+  P2: 8
+  P3: 24
+  P4: 72
+
+# --- Microsoft Fabric (modo fabric) ---
+# Solo los NOMBRES de las variables de entorno que se leen; los valores van en .env, nunca aquí.
+fabric:
+  sql_endpoint_env: FABRIC_SQL_ENDPOINT
+  lakehouse_database_env: FABRIC_LAKEHOUSE_DATABASE
+  warehouse_endpoint_env: FABRIC_WAREHOUSE_ENDPOINT
+  warehouse_database_env: FABRIC_WAREHOUSE_DATABASE
+  tenant_id_env: AZURE_TENANT_ID
+  client_id_env: AZURE_CLIENT_ID
+  client_secret_env: AZURE_CLIENT_SECRET
