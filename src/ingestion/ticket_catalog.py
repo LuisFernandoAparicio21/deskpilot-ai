@@ -5,6 +5,13 @@ branch names are ``"<city> NN"`` and carry no personal names. The 15 subcategori
 ``has_kb=True`` match the knowledge base articles planned for T12; the rest have no
 article (RN-06). Priority weights follow RN-01 (P1 branch/customer impact, P2 one user
 cannot operate, P3 degradation with workaround, P4 request or question).
+
+``escalation_rate`` is the share of tickets that L1 escalates to L2 (illustrative):
+~8-12% for the 5 repetitive subcategories (L1 solves them with the article), 60-65% for
+the other subcategories with an article (SAP, core bancario, escáner, etc. often need
+L2 permissions or field work) and 70-85% for subcategories without an article. RN-03
+cases (Sistema de caja, Sospecha de fraude) are always escalated (1.0). With seed 42
+this gives ~51% automatable tickets under RN-06 (article + solved without L2).
 """
 
 from __future__ import annotations
@@ -100,9 +107,9 @@ class SubcategorySpec:
 
 
 SUBCATEGORIES: tuple[SubcategorySpec, ...] = (
-    # --- The 5 repetitive subcategories (40% of the weight) ---
+    # --- The 5 repetitive subcategories (40% of the weight): escalation 8-12% ---
     SubcategorySpec(
-        "Reseteo de contraseña", "Accesos", 11, (0, 75, 20, 5), True, True, 0.0,
+        "Reseteo de contraseña", "Accesos", 11, (0, 75, 20, 5), True, True, 0.08,
         ("Se validó la identidad del usuario con su número de empleado y se restableció la "
          "contraseña desde el portal de autoservicio.",
          "Se generó una contraseña temporal y se guió al usuario para definir una nueva que "
@@ -113,7 +120,7 @@ SUBCATEGORIES: tuple[SubcategorySpec, ...] = (
          "meets the security policy."),
     ),
     SubcategorySpec(
-        "Desbloqueo de usuario", "Accesos", 10, (0, 80, 15, 5), True, True, 0.0,
+        "Desbloqueo de usuario", "Accesos", 10, (0, 80, 15, 5), True, True, 0.10,
         ("La cuenta estaba bloqueada por intentos fallidos; se desbloqueó en el directorio "
          "activo y se confirmó el acceso.",
          "Una sesión antigua con credenciales vencidas bloqueaba la cuenta; se cerró la "
@@ -124,7 +131,7 @@ SUBCATEGORIES: tuple[SubcategorySpec, ...] = (
          "closed and the user was unlocked."),
     ),
     SubcategorySpec(
-        "Token bancario", "Accesos", 7, (5, 65, 25, 5), True, True, 0.0,
+        "Token bancario", "Accesos", 7, (5, 65, 25, 5), True, True, 0.12,
         ("Se resincronizó el token bancario del usuario y se validó la generación de claves "
          "dinámicas.",
          "El token estaba vencido; se activó el token de reemplazo asignado a la sucursal."),
@@ -132,50 +139,50 @@ SUBCATEGORIES: tuple[SubcategorySpec, ...] = (
          "The token had expired; the replacement token assigned to the branch was activated."),
     ),
     SubcategorySpec(
-        "VPN", "Conectividad", 6, (0, 45, 50, 5), True, True, 0.0,
+        "VPN", "Conectividad", 6, (0, 45, 50, 5), True, True, 0.12,
         ("Se reinstaló el perfil de VPN y se renovó el certificado del equipo.",
          "El cliente de VPN estaba desactualizado; se actualizó y se verificó la conexión."),
         ("The VPN profile was reinstalled and the device certificate was renewed.",
          "The VPN client was outdated; it was updated and the connection was verified."),
     ),
     SubcategorySpec(
-        "Impresoras", "Hardware", 6, (0, 10, 70, 20), True, True, 0.0,
+        "Impresoras", "Hardware", 6, (0, 10, 70, 20), True, True, 0.12,
         ("Se limpió la cola de impresión y se reinstaló el controlador de la impresora.",
          "La impresora estaba fuera de línea por un cambio de IP; se reconfiguró el puerto."),
         ("The print queue was cleared and the printer driver was reinstalled.",
          "The printer was offline after an IP change; the port was reconfigured."),
     ),
-    # --- Other subcategories with a KB article ---
+    # --- Other subcategories with a KB article: escalation 60-65% (caja 100%, RN-03) ---
     SubcategorySpec(
-        "Acceso a SAP", "Accesos", 6, (0, 40, 45, 15), True, False, 0.10,
+        "Acceso a SAP", "Accesos", 6, (0, 40, 45, 15), True, False, 0.60,
         ("Se asignó el rol de SAP del puesto y se confirmó el acceso a la transacción.",
          "Se restableció la contraseña de SAP y se limpió la caché de SAP GUI."),
         ("The SAP role for the job was assigned and access to the transaction was confirmed.",
          "The SAP password was reset and the SAP GUI cache was cleared."),
     ),
     SubcategorySpec(
-        "Acceso a core bancario", "Accesos", 4, (25, 55, 20, 0), True, False, 0.25,
+        "Acceso a core bancario", "Accesos", 4, (25, 55, 20, 0), True, False, 0.65,
         ("Se reactivó el perfil en el core bancario tras validar la autorización del gerente.",
          "Se corrigió el horario de acceso del perfil en el core bancario."),
         ("The core banking profile was reactivated after the manager approval was validated.",
          "The access schedule of the core banking profile was corrected."),
     ),
     SubcategorySpec(
-        "Carpetas compartidas", "Conectividad", 5, (0, 20, 55, 25), True, False, 0.05,
+        "Carpetas compartidas", "Conectividad", 5, (0, 20, 55, 25), True, False, 0.60,
         ("Se agregó al usuario al grupo de la carpeta compartida y se mapeó la unidad de red.",
          "La unidad de red estaba desconectada; se reconectó y se validaron los permisos."),
         ("The user was added to the shared folder group and the network drive was mapped.",
          "The network drive was disconnected; it was reconnected and the permissions checked."),
     ),
     SubcategorySpec(
-        "Equipo lento", "Hardware", 6, (0, 5, 65, 30), True, False, 0.10,
+        "Equipo lento", "Hardware", 6, (0, 5, 65, 30), True, False, 0.60,
         ("Se liberó espacio en disco y se deshabilitaron programas de inicio innecesarios.",
          "El antivirus escaneaba en horario laboral; se reprogramó el escaneo."),
         ("Disk space was freed and the unnecessary startup programs were disabled.",
          "The antivirus was scanning during business hours; the scan was rescheduled."),
     ),
     SubcategorySpec(
-        "Escáner de cheques", "Hardware", 3, (15, 60, 25, 0), True, False, 0.20,
+        "Escáner de cheques", "Hardware", 3, (15, 60, 25, 0), True, False, 0.65,
         ("Se limpiaron los rodillos del escáner de cheques y se recalibró el lector.",
          "Se reinstaló el controlador del escáner de cheques y se digitalizó una prueba."),
         ("The check scanner rollers were cleaned and the reader was recalibrated.",
@@ -191,50 +198,50 @@ SUBCATEGORIES: tuple[SubcategorySpec, ...] = (
         ("Caja", "Operaciones"),
     ),
     SubcategorySpec(
-        "Correo", "Comunicaciones", 7, (0, 25, 55, 20), True, False, 0.05,
+        "Correo", "Comunicaciones", 7, (0, 25, 55, 20), True, False, 0.60,
         ("Se reconstruyó el perfil de Outlook y se sincronizó el buzón.",
          "El buzón estaba lleno; se archivaron correos antiguos y se restableció la recepción."),
         ("The Outlook profile was rebuilt and the mailbox was synchronized.",
          "The mailbox was full; old emails were archived and the inbox works again."),
     ),
     SubcategorySpec(
-        "Microsoft Teams", "Comunicaciones", 4, (0, 10, 60, 30), True, False, 0.05,
+        "Microsoft Teams", "Comunicaciones", 4, (0, 10, 60, 30), True, False, 0.60,
         ("Se limpió la caché de Teams y se reinstaló la aplicación.",
          "Se configuraron los permisos de micrófono y cámara y se probó una llamada."),
         ("The Teams cache was cleared and the app was reinstalled.",
          "Microphone and camera permissions were set and the user made a test call."),
     ),
     SubcategorySpec(
-        "Telefonía", "Comunicaciones", 3, (5, 25, 55, 15), True, False, 0.15,
+        "Telefonía", "Comunicaciones", 3, (5, 25, 55, 15), True, False, 0.65,
         ("Se reconfiguró la extensión del teléfono IP y se probaron llamadas.",
          "Se reemplazó el cable de red del teléfono IP y la extensión volvió a registrarse."),
         ("The IP phone extension was reconfigured and calls were tested.",
          "The IP phone network cable was replaced and the extension registered again."),
     ),
     SubcategorySpec(
-        "Instalación de software", "Software", 4, (0, 0, 30, 70), True, False, 0.05,
+        "Instalación de software", "Software", 4, (0, 0, 30, 70), True, False, 0.60,
         ("Se instaló el software autorizado desde el catálogo corporativo.",
          "Se instaló la actualización solicitada con privilegios de administrador."),
         ("The approved software was installed from the corporate catalog.",
          "The requested update was installed with administrator rights on the device."),
     ),
-    # --- Subcategories without a KB article (RN-06) ---
+    # --- Subcategories without a KB article (RN-06): escalation 70-85% (fraude 100%) ---
     SubcategorySpec(
-        "Alta de usuario", "Accesos", 4, (0, 0, 20, 80), False, False, 0.10,
+        "Alta de usuario", "Accesos", 4, (0, 0, 20, 80), False, False, 0.75,
         ("Se creó la cuenta del nuevo colaborador con los accesos del perfil de puesto.",
          "Se dieron de alta el correo y los accesos básicos según la solicitud aprobada."),
         ("The account of the new employee was created with the job profile access.",
          "Email and basic access were created as the approved request specified."),
     ),
     SubcategorySpec(
-        "Red de sucursal", "Conectividad", 3, (60, 30, 10, 0), False, False, 0.60,
+        "Red de sucursal", "Conectividad", 3, (60, 30, 10, 0), False, False, 0.85,
         ("Se reinició el equipo de comunicaciones y el proveedor restableció el enlace.",
          "Se conmutó la sucursal al enlace de respaldo mientras se reparaba el principal."),
         ("The branch network equipment was restarted and the carrier restored the link.",
          "The branch was switched to the backup link while the main link was repaired."),
     ),
     SubcategorySpec(
-        "Equipo dañado", "Hardware", 3, (5, 35, 50, 10), False, False, 0.50,
+        "Equipo dañado", "Hardware", 3, (5, 35, 50, 10), False, False, 0.80,
         ("Se reemplazó el equipo dañado por uno de respaldo y se migró la información.",
          "El técnico en sitio cambió la fuente de poder y el equipo volvió a encender."),
         ("The damaged device was replaced with a backup unit and the data was migrated.",
@@ -249,7 +256,7 @@ SUBCATEGORIES: tuple[SubcategorySpec, ...] = (
          "The incident evidence was preserved and Information Security took the case."),
     ),
     SubcategorySpec(
-        "Consulta general", "Solicitudes", 3, (0, 0, 20, 80), False, False, 0.0,
+        "Consulta general", "Solicitudes", 3, (0, 0, 20, 80), False, False, 0.70,
         ("Se resolvió la duda del usuario y se compartió la guía correspondiente.",
          "Se orientó al usuario sobre el procedimiento y se cerró la solicitud."),
         ("The question of the user was answered and the relevant guide was shared.",

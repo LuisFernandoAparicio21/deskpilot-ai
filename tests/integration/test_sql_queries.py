@@ -80,3 +80,11 @@ def test_automatable_tickets_only_in_kb_subcategories(results: dict[str, QueryRe
     rows = _rows(results["05"])
     assert all(r["tickets_automatizables"] == 0 for r in rows if r["tiene_articulo"] == 0)
     assert sum(r["tickets_automatizables"] for r in rows) > 0  # type: ignore[misc]
+
+
+def test_automatable_share_is_credible(results: dict[str, QueryResult]) -> None:
+    """RN-06 share stays between 45% and 55% of all tickets (realistic L2 escalation)."""
+    rows = _rows(results["05"])
+    automatable = sum(int(r["tickets_automatizables"]) for r in rows)  # type: ignore[call-overload]
+    total = sum(int(r["tickets"]) for r in rows)  # type: ignore[call-overload]
+    assert 0.45 <= automatable / total <= 0.55
