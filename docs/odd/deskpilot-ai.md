@@ -237,7 +237,7 @@ Criterios de aceptación:
 **RAG (por PR)**
 - T12 [CÓDIGO] 15 artículos de base de conocimiento + test de formato — subagente: docs-writer — cubre S4 — commit: f2752e2 (PR #10)
 - T13 [CÓDIGO] src/ingestion (Markdown/PDF/CSV) + src/chunking por sección con metadatos — subagente: rag-engineer — cubre S7 — commit: e1ffbb6 (PR #12)
-- T14 [CÓDIGO] src/embeddings (fastembed + fake) + src/vectordb (Chroma tras interfaz) + `main.py index` — subagente: rag-engineer — cubre S7, S17 — commit:
+- T14 [CÓDIGO] src/embeddings (fastembed + fake) + src/vectordb (Chroma tras interfaz) + `main.py index` — subagente: rag-engineer — cubre S7, S17 — commit: c7a8a84 (PR #14)
 - T15 [CÓDIGO] [ALTO RIESGO] src/retrieval (umbral) + src/prompts + src/llm (none/Claude/OpenAI/Gemini) + servicio de respuesta con cita + integración RAG — subagente: rag-engineer — cubre S7, S16 — commit:
 
 **API, MCP y despliegue (por PR)**
@@ -971,3 +971,9 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 ### L12 — T13 ingestion + chunking (rag-engineer) · PR #12
 - `src/ingestion/documents.py` (KBArticle; loaders de Markdown, PDF con pypdf 7.1.1 y CSV), `src/chunking/section_chunker.py` (chunk por sección, ids `KB-001#pasos#0`, subdivisión con overlap). La KB real da 64 chunks (sección más larga: 735 caracteres, menor que chunk_size 800). 420 tests, 100% de cobertura en los módulos nuevos.
 - Decisión: el texto anterior al primer `##` se guarda como sección "introduccion", porque ahí están las advertencias de RN-05 (KB-001, 002, 003, 011). El orquestador la mantiene.
+
+### L13 — T14 embeddings + vectordb (rag-engineer) · PR #14
+- `src/embeddings` (Protocol, FakeEmbedder por hashing de tokens, FastEmbedEmbedder normalizado) y `src/vectordb` (Protocol, InMemory, Chroma coseno con `configuration={"hnsw":{"space":"cosine"}}`, similitud = clamp(1−d,0,1), índice versionado `data/vectordb/<ts>/` + puntero atómico `CURRENT` + poda que respeta índices abiertos en Windows). `main.py index`. 492 tests, 99.31% de cobertura. Test `slow` con el modelo real pasa en local.
+- Verificado: modelo de 384 dimensiones, unos 241 MB, corta a 128 tokens. Index real: 15 artículos → 64 chunks en 66.7 s la primera vez (con descarga) y 4.2 s después. Concurrencia: la doc oficial de Chroma no la cubre y el Chroma Cookbook dice "not process-safe for concurrent writers" ⇒ diseño de versión nueva + puntero. Prueba real: un lector hizo 3841 consultas mientras otro proceso reindexaba, sin errores (RF-15).
+- Similitudes: "se bloqueó mi usuario de Windows" → KB-002 0.683; "my VPN does not connect" → KB-004 0.814; dentro del dominio ≥0.57, fuera ≤0.16 ⇒ calibrar el umbral en T15.
+- Caché del modelo en `data/vectordb/models` (ignorado). Pendientes: `CurrentStore.from_settings` en la API (T16), modelo en Docker (T19).
