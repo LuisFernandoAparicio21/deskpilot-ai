@@ -317,3 +317,15 @@ def test_pattern_stats_agree_with_the_files(dataset: tg.DatasetResult, tickets: 
     assert stats.sla_gap_pp >= 10
     assert stats.sla_metro_pct - stats.sla_foranea_pct == pytest.approx(stats.sla_gap_pp)
     assert stats.open_tickets == sum(r["fecha_cierre"] == "" for r in tickets)
+
+
+def test_escalation_rates_follow_the_declared_bands() -> None:
+    for spec in SUBCATEGORIES:
+        if spec.name in {"Sistema de caja", "Sospecha de fraude"}:  # RN-03: always
+            assert spec.escalation_rate == 1.0
+        elif spec.repetitive:
+            assert 0.05 <= spec.escalation_rate <= 0.12, spec.name
+        elif spec.has_kb:
+            assert 0.40 <= spec.escalation_rate <= 0.65, spec.name
+        else:
+            assert 0.70 <= spec.escalation_rate <= 0.90, spec.name

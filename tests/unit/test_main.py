@@ -34,7 +34,12 @@ def tmp_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Se
     """Real config.yaml with every output path redirected to ``tmp_path``."""
     settings = load_settings(env_file=tmp_path / "missing.env")
     paths = settings.paths.model_copy(
-        update={"raw": tmp_path / "raw", "sample": tmp_path / "sample", "logs": tmp_path / "logs"}
+        update={
+            "raw": tmp_path / "raw",
+            "sample": tmp_path / "sample",
+            "logs": tmp_path / "logs",
+            "sqlite_db": tmp_path / "deskpilot.db",
+        }
     )
     patched = settings.model_copy(update={"paths": paths})
     monkeypatch.setattr(main, "load_settings", lambda: patched)
@@ -105,3 +110,52 @@ def test_generate_data_reports_config_errors(
     monkeypatch.setattr(main, "load_settings", broken)
     assert main.main(["generate-data"]) == main.EXIT_CONFIG_ERROR
     assert "Configuration file not found" in capsys.readouterr().err
+
+
+def test_load_db_loads_sqlite(tmp_settings: Settings, capsys: pytest.CaptureFixture[str]) -> None:
+    assert main.main(["generate-data", "--n", "300"]) == main.EXIT_OK
+    capsys.readouterr()
+    assert main.main(["load-db"]) == main.EXIT_OK
+    out = capsys.readouterr().out
+    assert tmp_settings.paths.sqlite_db.is_file()
+    assert "300 rows -> tickets" in out
+    assert "120 rows -> sucursales" in out
+    assert "==" not in out  # queries only run with --run-sql
+
+
+def test_load_db_run_sql_prints_the_ten_queries(
+    tmp_settings: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main.main(["generate-data", "--n", "500"]) == main.EXIT_OK
+    capsys.readouterr()
+    assert main.main(["load-db", "--run-sql"]) == main.EXIT_OK
+    out = capsys.readouterr().out
+    assert sum(line.startswith("== ") for line in out.splitlines()) == 10
+    assert "== 08_local_vs_foranea" in out
+    assert "10 queries executed" in out
+
+
+def test_load_db_without_csv_asks_to_generate_data(
+    tmp_settings: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main.main(["load-db"]) == main.EXIT_DATA_ERROR
+    assert "generate-data" in capsys.readouterr().err
+    assert not tmp_settings.paths.sqlite_db.exists()
+
+
+def test_load_db_reports_config_errors(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def broken() -> Settings:
+        raise ConfigError("Configuration file not found: config.yaml")
+
+    monkeypatch.setattr(main, "load_settings", broken)
+    assert main.main(["load-db"]) == main.EXIT_CONFIG_ERROR
+    assert "Configuration file not found" in capsys.readouterr().err
+
+
+def test_run_business_queries_without_sql_files(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main.run_business_queries(tmp_path / "x.db", tmp_path) == main.EXIT_DATA_ERROR
+    assert "no queries found" in capsys.readouterr().err

@@ -8,3 +8,6 @@ mypy==2.4.1
 # Stubs: PyYAML no trae tipos propios. pyodbc ya incluye pyodbc.pyi; el resto de las
 # dependencias directas trae py.typed, así que no requieren stubs adicionales.
 types-PyYAML==6.0.12.20261113
+# Parser SQL usado solo en tests para validar que las consultas de integrations/fabric/sql
+# parsean como T-SQL y como SQLite (T10, S5).
+sqlglot==30.33.0
