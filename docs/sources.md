@@ -107,6 +107,12 @@ Consultadas con WebFetch el 2026-11-21. "⚠" marca lo que las fuentes no confir
 | CAST and CONVERT (Transact-SQL) — Microsoft Learn | https://learn.microsoft.com/en-us/sql/t-sql/functions/cast-and-convert-transact-sql | Aplica al SQL analytics endpoint y al Warehouse de Fabric. El estilo 121 (`yyyy-MM-dd HH:mm:ss.fff`) es el predeterminado para **datetime2**; `07_efecto_quincena.sql` usa `SUBSTRING(CAST(fecha_apertura AS VARCHAR(19)), 9, 2)` para el día del mes. ⚠ Verificar en T29 que la columna Delta llegue al endpoint como datetime2 (con **datetime** el estilo predeterminado es 0 y la consulta fallaría). |
 | SQLite — Built-in scalar SQL functions | https://sqlite.org/lang_corefunc.html | "substring() is an alias for substr() beginning with SQLite version 3.34" (el `.venv` trae SQLite 3.45.3). `round(X,Y)` devuelve un número de punto flotante. |
 
+## Ingestión y chunking (T13)
+
+| Título | URL | Para qué se usó |
+| --- | --- | --- |
+| pypdf — Extract Text from a PDF | https://pypdf.readthedocs.io/en/stable/user/extract-text.html | `src/ingestion/documents.py`: `PdfReader(path)`, `reader.pages` y `page.extract_text()`. Comprobado con pypdf 7.1.1 instalado: `PdfReader.metadata` expone `title`, `modification_date` y `creation_date`; los errores de lectura heredan de `pypdf.errors.PyPdfError`; `PdfWriter.add_blank_page(width, height)` crea la página sin texto del test. El PDF con texto del test se escribe a mano (xref calculado), sin binarios versionados. |
+
 
 Las URLs de abajo respondieron con WebFetch el 2026-11-21. Todavía no se usaron: cada tarea debe confirmar el detalle técnico y pasar la fila a su sección.
 

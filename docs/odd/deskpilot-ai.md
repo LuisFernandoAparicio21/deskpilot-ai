@@ -235,7 +235,7 @@ Criterios de aceptación:
 - T11 [CÓDIGO] [ALTO RIESGO] Notebook PySpark → Delta, DDL del Warehouse, conexión Fabric por variables de entorno (mocks) — subagente: data-engineer — cubre S6, S16 — commit: d567cb3 (PR #8)
 
 **RAG (por PR)**
-- T12 [CÓDIGO] 15 artículos de base de conocimiento + test de formato — subagente: docs-writer — cubre S4 — commit:
+- T12 [CÓDIGO] 15 artículos de base de conocimiento + test de formato — subagente: docs-writer — cubre S4 — commit: f2752e2 (PR #10)
 - T13 [CÓDIGO] src/ingestion (Markdown/PDF/CSV) + src/chunking por sección con metadatos — subagente: rag-engineer — cubre S7 — commit:
 - T14 [CÓDIGO] src/embeddings (fastembed + fake) + src/vectordb (Chroma tras interfaz) + `main.py index` — subagente: rag-engineer — cubre S7, S17 — commit:
 - T15 [CÓDIGO] [ALTO RIESGO] src/retrieval (umbral) + src/prompts + src/llm (none/Claude/OpenAI/Gemini) + servicio de respuesta con cita + integración RAG — subagente: rag-engineer — cubre S7, S16 — commit:
@@ -963,3 +963,7 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - ⚠ No verificado: scope `https://database.windows.net/.default` contra un tenant real (T30); ejecución del notebook en Spark (T29); DDL en el Warehouse (T29); precisión del datetime2 que expone Delta.
 - security-verifier: **APROBADO**. Bajas: (#4) faltaba un assert de que el texto AADSTS no aparece en FabricAuthError → corregido por el orquestador (commit test(fabric)); (#3) en T16/T17, registrar los errores de Fabric sin `exc_info`.
 - La unicidad de ticket_id en el Warehouse (PK NOT ENFORCED) la debe garantizar T17.
+
+### L11 — T12 base de conocimiento (docs-writer) · PR #10
+- 15 artículos `data/knowledge_base/KB-001…KB-015` (260–324 palabras): contraseña, desbloqueo, token, VPN, impresoras, SAP, core bancario, carpetas compartidas, equipo lento, escáner de cheques, sistema de caja, correo, Teams, telefonía, software. Front matter con palabras_clave ES/EN.
+- RN-01 (prioridad sugerida), RN-03 (KB-011 caja y la sospecha de acceso no autorizado escalan siempre) y RN-05 (identidad por número de empleado, advertencia de no compartir) verificados por `tests/unit/test_knowledge_base.py`. 367 tests, 99.34% de cobertura.

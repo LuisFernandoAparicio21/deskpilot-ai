@@ -8,3 +8,6 @@ Incluye el generador de tickets sintéticos con semilla fija (`main.py generate-
 
 `sqlite_loader.py` (`main.py load-db`) carga esos CSV a SQLite (`paths.sqlite_db`) con DDL explícito, en una
 transacción e idempotente: tablas `sucursales`, `tickets` y `tickets_nuevos` (vacía, para `crear_ticket`).
+
+`documents.py` carga la base de conocimiento como `KBArticle` (front matter + secciones `##` en Markdown, texto
+de PDF en una sección "Contenido", una fila por artículo en CSV); `load_knowledge_base` despacha por extensión.
