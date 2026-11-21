@@ -944,3 +944,8 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - `src/utils/config.py` (Pydantic + pydantic-settings, fail-fast), `logging.py` (JSON, request_id ContextVar, rotación `deskpilot.N.log`), `redaction.py` (contraseña/NIP, tarjeta con Luhn, CURP, tokens). 90 tests, cobertura total 98.65%, ruff/mypy limpios; CI verde.
 - Reglas agregadas: fallo al arrancar si `LLM_PROVIDER` ≠ none y falta su llave o su modelo; la API key debe tener ≥16 caracteres.
 - No verificado: regex de CURP contra el instructivo oficial de RENAPO; no se valida el dígito verificador.
+
+### L8 — T9 generador (data-engineer) · PR #4 · merge c4be8f4
+- `src/ingestion/ticket_generator.py` + `ticket_catalog.py` (120 sucursales en 45 ciudades, de ellas 80 foráneas; 20 subcategorías, 15 con artículo de KB y 5 sin artículo). `main.py generate-data [--seed --n]`. Muestra sistemática de 1 de cada 25 filas en `data/sample/tickets_sample.csv`.
+- Cifras reales (semilla 42): repetitivo 39.9%, desbloqueo en quincena 1.90×, SLA 85.8% en CDMX/Guadalajara/Monterrey vs 69.9% en foráneas (brecha 15.9 pp), inglés 9.6%, 14 abiertos. 127 tests, 99.10% de cobertura. Hash reproducible verificado.
+- Nota: con `core.autocrlf` local la copia de trabajo puede tener CRLF; no afecta lo que se versiona (LF).
