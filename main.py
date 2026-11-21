@@ -5,7 +5,7 @@ Every pipeline step runs through a subcommand:
     python main.py generate-data | load-db | index | serve | eval | export-openapi
 
 Subcommands without a handler yet only report which task will implement them and exit
-with code 2. Implemented so far: ``generate-data`` (T9).
+with code 2. Implemented so far: ``generate-data`` (T9) and ``load-db`` (T10).
 """
 
 from __future__ import annotations
@@ -15,13 +15,18 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from src.ingestion.sqlite_loader import MissingDataError, load_sqlite
 from src.ingestion.ticket_generator import generate_dataset
 from src.utils.config import PROJECT_ROOT, ConfigError, load_settings
+from src.utils.db import SQL_DIR, format_table, list_query_files, run_sql_file, sqlite_connection
 from src.utils.logging import configure_logging_from_settings
 
 EXIT_OK = 0
 EXIT_CONFIG_ERROR = 1
 EXIT_NOT_IMPLEMENTED = 2
+EXIT_DATA_ERROR = 3
+
+SQL_SUMMARY_MAX_ROWS = 10  # rows printed per query by ``load-db --run-sql``
 
 # Subcommand -> (help text, task that implements it).
 SUBCOMMANDS: dict[str, tuple[str, str]] = {
@@ -85,8 +90,48 @@ def cmd_generate_data(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def run_business_queries(db_path: Path, sql_dir: Path = SQL_DIR) -> int:
+    """Run the numbered queries of ``sql_dir`` and print each result as a table (RF-20)."""
+    files = list_query_files(sql_dir)
+    if not files:
+        print(f"load-db: no queries found in {_display(sql_dir)}", file=sys.stderr)
+        return EXIT_DATA_ERROR
+    with sqlite_connection(db_path) as conn:
+        for path in files:
+            result = run_sql_file(conn, path)
+            print()
+            print(f"== {result.name} ({len(result.rows)} rows)")
+            print(format_table(result.columns, result.rows, SQL_SUMMARY_MAX_ROWS))
+    print()
+    print(f"load-db: {len(files)} queries executed")
+    return EXIT_OK
+
+
+def cmd_load_db(args: argparse.Namespace) -> int:
+    """Load the CSV files into SQLite and optionally run the 10 SQL queries (T10, S5)."""
+    try:
+        settings = load_settings()
+    except ConfigError as exc:
+        print(f"load-db: {exc}", file=sys.stderr)
+        return EXIT_CONFIG_ERROR
+    configure_logging_from_settings(settings, console=False)
+    try:
+        result = load_sqlite(settings.paths.raw, settings.paths.sqlite_db)
+    except MissingDataError as exc:
+        print(f"load-db: {exc}", file=sys.stderr)
+        return EXIT_DATA_ERROR
+    print(f"load-db: {_display(result.db_path)}")
+    print(f"  {result.n_sucursales} rows -> sucursales")
+    print(f"  {result.n_tickets} rows -> tickets")
+    print("  0 rows -> tickets_nuevos (created empty)")
+    if args.run_sql:
+        return run_business_queries(result.db_path)
+    return EXIT_OK
+
+
 HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "generate-data": cmd_generate_data,
+    "load-db": cmd_load_db,
 }
 
 
@@ -105,6 +150,12 @@ def build_parser() -> argparse.ArgumentParser:
             )
             subparser.add_argument(
                 "--n", type=_positive_int, help="number of tickets (default: data.n_tickets)"
+            )
+        elif name == "load-db":
+            subparser.add_argument(
+                "--run-sql",
+                action="store_true",
+                help="after loading, run the 10 queries of integrations/fabric/sql and print them",
             )
     return parser
 
