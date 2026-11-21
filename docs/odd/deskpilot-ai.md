@@ -939,3 +939,8 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - **T7:** commit de la base en main, repo público con `gh repo create` y push. Desde aquí, todo entra por PR.
 
 - **T7** ✓ `7376681`: https://github.com/LuisFernandoAparicio21/deskpilot-ai (público, 10 topics). CI de main verde (run 44956376221).
+
+### L7 — T8 utils (repo-architect) · PR #2 · merge b7e8196
+- `src/utils/config.py` (Pydantic + pydantic-settings, fail-fast), `logging.py` (JSON, request_id ContextVar, rotación `deskpilot.N.log`), `redaction.py` (contraseña/NIP, tarjeta con Luhn, CURP, tokens). 90 tests, cobertura total 98.65%, ruff/mypy limpios; CI verde.
+- Reglas agregadas: fallo al arrancar si `LLM_PROVIDER` ≠ none y falta su llave o su modelo; la API key debe tener ≥16 caracteres.
+- No verificado: regex de CURP contra el instructivo oficial de RENAPO; no se valida el dígito verificador.
