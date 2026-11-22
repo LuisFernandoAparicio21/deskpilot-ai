@@ -6,7 +6,7 @@ Every pipeline step runs through a subcommand:
 
 Subcommands without a handler yet only report which task will implement them and exit
 with code 2. Implemented so far: ``generate-data`` (T9), ``load-db`` (T10), ``index`` (T14)
-``serve`` (T16) and ``mcp`` (T18).
+``serve`` (T16), ``mcp`` (T18) and ``export-openapi`` (T19).
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ EXIT_CONFIG_ERROR = 1
 EXIT_NOT_IMPLEMENTED = 2
 EXIT_DATA_ERROR = 3
 
+DEFAULT_OPENAPI_OUT = PROJECT_ROOT / "integrations" / "copilot_studio" / "openapi.json"
 SQL_SUMMARY_MAX_ROWS = 10  # rows printed per query by ``load-db --run-sql``
 
 # Subcommand -> (help text, task that implements it).
@@ -38,7 +39,7 @@ SUBCOMMANDS: dict[str, tuple[str, str]] = {
     "serve": ("Start the FastAPI service.", "T16"),
     "mcp": ("Start the MCP server (stdio by default, or streamable HTTP).", "T18"),
     "eval": ("Run the agent evaluation cases and save the results.", "T21"),
-    "export-openapi": ("Export the OpenAPI spec for Copilot Studio.", "T19"),
+    "export-openapi": ("Export the Swagger 2.0 JSON for Copilot Studio.", "T19"),
 }
 
 
@@ -188,6 +189,34 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_export_openapi(args: argparse.Namespace) -> int:
+    """Write the Swagger 2.0 JSON that Copilot Studio accepts (T19, S8).
+
+    Builds the app with placeholder services: no server, database, index or API key needed.
+    """
+    from src.api.openapi_export import DEFAULT_HOST, ExportError, export_swagger, write_swagger
+
+    try:
+        settings = load_settings()
+        spec = export_swagger(settings, args.host or DEFAULT_HOST)
+        out = Path(args.out) if args.out else DEFAULT_OPENAPI_OUT
+        size = write_swagger(spec, out)
+    except ConfigError as exc:
+        print(f"export-openapi: {exc}", file=sys.stderr)
+        return EXIT_CONFIG_ERROR
+    except ExportError as exc:
+        print(f"export-openapi: {exc}", file=sys.stderr)
+        return EXIT_DATA_ERROR
+    operations = [
+        op["operationId"] for methods in spec["paths"].values() for op in methods.values()
+    ]
+    print(f"export-openapi: {_display(out)} (Swagger 2.0, {size} bytes)")
+    print(f"  host: {spec['host']}  schemes: https  operations: {', '.join(operations)}")
+    if spec["host"] == DEFAULT_HOST:
+        print("  host is a placeholder: pass --host <your public host> before uploading")
+    return EXIT_OK
+
+
 def cmd_mcp(args: argparse.Namespace) -> int:
     """Start the MCP server (T18, S10): stdio (no network) by default, HTTP behind the API key.
 
@@ -228,6 +257,7 @@ HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "index": cmd_index,
     "serve": cmd_serve,
     "mcp": cmd_mcp,
+    "export-openapi": cmd_export_openapi,
 }
 
 
@@ -261,6 +291,15 @@ def build_parser() -> argparse.ArgumentParser:
             subparser.add_argument("--host", help="HTTP bind address (default: mcp.host)")
             subparser.add_argument(
                 "--port", type=_positive_int, help="HTTP port (default: mcp.port)"
+            )
+        elif name == "export-openapi":
+            subparser.add_argument(
+                "--host",
+                help="public host of the API, without https:// (default: a placeholder)",
+            )
+            subparser.add_argument(
+                "--out",
+                help="output file (default: integrations/copilot_studio/openapi.json)",
             )
         elif name == "load-db":
             subparser.add_argument(

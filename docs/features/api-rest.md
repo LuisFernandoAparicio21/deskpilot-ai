@@ -90,7 +90,7 @@ Resultado esperado: `/health` devuelve solo `{"status":"ok"}`; los endpoints con
 Revisión del security-verifier (ALTO RIESGO); hallazgos M1, M2, B1 y B2 corregidos (commits `fix(api)`, `feat(config)`; ver `git log`):
 
 - `/health` es anónimo pero solo devuelve `status`, sin detalles internos; el sondeo se cachea para que llamadas anónimas no carguen la BD.
-- `/docs`, `/redoc` y `/openapi.json` apagados (el OpenAPI se exporta con `export-openapi`, T19).
+- `/docs`, `/redoc` y `/openapi.json` apagados (el OpenAPI se exporta con `export-openapi`, T19; ver [openapi-export.md](openapi-export.md)).
 - Llave comparada en tiempo constante, mínimo 16 y máximo 256 bytes validados al arrancar (`serve` falla rápido).
 - 422 nunca refleja nombres de campos del cliente; `fullmatch` en los patrones; 413 también para cuerpos chunked.
 - Sin llave ni texto del usuario en logs; errores de BD solo con el tipo, sin traza; access log sin query string.

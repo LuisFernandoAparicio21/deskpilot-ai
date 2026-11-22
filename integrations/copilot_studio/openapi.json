@@ -1,0 +1,768 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "DeskPilot AI",
+    "description": "Herramientas del asistente de mesa de servicio de TI de nivel 1 de Banco Altiplano (banco ficticio, datos sintéticos): buscar soluciones con citas, consultar tickets, ver métricas y crear tickets.",
+    "version": "0.1.0"
+  },
+  "host": "your-deskpilot-host.example.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/buscar_solucion": {
+      "post": {
+        "operationId": "buscar_solucion",
+        "summary": "Buscar solución en la base de conocimiento",
+        "description": "Busca en la base de conocimiento de TI de Banco Altiplano la solución a un problema técnico y la devuelve con citas (id y título del artículo fuente). Úsala SIEMPRE primero cuando un empleado describa un problema (VPN, contraseña bloqueada, impresora, correo, caja, etc.), antes de crear un ticket. Envía en `query` el problema tal como lo dijo el empleado, en español o inglés, sin contraseñas ni PIN. `categoria` es opcional. Lee `status`: `answered` = respuesta con pasos en `text` y fuentes en `citations`; `no_evidence` = no hay artículo suficientemente parecido, no inventes pasos y ofrece crear un ticket; `mandatory_escalation` = caso que exige escalar a una persona (fraude, acceso no autorizado, sistema de caja caído): muestra `text` y crea un ticket. Si `sensitive_data_warning` es true, pide al empleado que no comparta datos sensibles. Ejemplo: {\"query\": \"no puedo conectarme a la VPN\"}.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Consulta del empleado y filtro opcional de categoría.",
+            "schema": {
+              "$ref": "#/definitions/BuscarSolucionRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa.",
+            "schema": {
+              "$ref": "#/definitions/BuscarSolucionResponse"
+            }
+          },
+          "401": {
+            "description": "No autorizado: falta la llave X-API-Key o es inválida.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la petición es demasiado grande.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "422": {
+            "description": "Datos de entrada inválidos (longitud, formato o parámetros).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "503": {
+            "description": "Servicio no disponible: base de datos o índice de conocimiento.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "504": {
+            "description": "La petición tardó demasiado (tiempo de espera agotado).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/tickets": {
+      "post": {
+        "operationId": "crear_ticket",
+        "summary": "Crear un ticket de soporte",
+        "description": "Crea un ticket de soporte de TI. La categoría, subcategoría y prioridad (P1-P4) se clasifican automáticamente y se devuelve el SLA. ACCIÓN QUE ESCRIBE DATOS: úsala solo cuando buscar_solucion no resolvió el problema (`no_evidence`) o exigió escalamiento, y después de que el empleado confirme que desea crear el ticket. No la llames dos veces por el mismo problema. En `descripcion` resume el problema SIN contraseñas, PIN ni números de tarjeta (si se detectan, se censuran y `sensitive_data_warning` es true). `escalado` true significa que debe atenderlo una persona (prioridad P1); informa el `ticket_id` y el SLA al empleado. Ejemplo: {\"descripcion\": \"La impresora de la caja 2 no imprime comprobantes\", \"sucursal\": \"Sucursal Centro\", \"area\": \"Caja\", \"canal\": \"Teams\"}.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Datos del problema, la sucursal y el área del empleado.",
+            "schema": {
+              "$ref": "#/definitions/CrearTicketRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Ticket creado.",
+            "schema": {
+              "$ref": "#/definitions/CrearTicketResponse"
+            }
+          },
+          "401": {
+            "description": "No autorizado: falta la llave X-API-Key o es inválida.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la petición es demasiado grande.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "422": {
+            "description": "Datos de entrada inválidos (longitud, formato o parámetros).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "503": {
+            "description": "Servicio no disponible: base de datos o índice de conocimiento.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "504": {
+            "description": "La petición tardó demasiado (tiempo de espera agotado).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/tickets/{ticket_id}": {
+      "get": {
+        "operationId": "consultar_estado_ticket",
+        "summary": "Consultar el estado de un ticket",
+        "description": "Devuelve el estado de un ticket existente a partir de su identificador (por ejemplo TCK-000123): estado (abierto, en_proceso, resuelto, cerrado), prioridad P1-P4, fechas y si cumplió o cumple el SLA. Úsala cuando el empleado pregunte cómo va su solicitud y dé un id de ticket. Si el id no existe responde 404: pide al empleado que lo verifique, no adivines otro id.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "description": "Identificador del ticket, por ejemplo TCK-000123 (letras, números, - y _).",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa.",
+            "schema": {
+              "$ref": "#/definitions/TicketStatusResponse"
+            }
+          },
+          "401": {
+            "description": "No autorizado: falta la llave X-API-Key o es inválida.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "No existe un ticket con ese identificador.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "422": {
+            "description": "Datos de entrada inválidos (longitud, formato o parámetros).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "503": {
+            "description": "Servicio no disponible: base de datos o índice de conocimiento.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "504": {
+            "description": "La petición tardó demasiado (tiempo de espera agotado).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/metricas": {
+      "get": {
+        "operationId": "metricas_area",
+        "summary": "Consultar métricas de tickets por área o sucursal",
+        "description": "Devuelve métricas de tickets de UN área (por ejemplo Caja) o de UNA sucursal: total de tickets, cerrados, porcentaje dentro de SLA, horas promedio de resolución y categorías más frecuentes. Envía exactamente uno de los dos parámetros, `area` o `sucursal`; con ambos o ninguno responde 422. Úsala para preguntas de líderes como cómo va el SLA del área Caja. Si no hay tickets con ese nombre responde 404. Ejemplo: GET /metricas?area=Caja.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "description": "Nombre del área, por ejemplo Caja. Envía solo uno de area o sucursal.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          {
+            "name": "sucursal",
+            "in": "query",
+            "required": false,
+            "description": "Nombre de la sucursal, por ejemplo Sucursal Centro. Envía solo uno de area o sucursal.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación exitosa.",
+            "schema": {
+              "$ref": "#/definitions/AreaMetricsResponse"
+            }
+          },
+          "401": {
+            "description": "No autorizado: falta la llave X-API-Key o es inválida.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "No hay tickets para esa área o sucursal.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "422": {
+            "description": "Datos de entrada inválidos (longitud, formato o parámetros).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "503": {
+            "description": "Servicio no disponible: base de datos o índice de conocimiento.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "504": {
+            "description": "La petición tardó demasiado (tiempo de espera agotado).",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AreaMetricsResponse": {
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "area",
+            "sucursal"
+          ],
+          "description": "Si la métrica es de un área o de una sucursal.",
+          "example": "area"
+        },
+        "name": {
+          "type": "string",
+          "description": "Nombre del área o sucursal consultada.",
+          "example": "Caja"
+        },
+        "total_tickets": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total de tickets.",
+          "example": 450
+        },
+        "closed_tickets": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tickets cerrados.",
+          "example": 430
+        },
+        "sla_cumplido_pct": {
+          "type": "number",
+          "description": "Porcentaje de tickets cerrados dentro del SLA; nulo si no hay ninguno cerrado.",
+          "x-nullable": true,
+          "example": 87.5
+        },
+        "avg_horas_resolucion": {
+          "type": "number",
+          "x-nullable": true,
+          "description": "Horas promedio de resolución; nulo si no hay cerrados.",
+          "example": 14.2
+        },
+        "top_categorias": {
+          "items": {
+            "$ref": "#/definitions/CategoryCount"
+          },
+          "type": "array",
+          "description": "Categorías con más tickets, de mayor a menor."
+        }
+      },
+      "type": "object",
+      "required": [
+        "scope",
+        "name",
+        "total_tickets",
+        "closed_tickets",
+        "sla_cumplido_pct",
+        "avg_horas_resolucion",
+        "top_categorias"
+      ],
+      "description": "Métricas de tickets de un área o sucursal."
+    },
+    "BuscarSolucionRequest": {
+      "properties": {
+        "query": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "description": "Problema descrito por el empleado, en español o inglés, sin contraseñas ni PIN.",
+          "example": "no puedo conectarme a la VPN desde mi casa"
+        },
+        "categoria": {
+          "type": "string",
+          "enum": [
+            "Accesos",
+            "Comunicaciones",
+            "Conectividad",
+            "Hardware",
+            "Software",
+            "General"
+          ],
+          "description": "Filtro opcional por categoría de la base de conocimiento; omítelo si no estás seguro.",
+          "x-nullable": true,
+          "example": "Conectividad"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "query"
+      ],
+      "description": "Consulta para buscar una solución en la base de conocimiento."
+    },
+    "BuscarSolucionResponse": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "answered",
+            "no_evidence",
+            "mandatory_escalation"
+          ],
+          "description": "answered = hay respuesta con citas; no_evidence = no hay artículo suficiente, ofrece crear un ticket; mandatory_escalation = debe atenderlo una persona.",
+          "example": "answered"
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "es",
+            "en"
+          ],
+          "description": "Idioma de la respuesta (es o en).",
+          "example": "es"
+        },
+        "text": {
+          "type": "string",
+          "description": "Respuesta lista para mostrar al empleado.",
+          "example": "Reinicia el cliente VPN y ..."
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/definitions/CitationOut"
+          },
+          "type": "array",
+          "description": "Artículos fuente de la respuesta; vacío si no hay evidencia."
+        },
+        "sensitive_data_warning": {
+          "type": "boolean",
+          "description": "true si la consulta parece contener datos sensibles (contraseñas, PIN, tarjetas).",
+          "example": false
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "extractive",
+            "llm",
+            "policy"
+          ],
+          "description": "Cómo se generó el texto: extractive (de los artículos), llm o policy (mensaje de política).",
+          "example": "extractive"
+        }
+      },
+      "type": "object",
+      "required": [
+        "status",
+        "language",
+        "text",
+        "citations",
+        "sensitive_data_warning",
+        "mode"
+      ],
+      "description": "Respuesta con citas de la base de conocimiento."
+    },
+    "CategoryCount": {
+      "properties": {
+        "categoria": {
+          "type": "string",
+          "description": "Nombre de la categoría.",
+          "example": "Accesos"
+        },
+        "tickets": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Cantidad de tickets de esa categoría.",
+          "example": 120
+        }
+      },
+      "type": "object",
+      "required": [
+        "categoria",
+        "tickets"
+      ],
+      "description": "Cantidad de tickets de una categoría."
+    },
+    "CitationOut": {
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "description": "Identificador del artículo fuente.",
+          "example": "KB-003"
+        },
+        "titulo": {
+          "type": "string",
+          "description": "Título del artículo fuente; cítalo al empleado.",
+          "example": "VPN no conecta"
+        },
+        "seccion": {
+          "type": "string",
+          "description": "Sección del artículo usada (síntoma, causa, pasos, escalar).",
+          "example": "pasos"
+        },
+        "similarity": {
+          "type": "number",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "description": "Similitud entre 0 y 1 con la consulta.",
+          "example": 0.61
+        }
+      },
+      "type": "object",
+      "required": [
+        "article_id",
+        "titulo",
+        "seccion",
+        "similarity"
+      ],
+      "description": "Artículo fuente citado en una respuesta."
+    },
+    "CrearTicketRequest": {
+      "properties": {
+        "descripcion": {
+          "type": "string",
+          "maxLength": 2000,
+          "minLength": 5,
+          "description": "Problema descrito por el empleado. Nunca incluyas contraseñas, PIN ni tarjetas.",
+          "example": "La impresora de la caja 2 no imprime comprobantes"
+        },
+        "sucursal": {
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1,
+          "description": "Sucursal del empleado.",
+          "example": "Sucursal Centro"
+        },
+        "area": {
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 1,
+          "description": "Área del empleado.",
+          "example": "Caja"
+        },
+        "canal": {
+          "type": "string",
+          "enum": [
+            "portal",
+            "correo",
+            "teléfono",
+            "Teams"
+          ],
+          "description": "Canal de origen de la solicitud; por defecto Teams.",
+          "default": "Teams",
+          "example": "Teams"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "descripcion",
+        "sucursal",
+        "area"
+      ],
+      "description": "Datos para crear un ticket de soporte."
+    },
+    "CrearTicketResponse": {
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "description": "Identificador del ticket creado; compártelo con el empleado.",
+          "example": "TCK-005001"
+        },
+        "estado": {
+          "type": "string",
+          "enum": [
+            "abierto"
+          ],
+          "description": "Estado inicial, siempre abierto.",
+          "example": "abierto"
+        },
+        "categoria": {
+          "type": "string",
+          "description": "Categoría asignada automáticamente.",
+          "example": "Hardware"
+        },
+        "subcategoria": {
+          "type": "string",
+          "description": "Subcategoría asignada automáticamente.",
+          "example": "Impresora"
+        },
+        "prioridad": {
+          "type": "string",
+          "enum": [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ],
+          "description": "Prioridad P1 (crítica) a P4 (baja).",
+          "example": "P3"
+        },
+        "sla_horas": {
+          "type": "integer",
+          "description": "Horas de SLA de la prioridad asignada.",
+          "example": 24
+        },
+        "fecha_apertura": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora de apertura.",
+          "example": "2026-11-21T10:00:00"
+        },
+        "fecha_limite_sla": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora límite del SLA.",
+          "example": "2026-11-22T10:00:00"
+        },
+        "escalado": {
+          "type": "boolean",
+          "description": "true si debe atenderlo una persona (siempre prioridad P1).",
+          "example": false
+        },
+        "motivo_escalamiento": {
+          "type": "string",
+          "enum": [
+            "fraud",
+            "unauthorized_access",
+            "cash_system",
+            "article"
+          ],
+          "x-nullable": true,
+          "description": "Motivo del escalamiento (fraud, unauthorized_access, cash_system, article); nulo si no se escaló."
+        },
+        "sensitive_data_warning": {
+          "type": "boolean",
+          "description": "true si se encontraron datos sensibles y se censuraron antes de guardar.",
+          "example": false
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "rules",
+            "llm"
+          ],
+          "description": "Cómo se clasificó: rules (reglas) o llm.",
+          "example": "rules"
+        }
+      },
+      "type": "object",
+      "required": [
+        "ticket_id",
+        "estado",
+        "categoria",
+        "subcategoria",
+        "prioridad",
+        "sla_horas",
+        "fecha_apertura",
+        "fecha_limite_sla",
+        "escalado",
+        "motivo_escalamiento",
+        "sensitive_data_warning",
+        "mode"
+      ],
+      "description": "Ticket creado y clasificado."
+    },
+    "ErrorResponse": {
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Código de error legible, por ejemplo unauthorized o validation_error."
+        },
+        "message": {
+          "type": "string",
+          "description": "Mensaje del error."
+        },
+        "request_id": {
+          "type": "string",
+          "x-nullable": true,
+          "description": "Identificador de la petición, útil para soporte."
+        },
+        "details": {
+          "items": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "x-nullable": true,
+          "description": "Detalle por campo en errores de validación (422)."
+        }
+      },
+      "type": "object",
+      "required": [
+        "code",
+        "message",
+        "request_id"
+      ],
+      "description": "Formato uniforme de todos los errores de la API."
+    },
+    "TicketStatusResponse": {
+      "properties": {
+        "ticket_id": {
+          "type": "string",
+          "description": "Identificador del ticket.",
+          "example": "TCK-000123"
+        },
+        "estado": {
+          "type": "string",
+          "enum": [
+            "abierto",
+            "en_proceso",
+            "resuelto",
+            "cerrado"
+          ],
+          "description": "Estado actual: abierto, en_proceso, resuelto o cerrado.",
+          "example": "en_proceso"
+        },
+        "prioridad": {
+          "type": "string",
+          "enum": [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ],
+          "description": "Prioridad P1 (crítica) a P4 (baja).",
+          "example": "P2"
+        },
+        "fecha_apertura": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora de apertura.",
+          "example": "2026-11-01T09:30:00"
+        },
+        "fecha_cierre": {
+          "type": "string",
+          "format": "date-time",
+          "x-nullable": true,
+          "description": "Fecha y hora de cierre; nulo si el ticket sigue abierto."
+        },
+        "sla_horas": {
+          "type": "integer",
+          "description": "Horas de SLA según la prioridad.",
+          "example": 8
+        },
+        "fecha_limite_sla": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora límite del SLA.",
+          "example": "2026-11-01T17:30:00"
+        },
+        "sla_cumplido": {
+          "type": "boolean",
+          "x-nullable": true,
+          "description": "true si se cerró dentro del SLA, false si no; nulo si sigue abierto."
+        }
+      },
+      "type": "object",
+      "required": [
+        "ticket_id",
+        "estado",
+        "prioridad",
+        "fecha_apertura",
+        "fecha_cierre",
+        "sla_horas",
+        "fecha_limite_sla",
+        "sla_cumplido"
+      ],
+      "description": "Estado de un ticket."
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-Key",
+      "description": "Llave de la API (cabecera X-API-Key)."
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ]
+}
