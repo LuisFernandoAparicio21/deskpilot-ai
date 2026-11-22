@@ -1097,3 +1097,9 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - Skill de proyecto `.claude/skills/feature-loop/SKILL.md` (frontmatter: name, description, argument-hint, `disable-model-invocation: true`; sin `context: fork`) con plantillas y referencias; `.claude/skills/` anotada en CLAUDE.md y CONTRIBUTING. Investigación en `docs/research/project-skills.md`.
 - Roadmap: PL-11 mergeada (#64, 2026-11-22), PL-12 documentada.
 - No verificado (⚠): delegación a subagentes desde el cuerpo de la skill y detección de `.claude/skills/` nueva a mitad de sesión; no se ejecutó un ciclo real.
+
+### L40 — PL-13 phase-c-plan (planner) · rama chore/phase-c-plan
+- `docs/phase-c-plan.md` (en inglés): reparto de los 47 pasos de MANUAL_STEPS (22 automatiza Claude Code, 13 prepara y ejecuta el usuario, 12 manuales), features PC-1 a PC-13 con ciclo a–f, checklist reducida (~2 h nominal, 2.5 a 3 h con plan B), puntos de control y plan B. Sección "Phase C automation (planned)" en `docs/roadmap.md`; investigación R1-R7 en `docs/research/`.
+- Decisiones: Copilot Studio por la UI (no `pac copilot`, R3); evaluación nativa con CSV Question/Expected response (R4); túnel persistente con devtunnel (R5); Power BI a mano con medidas DAX y diseño (R6); casos de Copilot Studio contra el modo local. Rama `chore/` en vez de `docs/` según el estándar.
+- No verificado (⚠): todo lo marcado "not confirmed" en R1-R7 (notebook por `fab`, Warehouse con `fab create`, formato del CSV exportado, evaluación en la prueba, micrófono de Snipping Tool); las estimaciones de minutos no son mediciones. Los pasos 45 (tag v0.1.0) ya estaban hechos: existen los tags v0.1.0 y v0.1.1.
+- Roadmap: PL-12 ya estaba mergeada (#66), PL-13 documentada, PC-1 a PC-13 pendientes.

@@ -376,13 +376,29 @@ SECRET_PATTERNS = {
     "connection string": r"(?i)(?:AccountKey|SharedAccessSignature)=[^\s]{8,}",
 }
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
-SAFE_EMAIL = re.compile(r"(@example\.(?:com|org|net)$|^no-?reply@)")
+SAFE_EMAIL = re.compile(r"(@example\.(?:com|org|net)$|^no-?reply@|^user@university\.edu$)")
+# Public documentation hosts: article ids in their https URLs are not secrets.
+PUBLIC_DOC_HOSTS = (
+    "learn.microsoft.com",
+    "docs.microsoft.com",
+    "support.microsoft.com",
+    "github.com",
+    "docs.github.com",
+)
+_HOSTS_RE = "|".join(re.escape(h) for h in PUBLIC_DOC_HOSTS)
+PUBLIC_URL_RE = re.compile(rf"https://(?:{_HOSTS_RE})(?=[/\s)\]>]|$)[^\s)\]>]*")
+
+
+def strip_public_urls(text: str) -> str:
+    """Remove https URLs of allow-listed public documentation hosts before scanning."""
+    return PUBLIC_URL_RE.sub("", text)
 
 
 @pytest.mark.parametrize("doc", _doc_files(), ids=_rel)
 def test_no_secrets_or_real_emails(doc: Path) -> None:
     text = doc.read_text("utf-8")
-    hits = [name for name, pat in SECRET_PATTERNS.items() if re.search(pat, text)]
+    scan = strip_public_urls(text)
+    hits = [name for name, pat in SECRET_PATTERNS.items() if re.search(pat, scan)]
     assert not hits, f"{_rel(doc)} matches secret patterns: {hits}"
     emails = [e for e in EMAIL_RE.findall(text) if not SAFE_EMAIL.search(e)]
     assert not emails, f"{_rel(doc)} contains non-placeholder emails: {emails}"
@@ -392,3 +408,34 @@ def test_secret_patterns_detect_samples() -> None:
     assert re.search(SECRET_PATTERNS["openai/anthropic key"], "sk-ant-abcdefghijklmnop1234")
     assert re.search(SECRET_PATTERNS["assignment"], "API_KEY=abcdefghijklmnop12345")
     assert not SAFE_EMAIL.search("real.person@gmail.com")
+
+
+_GUID = "00246869-1843-655f-f220-97299b865f6b"
+
+
+def _secret_hits(text: str) -> list[str]:
+    scan = strip_public_urls(text)
+    return [n for n, p in SECRET_PATTERNS.items() if re.search(p, scan)]
+
+
+def test_bare_guid_is_flagged() -> None:
+    assert _secret_hits(f"tenant id: {_GUID}") == ["guid"]
+
+
+def test_guid_in_public_support_url_is_allowed() -> None:
+    url = f"https://support.microsoft.com/en-us/windows/use-snipping-tool-{_GUID}"
+    assert _secret_hits(f"Fuente ({url}) consultada") == []
+
+
+def test_guid_in_non_allowlisted_url_is_flagged() -> None:
+    assert _secret_hits(f"https://evil.example.net/x/{_GUID}") == ["guid"]
+    assert _secret_hits(f"https://support.microsoft.com.evil.net/x/{_GUID}") == ["guid"]
+
+
+def test_guid_after_public_url_is_still_flagged() -> None:
+    text = f"https://learn.microsoft.com/en-us/fabric/ tenant {_GUID}"
+    assert _secret_hits(text) == ["guid"]
+
+
+def test_account_key_is_still_flagged() -> None:
+    assert "connection string" in _secret_hits("AccountKey=abcdefgh12345678==")
