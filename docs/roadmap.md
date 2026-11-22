@@ -52,9 +52,9 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 
 | # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
 |---|---|---|---|---|---|---|---|---|
-| PL-1 | user-flow | chore/user-flow-diagram | docs/user-flow.md: diagrama de decisión y de secuencia del MVP desde el usuario + ejemplo real ES/EN; versión compacta en README | S13, RF de búsqueda/ticket/escalamiento | docs-writer (qa-tester valida) | documentada | - | - |
+| PL-1 | user-flow | chore/user-flow-diagram | docs/user-flow.md: diagrama de decisión y de secuencia del MVP desde el usuario + ejemplo real ES/EN; versión compacta en README | S13, RF de búsqueda/ticket/escalamiento | docs-writer (qa-tester valida) | mergeada | #46 | 2026-11-22 |
 | PL-2 | visual-style-research | chore/visual-style-research | Investigación del estilo visual del perfil y repos del usuario (docs/research/visual-style.md) | S13 | researcher | mergeada | #48 | 2026-11-22 |
-| PL-3 | readme-visual-refresh | chore/readme-visual-refresh | Banner SVG, typing-svg, badges agrupados, resumen EN arriba, resultados en números, orden para reclutador | S13, S14 | docs-writer (qa-tester valida) | documentada | - | - |
+| PL-3 | readme-visual-refresh | chore/readme-visual-refresh | Banner SVG, typing-svg, badges agrupados, resumen EN arriba, resultados en números, orden para reclutador | S13, S14 | docs-writer (qa-tester valida) | mergeada | #50 | 2026-11-22 |
 | PL-4 | diagnostics-review | chore/diagnostics-review | Diagnóstico de 5 problemas de la revisión externa (docs/diagnostics/2026-11-22-review.md) | S12, S14 | diagnostician | mergeada | #52 | 2026-11-22 |
 | PL-5 | github-release-v0.1.0 | chore/release-v0.1.0-notes | P1: GitHub Release v0.1.0 con notas generadas de los PRs | S15 | docs-writer | mergeada | #54 | 2026-11-22 |
 | PL-6 | validated-vs-pending | chore/validated-vs-pending | P3: separar Validado de Pendiente de validar en tenant real en README y job-fit | S14 | docs-writer (qa-tester valida) | mergeada | #56 | 2026-11-22 |
@@ -62,7 +62,8 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 | PL-8 | rejection-cases | feat/rejection-cases | P5: 6–8 casos nuevos de rechazo fuera de dominio y, si se justifica, mecanismo general de rechazo | S12, RN rechazo | qa-tester + rag-engineer | mergeada | #60 | 2026-11-22 |
 | PL-9 | english-accessibility | chore/english-accessibility | P2: resumen en inglés ampliado con tabla de habilidades y límites; alinear conteos de pruebas entre README, resumen EN y job-fit (absorbida por PL-10) | S13, S14 | docs-writer (qa-tester valida) | documentada | - | - |
 | PL-10 | readme-redesign | chore/readme-redesign | README único en inglés (notas bilingües, resumen en español), reordenado según la investigación de criterios para reclutadores (docs/research/readme-outline.md); absorbe PL-9 | S13, S14 | docs-writer (qa-tester valida) | mergeada | #62 | 2026-11-22 |
-| PL-11 | release-v0.1.1 | chore/release-v0.1.1 | Release v0.1.1: .github/SECURITY.md, CHANGELOG 0.1.1 y notas de release | S13, S15 | docs-writer | documentada | - | - |
+| PL-11 | release-v0.1.1 | chore/release-v0.1.1 | Release v0.1.1: .github/SECURITY.md, CHANGELOG 0.1.1 y notas de release | S13, S15 | docs-writer | mergeada | #64 | 2026-11-22 |
+| PL-12 | feature-loop-skill | feat/feature-loop-skill | Skill de proyecto `feature-loop` (.claude/skills/) con el ciclo a–f, plantillas y referencias; investigación del formato de skills | S13 | docs-writer | mergeada | #66 | 2026-11-22 |
 
 ## Fase manual (usuario)
 Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T25.

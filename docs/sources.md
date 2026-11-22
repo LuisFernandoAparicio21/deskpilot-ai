@@ -45,6 +45,7 @@ Lo que agregó el usuario (L2) como estándar de producción, únicas adiciones 
 | Título | URL | Para qué se usó |
 | --- | --- | --- |
 | Claude Code: Create custom subagents | https://code.claude.com/docs/en/sub-agents | Formato de los subagentes en `.claude/agents/`: frontmatter YAML con `name` y `description` obligatorios y `tools` opcional (T2). Verificada: responde. |
+| Claude Code: Extend Claude with skills | https://code.claude.com/docs/en/skills | Formato de skill de proyecto (`.claude/skills/<nombre>/SKILL.md`), frontmatter, argumentos, `context: fork` + `agent`, `/skills`, límites (500 líneas, 1,536 caracteres). Verificada 2026-11-22. Ver `docs/research/project-skills.md`. ⚠ sin límite de longitud de `name` ni delegación vía Agent tool documentados. |
 
 ## Microsoft
 
