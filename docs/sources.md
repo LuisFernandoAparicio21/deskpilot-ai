@@ -229,3 +229,11 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | Shields.io GitHub tag y workflow | https://shields.io/badges/git-hub-tag | `img.shields.io/github/v/tag/<repo>` y `/github/actions/workflow/status/<repo>/ci.yml` responden 200 `image/svg+xml`; el tag muestra v0.1.0. |
 | Shields.io badge estático | https://shields.io/badges/static-badge | `img.shields.io/badge/<label>-<mensaje>-<color>` para cobertura medida a mano y plataforma Microsoft. |
 | Simple Icons | https://simpleicons.org | Existen python, fastapi, sqlite, docker, pytest, ruff y modelcontextprotocol; no hay icono de Chroma, Copilot Studio ni Fabric (badges sin logo). |
+
+## Mecanismos de abstención en RAG (rag-abstention-mechanisms.md)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| FastEmbed Supported Models (reranking) | https://qdrant.github.io/fastembed/examples/Supported_Models/ | `TextCrossEncoder` existe; lista 6 rerankers; el único multilingüe listado en la página es jina-reranker-v2-base-multilingual (1.11 GB, CC-BY-NC-4.0). El paquete 0.9.1 instalado además trae bge-reranker-v2-m3 (2.27 GB) y su int8 (0.57 GB), apache-2.0. |
+| Sentence-Transformers Retrieve & Re-Rank | https://sbert.net/examples/applications/retrieve_rerank/README.html | Cross-encoder más preciso que bi-encoder; flujo retriever + rerank; no trata umbrales ni abstención. |
+| BAAI/bge-reranker-v2-m3 | https://huggingface.co/BAAI/bge-reranker-v2-m3 | Multilingüe, Apache 2.0; scores crudos no acotados, `normalize=True` aplica sigmoide; sin umbral recomendado. |
