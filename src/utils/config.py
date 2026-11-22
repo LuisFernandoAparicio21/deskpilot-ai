@@ -33,6 +33,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "config.yaml"
 DEFAULT_ENV_FILE = PROJECT_ROOT / ".env"
 MIN_API_KEY_LENGTH = 16
+MAX_API_KEY_BYTES = 256  # the API only compares up to this many bytes of X-API-Key
 
 Mode = Literal["local", "fabric"]
 LLMProvider = Literal["none", "anthropic", "openai", "gemini"]
@@ -383,7 +384,11 @@ def _check_llm(settings: Settings) -> None:
 
 
 def require_api_key(settings: Settings) -> SecretStr:
-    """Return the API key required by ``serve``; raise ``ConfigError`` if unusable."""
+    """Return the API key required by ``serve``; raise ``ConfigError`` if unusable.
+
+    The key must have ``MIN_API_KEY_LENGTH`` to ``MAX_API_KEY_BYTES`` (UTF-8) bytes: a
+    longer key could never match, because the API rejects longer headers.
+    """
     key = settings.secrets.api_key
     hint = 'Generate one with: python -c "import secrets;print(secrets.token_urlsafe(32))"'
     if key is None:
@@ -391,5 +396,9 @@ def require_api_key(settings: Settings) -> SecretStr:
     if len(key.get_secret_value()) < MIN_API_KEY_LENGTH:
         raise ConfigError(
             f"DESKPILOT_API_KEY must have at least {MIN_API_KEY_LENGTH} characters. {hint}"
+        )
+    if len(key.get_secret_value().encode("utf-8")) > MAX_API_KEY_BYTES:
+        raise ConfigError(
+            f"DESKPILOT_API_KEY must not exceed {MAX_API_KEY_BYTES} bytes (UTF-8). {hint}"
         )
     return key

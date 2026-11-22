@@ -3,6 +3,10 @@
 Missing and wrong keys get the same 401 body, so nothing tells an attacker which case
 it was. The key is compared as bytes with ``hmac.compare_digest`` (the ``str`` form only
 accepts ASCII and would raise on other input); it is never logged.
+
+Headers longer than ``MAX_KEY_BYTES`` are rejected. To avoid silently locking out a
+configured key that long, ``src.utils.config.require_api_key`` refuses at startup any
+key over that limit, with a clear error.
 """
 
 from __future__ import annotations
@@ -16,11 +20,12 @@ from fastapi import Security
 from fastapi.security import APIKeyHeader
 
 from src.api.errors import ApiError
+from src.utils.config import MAX_API_KEY_BYTES
 
 logger = logging.getLogger(__name__)
 
 API_KEY_HEADER = "X-API-Key"
-MAX_KEY_BYTES = 256
+MAX_KEY_BYTES = MAX_API_KEY_BYTES
 _scheme = APIKeyHeader(name=API_KEY_HEADER, auto_error=False, description="Service API key.")
 
 
