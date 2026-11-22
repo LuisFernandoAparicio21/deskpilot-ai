@@ -9,7 +9,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -202,10 +201,6 @@ def test_supporting_files_referenced_exist() -> None:
         assert (SKILL_DIR / needed).is_file()
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG in skill: templates/feature-doc.md has no 'Pruebas realizadas' section",
-)
 def test_feature_doc_template_has_pruebas_realizadas() -> None:
     text = _text(SKILL_DIR / "templates" / "feature-doc.md")
     assert re.search(r"^## .*[Pp]ruebas realizadas", text, re.MULTILINE)
@@ -214,7 +209,8 @@ def test_feature_doc_template_has_pruebas_realizadas() -> None:
 def test_feature_doc_template_required_sections() -> None:
     text = _text(SKILL_DIR / "templates" / "feature-doc.md")
     headings = " | ".join(re.findall(r"^## (.+)$", text, re.MULTILINE)).lower()
-    for part in ("qué", "resultados reales", "cómo verificar", "limitaciones"):
+    parts = ("qué", "specs", "pruebas realizadas", "resultados reales", "cómo verificar", "limitaciones")
+    for part in parts:
         assert part in headings, part
     assert "RF" in text  # specs / requirements covered
 
@@ -247,10 +243,6 @@ def test_pr_checklist_covers_pr_template_checklist() -> None:
     assert "- [ ]" in cl
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG in skill: pr-checklist.md holds only the checklist, not the PR template sections",
-)
 def test_pr_checklist_has_same_sections_as_template() -> None:
     tpl = _text(ROOT / ".github" / "pull_request_template.md")
     cl = _text(SKILL_DIR / "templates" / "pr-checklist.md")
