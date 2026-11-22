@@ -34,7 +34,7 @@ Ejecutados en local (Windows, Python 3.13, rama `chore/t22-coverage-ci`):
 pytest --cov=src --cov-report=term-missing
 TOTAL                                   3434     41    656     29    98%
 Required test coverage of 80.0% reached. Total coverage: 98.24%
-1479 passed, 2 skipped, 33 deselected in 99.35s
+1724 passed, 2 skipped, 33 deselected in 83.11s
 
 ruff check .           -> Ruff: No issues found
 ruff format --check .  -> 174 files already formatted
