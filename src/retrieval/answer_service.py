@@ -11,7 +11,9 @@ Order of decisions, each one final:
 5. Evidence => with ``NoLLM`` the extractive answer: the "Pasos" section of the top
    article plus "Fuente: <id> — <título>". With an LLM, ``answer_with_citation@v1`` over
    the retrieved context; if the LLM fails or times out, the extractive answer is used
-   and a warning is logged (RNF-06). Every answer with steps cites its article (RN-04).
+   and a warning is logged (RNF-06). The same fallback applies when the LLM output cites a
+   ``KB-<n>`` id that is not in the evidence (invented source) or contains sensitive data
+   (RF-10). Every answer with steps cites its article (RN-04).
 
 Known limitation: in extractive mode an English query gets English framing and the same
 cited article, but the steps are quoted in Spanish as written in the knowledge base. In
@@ -55,6 +57,7 @@ AnswerStatus = Literal["answered", "no_evidence", "mandatory_escalation"]
 AnswerMode = Literal["extractive", "llm", "policy"]
 
 _NUMBERED = re.compile(r"^\d+[.)]\s+(?P<step>.+)$")
+_ARTICLE_ID = re.compile(r"KB-\d+")
 _BULLET = re.compile(r"^[-*•]\s+(?P<step>.+)$")
 
 
@@ -258,7 +261,24 @@ class AnswerService:
             answer = self._fixed(NO_EVIDENCE, "no_evidence", language, sensitive, [])
             return answer.model_copy(update={"mode": "llm", "prompt_key": prompt.key})
         evidence = result.evidence
-        cited = [article for article in evidence if article.article_id in text]
+        evidence_ids = {article.article_id for article in evidence}
+        cited_ids = set(_ARTICLE_ID.findall(text))
+        if cited_ids - evidence_ids:
+            logger.warning(
+                "LLM cited an article outside the evidence; using the extractive answer",
+                extra={
+                    "provider": self._llm.provider,
+                    "unknown_ids": len(cited_ids - evidence_ids),
+                },
+            )
+            return None
+        if contains_sensitive(text):
+            logger.warning(
+                "LLM output contains sensitive data; using the extractive answer",
+                extra={"provider": self._llm.provider},
+            )
+            return None
+        cited = [article for article in evidence if article.article_id in cited_ids]
         if not cited:
             cited = [evidence[0]]
             text = f"{text}\n\n{source_line(language, evidence[0].article_id, evidence[0].titulo)}"

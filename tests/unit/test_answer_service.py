@@ -339,6 +339,41 @@ def test_llm_answer_without_citation_gets_the_source_line(
     assert [c.article_id for c in answer.citations] == ["KB-002"]
 
 
+def test_llm_invented_article_id_falls_back_to_extractive(
+    retriever: Retriever, settings: Settings, caplog: pytest.LogCaptureFixture
+) -> None:
+    llm = FakeLLM(f"1. Haz esto.\n\n{SOURCE_ES}\nVer tambien KB-999.")
+    with caplog.at_level(logging.WARNING):
+        answer = _service(retriever, settings, llm).answer("se bloqueó mi usuario de Windows")
+
+    assert len(llm.calls) == 1
+    assert answer.mode == "extractive"
+    assert "KB-999" not in answer.text
+    assert answer.text.endswith(SOURCE_ES)
+    assert [c.article_id for c in answer.citations] == ["KB-002"]
+    assert any("outside the evidence" in r.getMessage() for r in caplog.records)
+
+
+def test_llm_answer_citing_its_source_does_not_get_a_second_source_line(
+    retriever: Retriever, settings: Settings
+) -> None:
+    reply = f"1. Espera 15 minutos.\n\n{SOURCE_ES}"
+    answer = _service(retriever, settings, FakeLLM(reply)).answer("se bloqueó mi usuario")
+    assert answer.text.count("KB-002") == 1
+    assert [c.article_id for c in answer.citations] == ["KB-002"]
+
+
+def test_llm_output_with_sensitive_data_falls_back_to_extractive(
+    retriever: Retriever, settings: Settings
+) -> None:
+    leaked = "Tu contraseña es Sol2024!xyz, usa tu tarjeta 4111111111111111"
+    llm = FakeLLM(f"{leaked}\n\n{SOURCE_ES}")
+    answer = _service(retriever, settings, llm).answer("se bloqueó mi usuario de Windows")
+    assert answer.mode == "extractive"
+    assert "4111111111111111" not in answer.text and "Sol2024" not in answer.text
+    assert answer.text.endswith(SOURCE_ES)
+
+
 def test_llm_saying_no_evidence_becomes_no_evidence(
     retriever: Retriever, settings: Settings
 ) -> None:
