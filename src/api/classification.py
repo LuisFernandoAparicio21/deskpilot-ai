@@ -176,8 +176,8 @@ def _parse_llm_output(raw: str) -> tuple[str, Priority] | None:
 
 
 def _accept_priority(llm: Priority, rules: Priority) -> bool:
-    if llm == "P1" and rules != "P1":
-        return False
+    if rules == "P1" or llm == "P1":
+        return llm == rules
     return abs(PRIORITIES.index(llm) - PRIORITIES.index(rules)) <= 1
 
 
