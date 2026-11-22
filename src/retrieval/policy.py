@@ -1,6 +1,7 @@
 """RN-03: cases that are always escalated to a human, without trying to solve them.
 
-Fraud, suspected unauthorized access and cash-system failures are detected by keyword
+Fraud (unrecognized charges, phishing, identity theft), suspected unauthorized access
+and cash-system failures (cash register, teller terminal, ATM) are detected by keyword
 patterns in the (redacted) query or by the retrieved article: KB-011 (sistema de caja)
 says it is always escalated. Matching ignores case and accents. Patterns are narrow on
 purpose; a miss still goes through retrieval, where KB-011 and the "Cuándo escalar"
@@ -22,6 +23,11 @@ _PATTERNS: dict[EscalationReason, re.Pattern[str]] = {
     "fraud": re.compile(
         r"\bfraud|\bestafa|\bscam\b|\bclonaron\b|\bskimm"
         r"|\boperacion(?:es)? no autorizada|\bunauthori[sz]ed (?:transaction|operation|charge)"
+        r"|\b(?:cargos?|transacci(?:on|ones)|movimientos?) "
+        r"(?:no reconocid|que no (?:hice|reconozco))"
+        r"|\b(?:unrecogni[sz]ed|unknown) (?:charge|transaction)"
+        r"|\bdon.?t recogni[sz]e (?:a |this |the )?(?:charge|transaction)"
+        r"|\bphishing|\bsuplantacion de identidad|\brobo de identidad|\bidentity theft"
     ),
     "unauthorized_access": re.compile(
         r"\baccesos? no autorizados?|\bunauthori[sz]ed access"
@@ -34,7 +40,11 @@ _PATTERNS: dict[EscalationReason, re.Pattern[str]] = {
     ),
     "cash_system": re.compile(
         r"\b(?:sistema|terminal|equipo|modulo|software|pantalla) de (?:la )?caja\b"
-        r"|\bla caja (?:no|se)\b|\bcash (?:register|system)|\bteller (?:system|terminal)"
+        r"|\bla caja (?:no|se)\b|\bno abre (?:la )?caja\b|\bcash (?:register|system)"
+        r"|\bteller (?:system|terminal)|\bcash drawer (?:won.?t|does not|doesn.?t|not) open"
+        r"|\bcajeros?\s+(?:\w+\s+){0,3}(?:falla|fallo|no (?:funciona|responde|dispensa|enciende|abre))"
+        r"|\b(?:falla|fallo|fallas) (?:en |del |de )?(?:el |los |un )?cajeros?\b"
+        r"|\batm (?:failure|malfunction|is down|is not working|not working|won.?t)"
     ),
 }
 
