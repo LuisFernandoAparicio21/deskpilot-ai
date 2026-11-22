@@ -49,7 +49,7 @@ El proyecto es API/CLI sin UI propia, así que C4 (condicional "si hay UI") no o
 
 ## 4. Decisiones abiertas
 
-### DECISIÓN DEL USUARIO, sin fuente: idioma del README
+### DECISIÓN DEL USUARIO, sin fuente: idioma del README (RESUELTA, ver sección 8)
 
 La investigación (P7) declara que no hay criterio sobre idioma de un README de portafolio. El borrador mantiene el estado actual (cuerpo en español, bloque English de 3 líneas, English summary al final) solo como línea base provisional, no como recomendación.
 
@@ -59,11 +59,11 @@ La investigación (P7) declara que no hay criterio sobre idioma de un README de 
 | B. Inglés completo | Mayor alcance según Adejumo et al. (preprint, solo resumen leído) y Devlane, pero ninguna fuente habla del README de un candidato. Cambia los contratos de test (encabezados "Por qué este proyecto", "Habilidades demostradas", nota en español) y exige traducir el README sin tocar docs/ en español. |
 | C. Dos archivos, `README.md` y `README.es.md` | Cada uno coherente en su idioma; duplica mantenimiento y riesgo de cifras desfasadas (C9). Exige que los scripts y tests apunten a uno u otro. |
 
-### DECISIÓN DEL USUARIO, sin fuente: longitud objetivo
+### DECISIÓN DEL USUARIO, sin fuente: longitud objetivo (PROVISIONAL: el usuario no respondió; se usó la longitud del borrador)
 
 No hay fuente con longitud óptima (P6); las fuentes divergen (Make a README: más largo es mejor; Microsoft: lo esencial y enlazar). El borrador queda en 300 líneas / 17.8 KiB. Opciones: (a) quedarse así; (b) recortar a ~150 líneas moviendo Decisiones, Habilidades y Documentación a `docs/` (más escaneable por C20 y C5, pero pierde evidencia visible en el primer vistazo); (c) mantener 300 y plegar más con `<details>`. Ninguna tiene respaldo numérico.
 
-### Contacto del mantenedor (C7, oficial)
+### Contacto del mantenedor (C7, oficial) (PROVISIONAL: el usuario no respondió; solo handle de GitHub e issues)
 
 C7 exige contacto o mantenedor. El borrador solo pone el handle de GitHub (`@LuisFernandoAparicio21`, el que ya está en las URLs del repo) y los issues. Nombre completo, correo o LinkedIn no se inventan: el usuario decide si los publica.
 
@@ -101,3 +101,13 @@ Notas sobre cifras: (1) el "1 failed" proviene de `test_docs.py::test_mermaid_bl
 ## 7. Validación del borrador
 
 Script en el scratchpad (no se commitea): tamaño 17.78 KiB; 4 `<details>` abiertos y cerrados, cada uno con `<summary>`; fences balanceados; 2 bloques mermaid con corchetes balanceados (sintaxis idéntica a la ya usada en el README y en `docs/user-flow.md`; no se renderizó en GitHub, no verificado); 0 enlaces o imágenes relativas rotas; marcadores RESULTS, VALIDATION y MSBADGES presentes con su contenido actual; los 3 bloques de texto exacto presentes sin cambios.
+
+## 8. Decisión del usuario sobre el idioma (registrada el 2026-11-22)
+
+Decisión: un solo `README.md` en inglés; no se crea `README.es.md`. Las dos notas de datos sintéticos van en inglés con el original en español textual debajo en `<sub>`. El README termina con la sección "Resumen en español" (4 líneas) para reclutadores en México. Los nombres de herramientas y las respuestas del agente siguen en español en los ejemplos (el agente es bilingüe), explicado en una línea; los documentos de `docs/` siguen en español y el README lo avisa.
+
+Trazabilidad: esta decisión no tiene fuente. Es del usuario. La investigación (P7) no encontró criterios sobre idioma de un README de portafolio, así que no se cita ninguno. Equivale a la opción B con los matices anteriores. Decisiones 2 (longitud) y 3 (contacto): provisionales, sin respuesta del usuario.
+
+Cambios respecto del borrador: se tradujo todo el texto; se quitó la etiqueta "English:" del párrafo de introducción (texto conservado); "English summary" se reemplazó por "Resumen en español"; el encabezado de licencia pasa a "License". Los bloques `RESULTS`, `VALIDATION` y `MSBADGES` ya se generan en inglés por `scripts.update_readme_results` (`--check` devuelve 0).
+
+Cifras re-medidas con `.venv\Scripts\python -m pytest --cov=src -q` (sin slow, 105 s): 1982 passed, 17 failed, 3 skipped, 35 deselected; cobertura 98.12%. El README publica "1999 run" (passed + failed). Las 17 fallas son contratos que fijan el README anterior o el texto en español de los scripts (nueva fila de la tabla de la sección 6: número 1999/3/35, fuente salida de pytest, comando anterior). Las lista el qa-tester: `test_docs.py` (cifras del README y mermaid de `readme-evaluation.md`), `test_readme_visual.py` (badges de plataforma en inglés), `test_scripts_update_readme_results.py` (7) y `test_validation_status.py` (6).

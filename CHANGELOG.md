@@ -9,6 +9,7 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Added
 
+- README rediseñado (PL-10, rama `chore/readme-redesign`; absorbe PL-9): un solo README en inglés con notas de datos sintéticos bilingües, resumen en español al final, orden y límites según `docs/research/readme-outline.md`, 6 badges (4 de estado y 2 de plataforma Microsoft), cifras con fuente (30/30 casos, 98.12% de cobertura). Decisiones y lo no verificado en `docs/features/readme-redesign.md`.
 - Veto con reranker cross-encoder (PL-8, rama `feat/rejection-cases`): `retrieval.rerank` (`BAAI/bge-reranker-v2-m3-int8`, `min_score` 0.01, puntuación pasaje a pasaje) convierte en "no lo sé" las respuestas sin pasaje relevante; `eval` pasa de 29/30 (exit 3) a 30/30 (exit 0) y `eval.known_failures` queda vacío. Casos `tests/eval/rejection_cases.csv` (RJ-01 a RJ-08) y held-out de 40 casos (`heldout_cases.csv`, 39/40: límite HO-29). Experimento de mecanismos en `docs/research/rejection-experiment.md` y [ADR-0009](docs/adr/0009-veto-con-reranker-cross-encoder.md). Costo: ~0.57 GB de descarga y ~0.5 a 1 s por consulta. No verificado: tamaño de la imagen Docker con el reranker, `docker run --network none` y CI.
 - Flujo del usuario (PL-1, #46): `docs/user-flow.md` con diagrama de decisión, diagrama de secuencia, tablas paso-herramienta-RF-EV y ejemplos reales ES/EN; versión compacta en la sección "Cómo funciona" del README.
 - Investigación del estilo visual del perfil y de los repos fijados (PL-2, #48): `docs/research/visual-style.md`.
