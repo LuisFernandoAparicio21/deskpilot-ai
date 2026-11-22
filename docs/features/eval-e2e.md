@@ -161,7 +161,9 @@ certutil -hashfile data\deskpilot.db SHA256             # debe ser igual
 - **Sobre-escalamiento por KB-011**: escalaba si KB-011 aparecía en cualquier posición del top, lo que escalaba
   EV-05, EV-07 y EV-09. Ahora solo escala si KB-011 está a menos de `retrieval.escalation_margin` (0.05) del
   top-1; fuera del margen se descarta de la evidencia (no se cita ni llega al LLM). El margen se calibró con la KB
-  real (el ruido queda a 0.29-0.33 del top-1).
+  real (el ruido queda a 0.29-0.33 del top-1). Con el reranker, KB-011 siempre se puntúa si aparece en los
+  resultados (aunque quede fuera de los 3 candidatos) y solo se descarta por el veto si su score es < `min_score` x
+  `mandatory_veto_factor` (0.1), es decir, ruido claro; RN-03 prima sobre la precisión.
 - **EV-20** ("inicios de sesión de mi cuenta a las 3 am que yo no hice") no escalaba: se añadió la detección de
   actividad de acceso no reconocida como `unauthorized_access`.
 - **Patrones RN-03 ampliados**: caja caída, POS, "nadie puede cobrar", "alguien robó mi cuenta", "acceso

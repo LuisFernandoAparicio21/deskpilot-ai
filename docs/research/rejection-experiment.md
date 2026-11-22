@@ -1,5 +1,9 @@
 # Experimento de rechazo ("no lo sé") con mecanismos generales
 
+> **Resumen vigente (2026-11-22).** `retrieval.rerank.min_score` = **0.01** (no 0.004 ni 0.02): las secciones con esos valores abajo son **histórico** y se conservan como registro del proceso. Vigente: reranker `bge-reranker-v2-m3-int8` puntuado pasaje a pasaje; el veto sobre el artículo de escalamiento obligatorio (KB-011) solo aplica con ruido claro (score < `min_score` x `mandatory_veto_factor` 0.1) y KB-011 se puntúa siempre aunque quede fuera de los candidatos. Resultado: `eval` 30/30, `rejection_cases` 8/8, held-out 39/40 (solo HO-29), 0 falsos rechazos.
+> **Límite de la cadena de suministro:** el modelo se descarga de Hugging Face Hub sin fijar la revisión a un hash; una actualización del repositorio del modelo cambiaría los scores sin aviso. Mitigación parcial: `retrieval.rerank.model` se valida contra una allow-list (solo `BAAI/bge-reranker-v2-m3-int8`). Pendiente: fijar la revisión (commit hash) y verificar un checksum del `.onnx` tras la descarga; mientras tanto, repetir la medición si cambia el modelo o fastembed.
+
+
 Fecha: 2026-11-22. Rama `feat/rejection-cases`. Cierra la parte experimental de P5 de `docs/diagnostics/2026-11-22-review.md` y prueba las hipótesis de `docs/research/rag-abstention-mechanisms.md`. Scripts y datos crudos vivían en `scratch/` (borrado al cerrar).
 
 ## Pregunta
@@ -37,7 +41,7 @@ Observaciones por mecanismo:
 - Margen: gap de rechazos 0.00-0.10, de respuestas 0.00-0.40; con varios chunks de un mismo artículo y consultas reales el margen no mide ausencia de evidencia.
 - Reranker: separación clara. Máximo en rechazos 0.0012 (sigmoide del mejor chunk), mínimo en respuestas 0.0104 (CT-08). Banda sin falsos rechazos y 24/24: 0.002 a 0.010 (con 0.012 ya rechaza CT-08). Se fijó `min_score: 0.004` (punto medio en logit).
 
-## Decisión: se implementa el reranker (único que cumple el criterio)
+## Decisión: se implementa el reranker (histórico: min_score 0.004; vigente 0.01) (único que cumple el criterio)
 Criterio: mejora el rechazo, ningún falso rechazo nuevo (canónicos ni control), top-3 14/14. Solo el reranker lo cumple de forma validada. Es el mecanismo más caro (modelo de 0.57 GB, ~0.7 s por búsqueda); los ligeros se probaron primero y no pasan la validación, por lo que no hay alternativa ligera que cumpla el criterio.
 
 Implementación (`retrieval.rerank` en `config.yaml`, validado por Pydantic, apagable con `enabled: false`):
@@ -63,7 +67,7 @@ Impacto en Docker y CI:
 - Los casos neutros EV-19/21/22/27/30 tendrían veto del reranker (scores 0.0001-0.001); no cambian el resultado porque la escalación por palabras clave, el ticket o la advertencia de dato sensible ocurren antes o aparte.
 - No verificado: comportamiento con otros idiomas, KB mayor de 15 artículos y tamaño real de la imagen Docker (no se construyó).
 
-## Actualizacion: min_score 0.02 tras la validacion independiente (2026-11-22)
+## Actualizacion: min_score 0.02 tras la validacion independiente (2026-11-22) (histórico: reemplazado por 0.01)
 
 - El qa-tester valido con un held-out de 40 casos (`tests/eval/heldout_cases.csv`): con reranker 0/20 falsos rechazos y 19/20 rechazos; sin reranker 9/20. Barrido de `min_score` 0.002/0.004/0.010/0.02: 0 falsos rechazos en todos. El minimo en dominio observado es 0.104.
 - Decision: `retrieval.rerank.min_score = 0.02` (>=5x por debajo del minimo en dominio, por encima del ruido de los OOD cercanos ~0.003). HO-33 puntua 0.0032, demasiado cerca de 0.004.
@@ -97,3 +101,19 @@ Candidatos evaluados:
 Resultado con el servicio real y `min_score` 0.01: `eval` 30/30 (rechazo 4/4, exit 0, p50 368 ms), `rejection_cases.csv` 8/8, `heldout_cases.csv` 39/40 (OOD 19/20, solo HO-29), top-3 sin cambios (el reranker no reordena). Q1 y su version con acentos ya se responden (0.048 y 0.130). `eval.known_failures` queda `[]`.
 
 Limites: variantes automaticas y sencillas (una errata por consulta); el held-out ya no es ciego; HO-29 sigue aceptado (0.052, por encima del corte); n de 35 en dominio. Si se cambia de modelo o de version de fastembed, repetir esta medicion.
+
+## Veto y KB-011 (RN-03): factor del ruido claro (2026-11-22)
+
+Hallazgo de seguridad: el veto excluía KB-011 de `relevant` si su score era < `min_score`; una consulta de caja parafraseada sin las palabras de la regex `cash_system` podía perder la red semántica. Además KB-011 solo se puntuaba si estaba entre los 3 candidatos. Cambio: KB-011 se puntúa siempre que aparezca en los resultados, y se descarta solo con score < `min_score` x `mandatory_veto_factor`; el margen de coseno sigue siendo el criterio base.
+
+Medición (reranker real, 12 paráfrasis de caja ES/EN sin palabras de la regex en `scratch/`, ya borradas, más los 30 canónicos, 8 de rechazo y 40 held-out). Factores 1.0 (comportamiento anterior), 0.5, 0.25, 0.1 y 0.0 (sin veto):
+
+| Caso | Score KB-011 | Relación con min_score | Resultado |
+| --- | --- | --- | --- |
+| RJ-02 (bóveda, ruido; KB-011 dentro del margen) | 0.00005 | 0.005x | rechaza con factor >= 0.1; con 0.0 escala (falla) |
+| EV-16 (bóveda, ruido; fuera del margen) | 0.00107 | 0.107x | rechaza con cualquier factor |
+| Paráfrasis de caja (dentro del margen): CA-01/03/04/05/06/09/11/12 | 0.011 a 0.96 | 1.1x a 96x | escalan con cualquier factor |
+| CA-07 y CA-08 (EN, fuera del margen) | 0.0022 y 0.0045 | 0.22x y 0.45x | no escalan con ninguno: los filtra el margen de coseno, no el veto |
+| CA-02 y CA-10 | 0.758 y no recuperado | - | no escalan con ninguno (margen; CA-10 sin KB-011 en el top-5) |
+
+Elegido: **0.1**. Los resultados son idénticos entre 0.1 y 1.0 en estos conjuntos; 0.1 deja el ruido medido (RJ-02 0.005x, EV-16 0.107x) bajo o en el corte y mantiene en escalamiento todo caso de caja con score >= 0.1x, por el lado seguro. Resultado: `eval` 30/30, `rejection_cases` 8/8, held-out 39/40 (19/20 rechazos, 0 falsos rechazos); ningún caso existente cambia de veredicto. Escalan 8 de 12 paráfrasis; las 4 que no escalan (CA-02, CA-07, CA-08, CA-10) fallan por la regla de margen de coseno (KB-011 a más de 0.05 del top-1), igual con y sin veto: es un límite de la regla base, no del veto (n pequeño, mismas manos que escribieron los casos). Posible mejora no aplicada: tratar KB-011 como relevante si su score del reranker es alto (CA-02: 0.758), pendiente de validar con más datos.

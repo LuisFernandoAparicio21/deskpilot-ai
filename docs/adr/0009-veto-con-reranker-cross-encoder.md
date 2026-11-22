@@ -50,6 +50,13 @@ Medidas en el experimento (24 rechazos, 28 respuestas legítimas; falsos rechazo
   el modelo se descarga en el build; el tamaño de la imagen con el reranker está pendiente de medir y el run con
   `--network none` no se verificó. CI: la primera corrida tras tocar `retrieval.rerank` descarga 0.57 GB (cambia la
   clave de caché); no verificado en GitHub Actions.
+- **Escalamiento obligatorio (RN-03):** KB-011 se puntúa siempre que aparezca en los resultados (aunque quede fuera de
+  los 3 candidatos) y el veto solo lo descarta con ruido claro (score < `min_score` x `mandatory_veto_factor` 0.1);
+  el margen de coseno sigue siendo el criterio base. RN-03 prima sobre la precisión: ante duda, escalar.
+- **Cadena de suministro (límite):** el modelo se baja del Hugging Face Hub sin fijar la revisión a un hash, así que
+  una actualización del repositorio cambiaría los scores sin aviso. `retrieval.rerank.model` se valida contra una
+  allow-list (hoy solo `BAAI/bge-reranker-v2-m3-int8`) y falla al arrancar con un mensaje claro. Pendiente: fijar la
+  revisión (hash de commit) y verificar el checksum del `.onnx` tras la descarga.
 - Límite honesto: **HO-29** ("wifi de casa", score 0.052) se sigue respondiendo; el held-out de 40 casos ya no es
   ciego porque se usó para elegir el corte (39/40). La muestra es pequeña y la escribió el mismo autor.
 

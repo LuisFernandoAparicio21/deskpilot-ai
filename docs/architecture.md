@@ -59,7 +59,7 @@ flowchart LR
 
 ## 2. Flujo de una consulta RAG
 
-El umbral (`retrieval.similarity_threshold`, 0.33), el veto del reranker cross-encoder (`retrieval.rerank.min_score`, 0.01; [ADR-0009](adr/0009-veto-con-reranker-cross-encoder.md)), el margen de escalamiento (`retrieval.escalation_margin`, 0.05) y la redacción son los de `config.yaml` y `src/retrieval/answer_service.py`.
+El umbral (`retrieval.similarity_threshold`, 0.33), el veto del reranker cross-encoder (`retrieval.rerank.min_score`, 0.01; [ADR-0009](adr/0009-veto-con-reranker-cross-encoder.md)), el margen de escalamiento (`retrieval.escalation_margin`, 0.05; KB-011 se descarta solo si su score del reranker es < `min_score` x `mandatory_veto_factor` 0.1, ruido claro) y la redacción son los de `config.yaml` y `src/retrieval/answer_service.py`.
 
 ```mermaid
 sequenceDiagram
