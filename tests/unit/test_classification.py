@@ -50,16 +50,11 @@ RULE_CASES = [
     ("The VPN keeps disconnecting every few minutes", "Conectividad", "VPN", "P3"),
     ("Toda la sucursal sin internet desde hace una hora", "Conectividad", "Red de sucursal", "P1"),
     ("The whole branch is down, there is no internet", "Conectividad", "Red de sucursal", "P1"),
-    pytest.param(
+    (
         "The network is down at the branch, nobody can work",
         "Conectividad",
         "Red de sucursal",
         "P1",
-        marks=pytest.mark.xfail(
-            strict=True,
-            reason="BUG src/api/classification.py _P1: English 'network down at the branch' "
-            "is a branch-wide outage (RN-01 P1) but no P1 pattern matches, so it gets P4",
-        ),
     ),
     ("We lost internet in the whole branch", "Conectividad", "Red de sucursal", "P1"),
     ("Internet is not working for the entire branch", "Conectividad", "Red de sucursal", "P1"),
@@ -68,6 +63,20 @@ RULE_CASES = [
     ("The printer on floor 2 is jammed", "Hardware", "Impresoras", "P4"),
     ("Mi computadora muy lenta desde ayer", "Hardware", "Equipo lento", "P3"),
     ("My laptop is very slow in the mornings", "Hardware", "Equipo lento", "P3"),
+    pytest.param(
+        "Mi PC está muy lenta, solo me pasa a mí",
+        "Hardware",
+        "Equipo lento",
+        "P3",
+        marks=pytest.mark.xfail(
+            strict=True,
+            reason="BUG src/api/classification.py 'Equipo lento': Spanish 'PC esta muy lenta' "
+            "(with a verb between noun and adjective) is not matched, so it is General",
+        ),
+    ),
+    ("My PC is very slow today, only mine", "Hardware", "Equipo lento", "P3"),
+    ("Nadie puede trabajar, se cayó el sistema", "General", "Consulta general", "P1"),
+    ("Nobody can work, the application is not loading", "General", "Consulta general", "P1"),
     ("El escáner de cheques no responde", "Hardware", "Escaner de cheques", "P4"),
     ("Mi monitor está dañado", "Hardware", "Equipo danado", "P4"),
     ("No me llegan los correos de Outlook", "Comunicaciones", "Correo", "P4"),
