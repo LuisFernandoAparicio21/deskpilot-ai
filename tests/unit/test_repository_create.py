@@ -100,7 +100,9 @@ def test_insert_is_parameterized_and_user_text_is_never_in_the_sql() -> None:
     sql, params = _insert(conn)
     assert ticket_id == "TCK-123456"
     assert sql.startswith("INSERT INTO dbo.tickets_nuevos (ticket_id,")
-    assert sql.count("?") == len(params) == 13  # 18 columns; 5 are literals (NULLs and es_repetitivo = 0)
+    assert (
+        sql.count("?") == len(params) == 13
+    )  # 18 columns; 5 are literals (NULLs and es_repetitivo = 0)
     for text in (TICKET.sucursal, TICKET.descripcion, TICKET.area, "DROP", "DELETE"):
         assert text not in sql
     assert TICKET.sucursal in params
