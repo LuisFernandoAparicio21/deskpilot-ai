@@ -90,7 +90,9 @@ def test_connection_failure_is_also_wrapped(caplog: pytest.LogCaptureFixture) ->
     def boom() -> FakeConnection:
         raise OSError(LEAK)
 
-    repo = SqlTicketRepository([TicketSource(lambda: cast(Any, boom()), "dbo.tickets")], backend="fabric")
+    repo = SqlTicketRepository(
+        [TicketSource(lambda: cast(Any, boom()), "dbo.tickets")], backend="fabric"
+    )
     with pytest.raises(RepositoryUnavailableError):
         repo.area_metrics("area", "Caja")
     assert repo.ping() is False

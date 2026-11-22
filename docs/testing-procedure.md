@@ -26,9 +26,9 @@ python main.py eval --api-url http://localhost:8000   # contra la API; crea tick
 
 - **Marker `slow`**: usa el modelo real de fastembed; el CI no lo corre.
 - **Cobertura**: `python -m pytest --cov=src --cov-report=term-missing`; el umbral es 80% (`fail_under`).
-- **Lint y tipos**: `ruff check .`, `ruff format --check .`, `mypy src main.py`.
-- **CI** (`.github/workflows/ci.yml`, en cada push y PR, Python 3.13): ruff check, ruff format --check, mypy y
-  pytest con cobertura.
+- **Lint y tipos**: `ruff check .`, `ruff format --check .`, `mypy src main.py tests`.
+- **CI** (`.github/workflows/ci.yml`, en cada push y PR, Python 3.13): ruff check, ruff format --check, mypy (src, main.py, tests) y
+  pytest con cobertura. Dos jobs más: `eval-smoke` (generate-data, load-db, index y `main.py eval`; tolera exit 1 por EV-16, exige 30 casos y >= 27 aprobados; cachea el modelo fastembed) y `docker-build` (build sin push, cache buildx).
 
 ## Métricas de éxito (sección 12) con resultado real en modo local
 

@@ -85,6 +85,7 @@ def test_serve_starts_uvicorn_with_safe_options(
     settings = _patch_settings(monkeypatch, tmp_path, key=API_KEY)
     built: list[Settings] = []
     marker = object()
+
     def fake_create_app(s: Settings) -> object:
         built.append(s)
         return marker
