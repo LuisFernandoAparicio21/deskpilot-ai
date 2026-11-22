@@ -46,6 +46,21 @@ Orden por dependencias; un subagente a la vez.
 | T26 | revision-final [ALTO RIESGO] | (sin rama: solo reporte) | Revisión final de secretos/seguridad y revisión "como reclutador" | S16, S21 | security-verifier (solo lectura) | documentada | - | 2026-11-22 |
 | T27 | release-v0.1.0 | fix/t27-final-review-findings | Correcciones de T26, suite completa y tag `v0.1.0` | S12, S21 | según hallazgo (testing: qa-tester) | mergeada | #42 | 2026-11-22 |
 
+## Pulido posterior a v0.1.0 (pedido del usuario, 2026-11-22)
+
+Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-5..PL-8). Cada feature con el ciclo a–f.
+
+| # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
+|---|---|---|---|---|---|---|---|---|
+| PL-1 | user-flow | chore/user-flow-diagram | docs/user-flow.md: diagrama de decisión y de secuencia del MVP desde el usuario + ejemplo real ES/EN; versión compacta en README | S13, RF de búsqueda/ticket/escalamiento | docs-writer (qa-tester valida) | pendiente | - | - |
+| PL-2 | visual-style-research | chore/visual-style-research | Investigación del estilo visual del perfil y repos del usuario (docs/research/visual-style.md) | S13 | researcher | pendiente | - | - |
+| PL-3 | readme-visual-refresh | chore/readme-visual-refresh | Banner SVG, typing-svg, badges agrupados, resumen EN arriba, resultados en números, orden para reclutador | S13, S14 | docs-writer (qa-tester valida) | pendiente | - | - |
+| PL-4 | diagnostics-review | chore/diagnostics-review | Diagnóstico de 5 problemas de la revisión externa (docs/diagnostics/2026-11-22-review.md) | S12, S14 | diagnostician | pendiente | - | - |
+| PL-5 | github-release-v0.1.0 | chore/release-v0.1.0-notes | P1: GitHub Release v0.1.0 con notas generadas de los PRs | S15 | docs-writer | pendiente | - | - |
+| PL-6 | validated-vs-pending | chore/validated-vs-pending | P3: separar Validado de Pendiente de validar en tenant real en README y job-fit | S14 | docs-writer (qa-tester valida) | pendiente | - | - |
+| PL-7 | eval-exit-contract | fix/eval-exit-contract | P4: contrato explícito del exit code de eval en config.yaml y CI sin tolerar errores genéricos | S12, S17 | rag-engineer (qa-tester valida) | pendiente | - | - |
+| PL-8 | rejection-cases | feat/rejection-cases | P5: 6–8 casos nuevos de rechazo fuera de dominio y, si se justifica, mecanismo general de rechazo | S12, RN rechazo | qa-tester + rag-engineer | pendiente | - | - |
+
 ## Fase manual (usuario)
 Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T25.
 
