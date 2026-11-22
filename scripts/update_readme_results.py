@@ -187,9 +187,7 @@ def render_block(summary: dict[str, Any], copilot: tuple[int, int] | None) -> st
             f">= {m['threshold_pct']}% | {mark} |"
         )
     latency = summary["latency_ms"]
-    lines.append(
-        f"| Latency per case | p50 {latency['p50']} ms, p95 {latency['p95']} ms | - | - |"
-    )
+    lines.append(f"| Latency per case | p50 {latency['p50']} ms, p95 {latency['p95']} ms | - | - |")
     failed = sorted(k for k, v in summary.get("cases", {}).items() if v != "pasó")
     lines += ["", f"Failed cases: {', '.join(failed) if failed else 'none'}.", ""]
     if copilot is None:
