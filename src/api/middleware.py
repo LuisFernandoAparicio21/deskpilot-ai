@@ -54,8 +54,12 @@ class RequestContextMiddleware:
         status = 500
         response_started = False
 
+        rejected = False
+
         async def send_wrapper(message: Message) -> None:
             nonlocal status, response_started
+            if rejected:
+                return  # the 413 is already out; drop whatever the app answers afterwards
             if message["type"] == "http.response.start":
                 response_started = True
                 status = message["status"]
@@ -68,12 +72,23 @@ class RequestContextMiddleware:
         received = 0
 
         async def receive_wrapper() -> Message:
-            nonlocal received
+            nonlocal received, rejected
+            if rejected:
+                return {"type": "http.disconnect"}
             message = await receive()
             if message["type"] == "http.request":
                 received += len(message.get("body", b""))
                 if received > self._max_body_bytes:
-                    raise BodyTooLargeError
+                    # Raising here would not work: FastAPI catches any error raised while
+                    # it reads the body and turns it into a 400. Answer 413 right now and
+                    # tell the app the client is gone so it stops reading.
+                    if not response_started:
+                        response = error_response(
+                            413, "payload_too_large", "Request body too large."
+                        )
+                        await response(scope, receive, send_wrapper)
+                    rejected = True
+                    return {"type": "http.disconnect"}
             return message
 
         declared = Headers(scope=scope).get("content-length", "")
