@@ -171,14 +171,6 @@ def test_error_responses_are_defined(spec: Json, operation_id: str, codes: set[s
     assert op["responses"]["401"]["schema"] == {"$ref": "#/definitions/ErrorResponse"}
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "BUG (src/api/openapi_export.py + app.py): the body-size middleware answers 413 on the "
-        "POST tools but no 413 response is declared in the Swagger, so Copilot Studio does not "
-        "know it. Remove this xfail when the export declares 413 on POST operations."
-    ),
-)
 @pytest.mark.parametrize("operation_id", ["buscar_solucion", "crear_ticket"])
 def test_post_operations_declare_413(spec: Json, operation_id: str) -> None:
     (op,) = [o for _, _, o in _operations(spec) if o["operationId"] == operation_id]
