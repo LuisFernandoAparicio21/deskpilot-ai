@@ -202,7 +202,7 @@ def cmd_mcp(args: argparse.Namespace) -> int:
         settings = load_settings()
         transport: str = args.transport or settings.mcp.transport
         if transport == "http":
-            require_api_key(settings)
+            require_api_key(settings, "mcp")
     except ConfigError as exc:
         print(f"mcp: {exc}", file=sys.stderr)
         return EXIT_CONFIG_ERROR
