@@ -241,6 +241,28 @@ def test_rn03_by_retrieved_article_cites_it(retriever: Retriever, settings: Sett
     assert "Detén" not in answer.text
 
 
+def test_rn03_article_in_a_lower_evidence_position_still_escalates(
+    settings: Settings, embedder: SpyEmbedder
+) -> None:
+    # Both articles match; KB-002 ranks first, KB-011 second but above the threshold.
+    store = InMemoryVectorStore()
+    chunks = [c for c in _chunks() if c.metadata.article_id in {"KB-002", "KB-011"}]
+    store.upsert(chunks, embedder.embed_documents([c.text for c in chunks]))
+    retriever = Retriever(embedder, store, top_k=3, threshold=0.0)
+    query = "usuario bloqueado de Windows con la terminal congelada"
+    result = retriever.search(query)
+    ids = [a.article_id for a in result.evidence]
+    assert "KB-011" in ids and ids[0] != "KB-011"
+
+    llm = FakeLLM("1. Reinicia la terminal.")
+    answer = _service(retriever, settings, llm).answer(query)
+
+    assert answer.status == "mandatory_escalation"
+    assert [c.article_id for c in answer.citations] == ["KB-011"]
+    assert "Reinicia" not in answer.text
+    assert llm.calls == []
+
+
 # --- sensitive data (RF-10, RN-05, HU-05) --------------------------------------------
 
 

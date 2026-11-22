@@ -6,7 +6,7 @@ Order of decisions, each one final:
    (retrieval, LLM); logs never get the query text, only its length and the outcome.
 2. Detect the language (RF-01, HU-04) and retrieve articles (RF-12, RF-13).
 3. RN-03: fraud, suspected unauthorized access or cash-system failure (keywords, or the
-   top evidence article is KB-011) => ``mandatory_escalation`` with no steps.
+   any evidence article is KB-011) => ``mandatory_escalation`` with no steps.
 4. No article reaches the threshold => ``no_evidence`` with the fixed message (RF-05).
 5. Evidence => with ``NoLLM`` the extractive answer: the "Pasos" section of the top
    article plus "Fuente: <id> — <título>". With an LLM, ``answer_with_citation@v1`` over
@@ -147,11 +147,11 @@ class AnswerService:
     ) -> Answer:
         evidence = result.evidence
         top = evidence[0] if evidence else None
-        mandatory_article = top is not None and top.article_id in MANDATORY_ESCALATION_ARTICLES
-        reason = escalation_reason(query) or ("article" if mandatory_article else None)
+        mandatory = [a for a in evidence if a.article_id in MANDATORY_ESCALATION_ARTICLES]
+        reason = escalation_reason(query) or ("article" if mandatory else None)
         if reason is not None:
             logger.info("Mandatory escalation (RN-03)", extra={"reason": reason})
-            cited = [top] if top is not None and mandatory_article else []
+            cited = mandatory[:1]
             return self._fixed(
                 MANDATORY_ESCALATION, "mandatory_escalation", language, sensitive, cited
             )
