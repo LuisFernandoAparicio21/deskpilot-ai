@@ -320,3 +320,44 @@ def test_api_key_is_required_for_http(settings: Settings, monkeypatch: pytest.Mo
         pass
     with pytest.raises(EvalError, match="empty"), ev.open_backend(no_key, API_URL, ""):
         pass
+
+
+# --- warning that HTTP mode creates real tickets -------------------------------------------
+
+REAL_TICKETS_WARNING = "HTTP mode creates real tickets on the server"
+
+
+def _run_with_fake_backend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *extra: str) -> int:
+    _cases_file(tmp_path)
+    _patch_backend(
+        monkeypatch,
+        FakeBackend(lambda q: _search("no_evidence" if q == "chiste" else "answered", ["KB-004"])),
+    )
+    return main.main(_argv(tmp_path, *extra))
+
+
+def test_cli_warns_on_stderr_that_http_mode_creates_real_tickets(
+    settings: Settings,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = _run_with_fake_backend(tmp_path, monkeypatch, "--api-url", API_URL, "--api-key", API_KEY)
+    captured = capsys.readouterr()
+    assert code == 0
+    assert REAL_TICKETS_WARNING in captured.err
+    assert REAL_TICKETS_WARNING not in captured.out
+    assert API_KEY not in captured.out + captured.err
+
+
+def test_cli_local_mode_prints_no_real_tickets_warning(
+    settings: Settings,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = _run_with_fake_backend(tmp_path, monkeypatch)
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "real tickets" not in captured.out + captured.err
+    assert "warning" not in captured.err.lower()
