@@ -8,8 +8,11 @@ Order of decisions, each one final:
 1. Redact sensitive data (RF-10, RN-05). From here on only the redacted query is used
    (retrieval, LLM); logs never get the query text, only its length and the outcome.
 2. Detect the language (RF-01, HU-04) and retrieve articles (RF-12, RF-13).
-3. RN-03: fraud, suspected unauthorized access or cash-system failure (keywords, or the
-   any evidence article is KB-011) => ``mandatory_escalation`` with no steps.
+3. RN-03: fraud, suspected unauthorized access or cash-system failure (keywords, or a
+   mandatory-escalation article, KB-011, that is the top-1 or within
+   ``retrieval.escalation_margin`` of its score) => ``mandatory_escalation`` with no
+   steps. A mandatory article that is not that relevant is dropped from the evidence, so it
+   is never cited nor given to the LLM as context.
 4. No article reaches the threshold => ``no_evidence`` with the fixed message (RF-05).
 5. Evidence => with ``NoLLM`` the extractive answer: the "Pasos" section of the top
    article plus "Fuente: <id> — <título>". With an LLM, ``answer_with_citation@v1`` over
@@ -125,6 +128,7 @@ class AnswerService:
         self._retriever = retriever
         self._llm = llm
         self._timeout_s = settings.llm.timeout_s
+        self._margin = settings.retrieval.escalation_margin
 
     def answer(self, query: str, categoria: str | None = None) -> Answer:
         if not query.strip():
@@ -161,7 +165,18 @@ class AnswerService:
         evidence = result.evidence
         top = evidence[0] if evidence else None
         mandatory = [a for a in evidence if a.article_id in MANDATORY_ESCALATION_ARTICLES]
-        reason = escalation_reason(query) or ("article" if mandatory else None)
+        relevant = [a for a in mandatory if top is not None and self._is_relevant(a, top)]
+        if len(relevant) < len(mandatory):
+            # Never let a mandatory-escalation article that is not relevant reach the LLM
+            # context or a citation: it is removed from the result before anything else.
+            dropped = {a.article_id for a in mandatory if a not in relevant}
+            result = result.model_copy(
+                update={"articles": [a for a in result.articles if a.article_id not in dropped]}
+            )
+            evidence = result.evidence
+            top = evidence[0] if evidence else None
+        reason = escalation_reason(query) or ("article" if relevant else None)
+        mandatory = relevant
         if reason is not None:
             logger.info("Mandatory escalation (RN-03)", extra={"reason": reason})
             cited = mandatory[:1]
@@ -175,6 +190,10 @@ class AnswerService:
             if generated is not None:
                 return generated
         return self._extractive(language, result, top, sensitive)
+
+    def _is_relevant(self, article: ArticleHit, top: ArticleHit) -> bool:
+        """Top-1, or within ``escalation_margin`` of the top-1 score ("as relevant as it")."""
+        return article is top or article.score >= top.score - self._margin
 
     def _fixed(
         self,
