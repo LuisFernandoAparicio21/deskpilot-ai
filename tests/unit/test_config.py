@@ -266,6 +266,7 @@ def test_fabric_mode_with_variables_builds_credentials(tmp_path: Path) -> None:
     fabric = settings.secrets.fabric
     assert fabric is not None
     assert fabric.sql_endpoint == FABRIC_VARS["FABRIC_SQL_ENDPOINT"]
+    assert fabric.client_secret is not None
     assert fabric.client_secret.get_secret_value() == FABRIC_VARS["AZURE_CLIENT_SECRET"]
     assert FABRIC_VARS["AZURE_CLIENT_SECRET"] not in repr(settings)
     assert fabric.uses_service_principal

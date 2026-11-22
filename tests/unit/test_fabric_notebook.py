@@ -8,6 +8,7 @@ compiled with ``ast.parse``. Running it in Spark is verified in Fabric (T29).
 from __future__ import annotations
 
 import ast
+import importlib
 import json
 import re
 from pathlib import Path
@@ -73,7 +74,7 @@ def _check_structure(nb: dict[str, Any]) -> None:
 def test_notebook_is_valid_nbformat() -> None:
     nb = _load()
     try:
-        import nbformat
+        nbformat = importlib.import_module("nbformat")
     except ImportError:
         _check_structure(nb)
     else:  # pragma: no cover - nbformat is optional and not in requirements

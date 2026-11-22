@@ -243,7 +243,7 @@ def test_build_llm_picks_the_configured_provider(
     client = build_llm(_settings(tmp_path, provider))
     assert isinstance(client, expected)
     assert client.provider == provider
-    assert client.model == "a-model"
+    assert getattr(client, "model", None) == "a-model"
 
 
 def test_build_llm_defaults_to_no_llm(tmp_path: Path) -> None:

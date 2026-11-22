@@ -54,7 +54,7 @@ def test_missing_and_wrong_key_give_the_same_body(client: TestClient) -> None:
 
 
 def test_non_ascii_key_is_401_not_500(client: TestClient) -> None:
-    response = client.get("/tickets/TCK-000001", headers={"X-API-Key": "ñandú-ключ".encode()})
+    response = client.get("/tickets/TCK-000001", headers={b"X-API-Key": "ñandú-ключ".encode()})
     assert response.status_code == 401
 
 

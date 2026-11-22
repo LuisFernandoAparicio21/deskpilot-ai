@@ -108,7 +108,7 @@ def test_wrong_x_api_key_wins_over_a_valid_bearer(guarded: tuple[TestClient, lis
 
 def test_non_ascii_key_is_401_not_500(guarded: tuple[TestClient, list[str]]) -> None:
     client, _ = guarded
-    response = client.post("/mcp", json={}, headers={"X-API-Key": "ñandú-ключ".encode()})
+    response = client.post("/mcp", json={}, headers={b"X-API-Key": "ñandú-ключ".encode()})
     assert response.status_code == 401
 
 

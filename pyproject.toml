@@ -21,7 +21,8 @@ markers = ["slow: downloads the real fastembed model; skipped unless run with -m
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src", "main.py"]
+files = ["src", "main.py", "tests"]
+explicit_package_bases = true
 strict = true
 warn_unreachable = true
 pretty = true

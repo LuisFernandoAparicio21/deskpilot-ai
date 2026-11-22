@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -89,8 +90,8 @@ def test_health_recovers_after_the_cache_expires(
     env.repo.ping_ok = False
     assert client.get("/health").json()["status"] == "degraded"
     env.repo.ping_ok = True
-    now = app_module.time.monotonic()
-    monkeypatch.setattr(app_module.time, "monotonic", lambda: now + app_module.HEALTH_CACHE_S + 1)
+    now = time.monotonic()
+    monkeypatch.setattr(time, "monotonic", lambda: now + app_module.HEALTH_CACHE_S + 1)
     assert client.get("/health").json()["status"] == "ok"
 
 

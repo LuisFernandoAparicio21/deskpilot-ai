@@ -40,6 +40,7 @@ def _lines(path: Path) -> list[dict[str, Any]]:
 
 def test_every_line_is_json_with_the_required_fields(tmp_path: Path) -> None:
     log_file = configure_logging("INFO", tmp_path, console=False)
+    assert log_file is not None
     assert log_file == tmp_path / LOG_FILE_NAME
     log = logging.getLogger("deskpilot.test")
     log.info("hola %s", "mundo")
@@ -64,6 +65,7 @@ def test_console_output_is_json(capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_request_id_is_present_and_scoped(tmp_path: Path) -> None:
     log_file = configure_logging("INFO", tmp_path, console=False)
+    assert log_file is not None
     log = logging.getLogger("deskpilot.req")
     log.info("fuera")
     with request_context("req-123") as request_id:
@@ -97,6 +99,7 @@ def test_request_id_is_isolated_between_concurrent_tasks() -> None:
 
 def test_level_filters_records(tmp_path: Path) -> None:
     log_file = configure_logging("WARNING", tmp_path, console=False)
+    assert log_file is not None
     log = logging.getLogger("deskpilot.level")
     log.info("no aparece")
     log.error("sí aparece")
@@ -151,6 +154,7 @@ def test_api_key_never_appears_in_logs(tmp_path: Path, capsys: pytest.CaptureFix
 
 def test_sensitive_data_is_redacted_in_message_and_extra(tmp_path: Path) -> None:
     log_file = configure_logging("INFO", tmp_path, console=False)
+    assert log_file is not None
     log = logging.getLogger("deskpilot.pii")
     log.info("usuario dice: mi contraseña es Altiplano#2024", extra={"nip": "NIP 1234"})
     log.info("tarjeta %s", "4111 1111 1111 1111")
