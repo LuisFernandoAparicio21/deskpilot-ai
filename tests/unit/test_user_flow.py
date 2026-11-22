@@ -1,4 +1,4 @@
-"""User-flow docs audit: docs/user-flow.md and README "Cómo funciona" vs the real code.
+"""User-flow docs audit: docs/user-flow.md and README "How it works" vs the real code.
 
 Docs are never edited here: a mismatch fails with "doc vs real". Mermaid rendering itself
 (mmdc) is not run; only structural checks by regex.
@@ -72,15 +72,15 @@ ROW_KINDS = {
 
 def _readme_section() -> str:
     text = README.read_text(encoding="utf-8")
-    match = re.search(r"^##\s+(?:\W+\s+)?Cómo funciona\s*$(.*?)(?=^## )", text, re.S | re.M)
-    assert match, "README has no 'Cómo funciona' section"
+    match = re.search(r"^##\s+(?:\W+\s+)?How it works\s*$(.*?)(?=^## )", text, re.S | re.M)
+    assert match, "README has no 'How it works' section"
     return match.group(1)
 
 
 def _sources() -> dict[str, str]:
     return {
         "docs/user-flow.md": FLOW.read_text(encoding="utf-8"),
-        "README.md#Cómo funciona": _readme_section(),
+        "README.md#How it works": _readme_section(),
     }
 
 
@@ -125,26 +125,32 @@ def _config() -> dict[str, Any]:
 # (1) Mermaid structure
 
 
-@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#Cómo funciona"])
+@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#How it works"])
 def test_mermaid_blocks_open_and_close(name: str) -> None:
     text = _sources()[name]
     assert text.count(FENCE) % 2 == 0, f"{name}: unbalanced code fences"
     blocks = _mermaid(text)
     assert blocks, f"{name}: no mermaid block"
     for body in blocks:
-        assert body.startswith(("flowchart TD", "sequenceDiagram")), body[:30]
+        # README v2 adds a left-to-right architecture overview next to the decision flow.
+        allowed = ("flowchart TD", "sequenceDiagram")
+        if name.startswith("README"):
+            allowed += ("flowchart LR",)
+        assert body.startswith(allowed), body[:30]
 
 
 def test_expected_diagram_kinds() -> None:
     kinds = [b.split("\n")[0] for b in _mermaid(FLOW.read_text(encoding="utf-8"))]
     assert kinds == ["flowchart TD", "sequenceDiagram"]
-    assert [b.split("\n")[0] for b in _mermaid(_readme_section())] == ["flowchart TD"]
+    readme_kinds = [b.split("\n")[0] for b in _mermaid(_readme_section())]
+    assert readme_kinds == ["flowchart LR", "flowchart TD"]  # architecture, then decision flow
 
 
-NODE_LABEL_RE = re.compile(r"(\[\[|\(\[|\[|\{|\()([^\]\)\}]*?)(\]\]|\]\)|\]|\}|\))")
+# Includes the cylinder node `[( ... )]` so its own delimiters are not read as label text.
+NODE_LABEL_RE = re.compile(r"(\[\(|\[\[|\(\[|\[|\{|\()([^\]\)\}]*?)(\)\]|\]\]|\]\)|\]|\}|\))")
 
 
-@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#Cómo funciona"])
+@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#How it works"])
 def test_flowchart_labels_have_no_breaking_characters(name: str) -> None:
     for body in _mermaid(_sources()[name]):
         if not body.startswith("flowchart"):
@@ -188,9 +194,10 @@ def test_openapi_operation_ids_equal_tool_names() -> None:
     assert ops == set(TOOL_NAMES)
 
 
-@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#Cómo funciona"])
+@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#How it works"])
 def test_flowchart_cites_exactly_the_four_tools(name: str) -> None:
-    flow = next(b for b in _mermaid(_sources()[name]) if b.startswith("flow"))
+    # The decision flow (top-down); the README's left-to-right overview cites no tools.
+    flow = next(b for b in _mermaid(_sources()[name]) if b.startswith("flowchart TD"))
     cited = set(TOOL_RE.findall(flow))
     assert cited == set(TOOL_NAMES), f"doc {sorted(cited)} vs real {sorted(TOOL_NAMES)}"
 
@@ -211,7 +218,7 @@ def test_tool_column_only_names_real_tools() -> None:
 # (3) RF-xx and EV-xx
 
 
-@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#Cómo funciona"])
+@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#How it works"])
 def test_cited_ids_exist(name: str) -> None:
     text = _sources()[name]
     reqs = _req_text()
@@ -352,7 +359,7 @@ SECRET_RES = [
 ]
 
 
-@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#Cómo funciona"])
+@pytest.mark.parametrize("name", ["docs/user-flow.md", "README.md#How it works"])
 def test_no_secrets(name: str) -> None:
     text = _sources()[name]
     for pattern in SECRET_RES:
@@ -365,7 +372,7 @@ def test_no_secrets(name: str) -> None:
 def test_relative_links_resolve() -> None:
     for name, base in (
         ("docs/user-flow.md", FLOW.parent),
-        ("README.md#Cómo funciona", README.parent),
+        ("README.md#How it works", README.parent),
     ):
         text = re.sub(BLOCK_RE, "", _sources()[name])
         links = [t for t in LINK_RE.findall(text) if not t.startswith(("http", "#", "mailto"))]
