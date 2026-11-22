@@ -34,3 +34,11 @@ Verificado en la documentación oficial (consulta 2026-11-22): ubicación `.clau
 2. `/feature-loop inexistente-xyz`: debe detenerse y pedir aclaración sin crear ramas.
 3. `/feature-loop PL-12` en una rama de prueba y pídele solo el paso a; revisa que delegue a un subagente y emita la línea de avance. Descarta la rama después.
 4. Opcional: `/skill-doctor` para ver el costo de contexto.
+
+## Prueba en seco (2026-11-22)
+- La sesión de Claude Code ya abierta NO detecta una carpeta `.claude/skills/` nueva (`Unknown skill: feature-loop`); una sesión nueva sí la carga (Claude Code 2.1.285).
+- Por ser `disable-model-invocation: true`, la skill no aparece en la lista que ve el modelo; se invoca escribiendo `/feature-loop <feature>` en el prompt de Claude Code.
+- Prueba real con una sesión nueva (`claude -p "/feature-loop PL-999 feature-that-does-not-exist"`, solo herramientas de lectura): leyó `docs/roadmap.md`, aplicó la regla de entrada (la feature no existe) y se detuvo pidiendo aclaración, sin crear rama, issue ni subagentes.
+- Ojo en Git Bash: `/feature-loop` se convierte en una ruta de Windows; escribe el comando desde el prompt de Claude Code, no desde un shell.
+- Las delegaciones a subagentes (pasos a–f completos) las ejercita el uso real del ciclo; la delegación desde el cuerpo de una skill sigue marcada como no confirmada en la documentación oficial, pero el propio ciclo del proyecto ya funciona delegando con la herramienta Agent.
+
