@@ -249,8 +249,8 @@ Criterios de aceptación:
 **Agente, pruebas y documentación (por PR)**
 - T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit: merge del PR #30
 - T21 [CÓDIGO] 30 casos de evaluación + `main.py eval` + resultados + test e2e + docs/testing-procedure.md — subagente: qa-tester — cubre S12 — commit: merge del PR #32
-- T22 [CÓDIGO] Cobertura ≥80%, ruff/mypy limpios, huecos de tests, CI verde — subagente: qa-tester — cubre S12, S17 — commit: rama chore/t22-coverage-ci (pendiente de PR)
-- T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit:
+- T22 [CÓDIGO] Cobertura ≥80%, ruff/mypy limpios, huecos de tests, CI verde — subagente: qa-tester — cubre S12, S17 — commit: merge del PR #34
+- T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit: rama chore/t23-business-case-adrs (pendiente de PR)
 - T24 [CÓDIGO] README completo + docs/architecture.md + docs/job-fit.md + docs/learning-log.md + CHANGELOG — subagente: docs-writer — cubre S13, S14 — commit:
 - T25 [CÓDIGO] Fase B: docs/MANUAL_STEPS.md + scripts/check_fabric.py, check_public_url.py, update_readme_results.py — subagente: docs-writer — cubre S18 — commit:
 - T26 [CÓDIGO] [ALTO RIESGO] Revisión final de secretos + revisión "como reclutador" — subagente: security-verifier — cubre S16, S21 — commit: (solo reporte)
@@ -1026,3 +1026,8 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 ### L24 — T22 cobertura y CI (qa-tester + docs-writer) · documentada
 - mypy sobre `src`, `main.py` y `tests` (`explicit_package_bases`); dos tests de integración renombrados (`test_api_create_ticket_flow.py`, `test_mcp_server_integration.py`); ResourceWarning de sqlite corregido; CI con jobs `quality`, `eval-smoke` (caché del modelo, acepta exit 1 por EV-16 y exige 30 casos con >=27 aprobados) y `docker-build` (buildx con caché gha).
 - **Resultados reales (local)**: 1479 passed, 2 skipped, 33 deselected; cobertura 98.24%; ruff y mypy limpios. Los jobs nuevos de CI no se han ejecutado: ver resultado del PR. Limitación: ResourceWarning de anyio del cliente MCP. Detalle en `docs/features/coverage-ci.md`.
+
+### L25 — T23 caso de negocio y ADRs (docs-writer) · documentada
+- `docs/business-case.md` con cifras reales de las 10 consultas SQL (copia temporal de `data/deskpilot.db`, que no se modificó): repetitivo 39.92% (1,996), automatizable RN-06 51.24% (2,562; 88.53% dentro de las 5 repetitivas), quincena 1.90x, SLA 79.50% local contra 60.57% foráneo (brecha 18.93 pp), inglés 9.62%, backlog 16. Horas ahorradas al mes: 35.6 / 53.4 / 71.2 con 10 / 15 / 20 min por ticket, marcados SUPUESTO ILUSTRATIVO (no salen de los datos).
+- Métricas de `main.py eval` leídas de `tests/eval/results.summary.json`: 29/30, top-3 14/14, rechazo 3/4 (EV-16), clasificación 5/5, seguridad 3/3, p50 13.8 ms y p95 31.5 ms (difiere del L22 por ser otra corrida).
+- ADR-0001 a ADR-0008 en `docs/adr/` con README e índice. `ruff format` no procesa Markdown (no hay cambios que aplicar). Pendiente: la validación de las consultas en Fabric (T29) y las métricas en Copilot Studio (T33/T36).

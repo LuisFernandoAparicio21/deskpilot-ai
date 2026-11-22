@@ -25,6 +25,8 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Diseño del agente de Copilot Studio (T20): `integrations/copilot_studio/` con instrucciones, 8 temas ES/EN, `tools.md`, `escalation.md` y 18 conversaciones de prueba; pruebas de estructura y consistencia (`tests/unit/test_copilot_studio.py`). Ver `docs/features/copilot-studio-agent.md`.
 - Evaluación end-to-end (T21): `python main.py eval` corre los 30 casos de `tests/eval/cases.csv` en modo local o HTTP (`--api-url`, con aviso de tickets reales), calcula las métricas de la sección 12 y escribe `results.csv` y `results.summary.json`; códigos de salida 0/1/2. Pruebas unitarias, de integración y e2e (incluye p95). Resultado real: 29/30 aprobados, EV-16 como limitación documentada. Ver `docs/features/eval-e2e.md` y `docs/testing-procedure.md`.
 - Cobertura y CI (T22): mypy sobre `tests`, CI con jobs `quality`, `eval-smoke` (caché del modelo fastembed, exige 30 casos y >=27 aprobados) y `docker-build` (buildx con caché). Cobertura 98.24%. Ver `docs/features/coverage-ci.md`.
+- Caso de negocio (T23): `docs/business-case.md` con cifras de las 10 consultas SQL sobre los datos sintéticos (39.92% repetitivo, 51.24% automatizable, factor de quincena 1.90, SLA 79.50% local contra 60.57% foráneo), supuestos marcados como ilustrativos, trazabilidad cifra-consulta-valor y resultado real de `eval` (29/30; rechazo 3/4 por EV-16).
+- ADR-0001 a ADR-0008 en `docs/adr/` con su índice: RAG extractivo, Chroma versionado, fastembed, SQL portable y Fabric, API REST y MCP, seguridad, Swagger 2.0 y Docker (T23).
 
 ### Changed
 
