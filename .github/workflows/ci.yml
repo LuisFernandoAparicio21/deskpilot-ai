@@ -80,29 +80,37 @@ jobs:
           python main.py load-db
           python main.py index
 
-      # `main.py eval` exits 0 (thresholds met), 1 (thresholds not met) or 2 (cases file or
-      # backend unusable). Exit 1 is expected: EV-16 is a documented rejection limitation
-      # (rechazo 3/4), so the step tolerates 1 and fails on any other code. It then reads
-      # results.summary.json and requires all 30 cases run and at least 27 passed.
+      # `main.py eval` exit-code contract (docs/features/eval-e2e.md): 0 = every target met;
+      # 3 = global minimum and security hold, but a target is unmet or a documented known
+      # failure (config.yaml eval.known_failures) failed; 1 = regression (minimum, security or
+      # a new failure); 2 = configuration/CSV/DB/index/API error. Only 0 and 3 pass the job.
+      # Exit 3 is never hidden: the unmet criteria are printed as a ::warning:: annotation.
       - name: Run the 30 evaluation cases
         run: |
           set +e
           python main.py eval
           code=$?
           set -e
-          if [ "$code" -ne 0 ] && [ "$code" -ne 1 ]; then
-            echo "::error::main.py eval exited with $code (expected 0 or 1)"
+          if [ "$code" -ne 0 ] && [ "$code" -ne 3 ]; then
+            echo "::error::main.py eval exited with $code (only 0 or 3 are accepted)"
             exit "$code"
           fi
           python - <<'PY'
           import json
-          import sys
 
-          summary = json.load(open("tests/eval/results.summary.json", encoding="utf-8"))
-          total, passed = summary["total"], summary["passed"]
-          print(f"eval: {passed}/{total} passed")
-          if total != 30 or passed < 27:
-              sys.exit(f"expected 30 cases and at least 27 passed, got {passed}/{total}")
+          s = json.load(open("tests/eval/results.summary.json", encoding="utf-8"))
+          unmet = [
+              f"{k} {c['actual']}% < {c['target']}%"
+              for k, c in s["criteria"].items()
+              if not c["met"]
+          ]
+          if unmet or s["known_failures_hit"] or s["new_failures"]:
+              print(
+                  f"::warning title=eval: {s['exit_reason']}::unmet criteria: "
+                  f"{'; '.join(unmet) or 'none'}. known failures: "
+                  f"{', '.join(s['known_failures_hit']) or 'none'}. new failures: "
+                  f"{', '.join(s['new_failures']) or 'none'}."
+              )
           PY
 
       - name: Upload the evaluation results
