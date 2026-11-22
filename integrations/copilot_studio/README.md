@@ -24,3 +24,5 @@ Instrucciones, temas con frases de activación ES/EN, herramientas, escalamiento
 - [tools.md](tools.md): las 4 herramientas, con los mismos nombres que `operationId` de `openapi.json` y del MCP.
 - [escalation.md](escalation.md): mensajes ES/EN y SLA por prioridad (P1 4 h, P2 8 h, P3 24 h, P4 72 h).
 - [test-conversations.md](test-conversations.md): 18 conversaciones de prueba (CT-01 a CT-18) para T32.
+
+> ⚠ verificar en pantalla: que español e inglés figuren como idiomas soportados en Copilot Studio (ver [docs/research/copilot-studio-agent-limits.md](../../docs/research/copilot-studio-agent-limits.md)).
