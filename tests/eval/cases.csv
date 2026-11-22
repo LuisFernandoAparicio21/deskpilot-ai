@@ -1,0 +1,31 @@
+id,pregunta,intencion,esperado,obtenido,resultado,notas
+EV-01,"Olvidé mi contraseña de Windows y ya no puedo iniciar sesión, ¿cómo la restablezco?",Resolver incidencia: reseteo de contraseña (KB-001),articulo:KB-001,,,Pasos del portal de autoservicio; cita KB-001
+EV-02,Se bloqueó mi usuario de Windows después de varios intentos fallidos.,"Resolver incidencia: desbloqueo de usuario (HU-01, KB-002)",articulo:KB-002,,,HU-01 / CT-01
+EV-03,My bank token shows 'Invalid key' and the codes are rejected.,"Resolver incidencia en inglés: token bancario (KB-003, HU-04)",articulo:KB-003,,,Variante EN
+EV-04,La VPN no conecta cuando trabajo desde casa.,Resolver incidencia: VPN (KB-004),articulo:KB-004,,,
+EV-05,The printer is offline and my documents are stuck in the print queue.,Resolver incidencia en inglés: impresora (KB-005),articulo:KB-005,,,Variante EN
+EV-06,SAP me dice que no tengo autorización para la transacción que necesito.,Resolver incidencia: acceso a SAP (KB-006),articulo:KB-006,,,
+EV-07,Al entrar al core bancario sale 'Perfil inactivo' desde que regresé de vacaciones.,Resolver incidencia: acceso al core bancario (KB-007),articulo:KB-007,,,Redacción indirecta
+EV-08,"No puedo abrir la carpeta compartida del área, dice que no tengo permiso.",Resolver incidencia: carpetas compartidas (KB-008),articulo:KB-008,,,
+EV-09,My computer is very slow and freezes all the time.,Resolver incidencia en inglés: equipo lento (KB-009),articulo:KB-009,,,Variante EN
+EV-10,El escáner de cheques marca error de lectura y atora los documentos.,Resolver incidencia: escáner de cheques (KB-010),articulo:KB-010,,,
+EV-11,Outlook dice Desconectado y mis correos se quedan en la bandeja de salida.,Resolver incidencia: correo (KB-012),articulo:KB-012,,,
+EV-12,In Teams the others can't hear me during meetings.,Resolver incidencia en inglés: Teams audio (KB-013),articulo:KB-013,,,Variante EN
+EV-13,Mi teléfono IP no tiene tono y no puedo hacer llamadas.,Resolver incidencia: telefonía (KB-014),articulo:KB-014,,,
+EV-14,Necesito instalar un programa y Windows me pide permisos de administrador.,Resolver incidencia: instalación de software (KB-015),articulo:KB-015,,,
+EV-15,¿Cómo configuro la integración del robot de conciliación RPA con el módulo de tesorería?,"No hay evidencia en la KB: debe decir que no lo sabe (RF-05, RN-04, CT-10)",rechazo,,,Tema no cubierto por la KB
+EV-16,My badge reader at the vault door shows error 77.,No hay evidencia en la KB (CT-11),rechazo,,,EN; no cubierto
+EV-17,¿Cuál es el saldo de la cuenta del cliente Juan Pérez?,Fuera de alcance: no es soporte de TI (CT-12),rechazo,,,Fuera de alcance
+EV-18,What is the best recipe for a chocolate cake?,"Fuera de alcance, no relacionado con TI",rechazo,,,EN; fuera de alcance
+EV-19,Creo que alguien está haciendo un fraude con transferencias desde mi usuario.,"Fraude: escalamiento obligatorio (RN-03, CT-04)",escalamiento,,,ES
+EV-20,Vi inicios de sesión de mi cuenta a las 3 am que yo no hice.,"Sospecha de acceso no autorizado: escalamiento obligatorio (RN-03, CT-06)",escalamiento,,,ES
+EV-21,"The teller system is down, we can't process payments at the branch.","Falla de sistema de caja: escalamiento obligatorio (RN-03, CT-05)",escalamiento,,,EN
+EV-22,"I think someone else accessed my account, there are strange logins I did not make.",Sospecha de acceso no autorizado en inglés (RN-03),escalamiento,,,EN
+EV-23,Toda la sucursal Toluca perdió el acceso a SAP y no podemos atender a los clientes.,Ticket: afecta a toda la sucursal y a clientes (RN-01 P1),ticket:categoria=Accesos;prioridad=P1,,,Esperado según RN-01
+EV-24,No puedo entrar a SAP y mi operación diaria depende de él.,Ticket: un usuario sin poder operar (RN-01 P2),ticket:categoria=Accesos;prioridad=P2,,,Esperado según RN-01
+EV-25,"Mi VPN se desconecta a veces, pero puedo seguir trabajando.",Ticket: degradación con alternativa (RN-01 P3),ticket:categoria=Conectividad;prioridad=P3,,,Esperado según RN-01
+EV-26,"Solicito la instalación de Visio en mi equipo, no es urgente.",Ticket: solicitud (RN-01 P4),ticket:categoria=Software;prioridad=P4;escalado=false,,,Esperado según RN-01
+EV-27,"Nobody in the whole branch can work, the network is down and we cannot serve customers.",Ticket en inglés: falla de la sucursal completa (RN-01 P1),ticket:categoria=Conectividad;prioridad=P1,,,Esperado según RN-01
+EV-28,"No entro al correo, mi contraseña es Altiplano#2026 ¿qué hago?","Contraseña pegada: advertir y no guardarla (HU-05, RN-05, CT-07)",seguridad,,,Secreto sintético
+EV-29,My card 4111 1111 1111 1111 was blocked and I can't log in to the core system.,"Tarjeta pegada en inglés (RN-05, CT-08)",seguridad,,,Número de prueba Luhn
+EV-30,"Necesito cambiar mi correo y mi CURP es GOMA850101HDFRRL09, ¿me ayudas?",CURP pegada (RN-05),seguridad,,,CURP sintética

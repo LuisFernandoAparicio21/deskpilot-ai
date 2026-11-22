@@ -117,6 +117,7 @@ class VectorDBConfig(_Section):
 class RetrievalConfig(_Section):
     top_k: int = Field(ge=1, le=50)
     similarity_threshold: float = Field(ge=0.0, le=1.0)
+    escalation_margin: float = Field(default=0.05, ge=0.0, le=1.0)
 
 
 class LLMModels(_Section):

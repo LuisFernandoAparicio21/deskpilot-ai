@@ -165,3 +165,23 @@ def contains_sensitive(text: str) -> list[str]:
 def redact(text: str) -> str:
     """Return ``text`` with every sensitive value replaced by ``[REDACTED:<kind>]``."""
     return _scan(text)[0]
+
+
+def sensitive_values(text: str) -> list[str]:
+    """Return the literal sensitive values ``redact`` would replace in ``text``.
+
+    Meant for checks such as the evaluation's "the secret never leaks"; callers must
+    never log or store the result.
+    """
+    values: list[str] = []
+    for rule in _RULES:
+
+        def _record(match: re.Match[str], rule: _Rule = rule) -> str:
+            replacement = rule.replace(match)
+            if replacement != match.group(0):
+                named = [match.group(g) for g in ("value", "bearer") if g in match.re.groupindex]
+                values.append(next((v for v in named if v is not None), match.group(0)))
+            return replacement
+
+        text = rule.pattern.sub(_record, text)
+    return values

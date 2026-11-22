@@ -48,6 +48,13 @@ retrieval:
   # Mínimo dentro del dominio 0.428, máximo fuera 0.236 => umbral en el punto medio
   # (0.33, margen ~0.09 a cada lado). Recalibrar si cambia el modelo de embeddings o la KB.
   similarity_threshold: 0.33  # debajo de este valor se responde "no lo sé" (RF-13)
+  # RN-03 por artículo (KB-011 caja): escala solo si el artículo obligatorio es el top-1 o su
+  # score está a menos de este margen del top-1 ("igual de relevante"). Si no, se descarta de la
+  # evidencia (nunca llega al LLM ni se cita). Calibrado con la KB real: los artículos de caja
+  # que aparecen como ruido quedan a 0.29-0.33 del top-1 (EV-05/07/09); los vecinos legítimos
+  # del top-1 en consultas de dominio suelen estar a >0.14. 0.05 ~ la mitad del margen de
+  # ruido del umbral (0.09): empates reales sí escalan, vecinos lejanos no.
+  escalation_margin: 0.05
 
 # --- LLM ---
 llm:
