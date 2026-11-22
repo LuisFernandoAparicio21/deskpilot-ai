@@ -41,7 +41,7 @@ jobs:
         run: ruff format --check .
 
       - name: Mypy
-        run: mypy src main.py tests
+        run: mypy
 
       - name: Pytest with coverage
         run: pytest --cov=src --cov-report=term-missing

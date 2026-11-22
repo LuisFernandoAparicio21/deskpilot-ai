@@ -19,7 +19,7 @@
 ```text
 ruff check .
 ruff format --check .
-mypy src main.py
+mypy
 pytest --cov=src --cov-report=term-missing
 ```
 

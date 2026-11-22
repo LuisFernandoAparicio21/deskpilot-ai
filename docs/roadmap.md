@@ -41,8 +41,8 @@ Orden por dependencias; un subagente a la vez.
 | T21 | eval-e2e | feat/t21-eval-e2e | 30 casos de evaluación, comando `eval`, resultados, test e2e (p95), testing-procedure.md | S12, RNF-01 | qa-tester | mergeada | #32 | 2026-11-22 |
 | T22 | coverage-ci | chore/t22-coverage-ci | Cobertura >=80%, ruff/mypy limpios, huecos de tests, CI verde | S12, S17, RNF-08/09 | qa-tester | mergeada | #34 | 2026-11-22 |
 | T23 | business-case-adrs | chore/t23-business-case-adrs | business-case.md con cifras del SQL + ADRs en docs/adr | S13 | docs-writer | mergeada | #36 | 2026-11-22 |
-| T24 | docs-readme | chore/t24-docs-readme | README completo, architecture.md, job-fit.md, learning-log.md, CHANGELOG | S13, S14, RNF-13 | docs-writer | documentada | - | - |
-| T25 | manual-steps-scripts (Fase B) | chore/t25-manual-steps | MANUAL_STEPS.md + scripts check_fabric.py, check_public_url.py, update_readme_results.py | S18 | docs-writer | pendiente | - | - |
+| T24 | docs-readme | chore/t24-docs-readme | README completo, architecture.md, job-fit.md, learning-log.md, CHANGELOG | S13, S14, RNF-13 | docs-writer | mergeada | #38 | 2026-11-22 |
+| T25 | manual-steps-scripts (Fase B) | chore/t25-manual-steps | MANUAL_STEPS.md + scripts check_fabric.py, check_public_url.py, update_readme_results.py | S18 | docs-writer | documentada | - | - |
 | T26 | revision-final [ALTO RIESGO] | (sin rama: solo reporte) | Revisión final de secretos/seguridad y revisión "como reclutador" | S16, S21 | security-verifier (solo lectura) | pendiente | - | - |
 | T27 | release-v0.1.0 | fix/t27-correcciones-t26 | Correcciones de T26, suite completa y tag `v0.1.0` | S12, S21 | según hallazgo (testing: qa-tester) | pendiente | - | - |
 

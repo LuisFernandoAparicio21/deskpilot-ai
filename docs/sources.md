@@ -52,6 +52,8 @@ Lo que agregó el usuario (L2) como estándar de producción, únicas adiciones 
 | --- | --- | --- |
 | Microsoft Fabric trial capacity (Microsoft Learn) | https://learn.microsoft.com/fabric/get-started/fabric-trial | Prueba gratuita de 60 días de Fabric. Verificada: responde, pero la URL canónica de la página es https://learn.microsoft.com/en-us/fabric/fundamentals/fabric-trial (redirige). |
 | Sign up for a Copilot Studio trial (Microsoft Learn) | https://learn.microsoft.com/microsoft-copilot-studio/sign-up-individual | Prueba de Copilot Studio y sus limitaciones (no permite publicar; requiere cuenta de trabajo o escuela). Verificada: redirige a "Get access to Copilot Studio", URL canónica https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-licensing-subscriptions. |
+| Extend your agent with tools from a REST API (preview) (Microsoft Learn) | https://learn.microsoft.com/en-us/microsoft-copilot-studio/agent-extend-action-rest-api | Pasos de tool REST API: OpenAPI JSON v2, auth API key (label, name, location header/query). Verificada 2026-11-22: responde. |
+| Quickstart: Create and deploy an agent with the standard harness (Microsoft Learn) | https://learn.microsoft.com/en-us/microsoft-copilot-studio/fundamentals-get-started | Crear agente, knowledge por URL, panel de prueba y publicar a demo website. Verificada 2026-11-22: responde. |
 
 ## MCP
 
@@ -180,3 +182,28 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | Quotas and limits - Microsoft Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-quotas | 200 trigger phrases por tema; 1,000 temas (250 en Dataverse for Teams) y 100 skills por agente. No publica máximo de caracteres de instrucciones ni de nombres/descripciones (⚠ verificar en pantalla). Ver `docs/research/copilot-studio-agent-limits.md`. |
 | Use system topics - Microsoft Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/authoring-system-topics | Tema de sistema Escalate: se dispara con "talk to agent" o con el evento Escalate; no se borra, se puede apagar; handoff real requiere Omnichannel. |
 | Configure and create multilingual agents - Microsoft Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/multilingual | Idioma principal fijo, secundarios en Settings > Languages, localización JSON/ResX, cambio dinámico con `User.Language` (solo orquestación generativa). La lista de idiomas soportados está en otra página (⚠ no consultada). |
+
+## Acceso a Fabric sin M365 Developer Program
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| Fabric trial capacity | https://learn.microsoft.com/en-us/fabric/fundamentals/fabric-trial | 60 días, F4/F64, 1 TB OneLake; cualquier usuario puede iniciarla si el admin no la deshabilita; límite de trials por tenant; al vencer, 7 días de retención. Ver `docs/research/fabric-access-without-m365-devprogram.md`. |
+| Buy Fabric capacity Azure SKUs | https://learn.microsoft.com/en-us/fabric/enterprise/buy-capacity | F SKU vía Azure portal; requiere suscripción en el tenant, permisos (incluye suspend/resume), proveedor registrado y cuota. Precios y pausa de facturación: ⚠ verificar en pantalla. |
+| Data Warehouse Tutorial: Introduction | https://learn.microsoft.com/en-us/fabric/data-warehouse/tutorial-introduction | Secuencia: workspace, warehouse, ingesta con pipeline, T-SQL. Requiere Fabric habilitado en el tenant. |
+
+## URL HTTPS pública para la demo (T25)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| Create and host a tunnel - Microsoft dev tunnels | https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started | `winget install Microsoft.devtunnel`, `devtunnel user login` (obligatorio para hospedar), `devtunnel host -p <puerto>`, URL `https://<id>-<puerto>.<region>.devtunnels.ms/`. Ver `docs/research/public-https-url-options.md`. |
+| Dev tunnels security | https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/security | Privado por defecto; acceso anónimo con `--allow-anonymous`; HTTPS forzado, TLS 1.2+; anti-phishing solo en GET HTML. Límites de uso: ⚠ verificar en pantalla. |
+| Quick Tunnels - Cloudflare | https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/ | `cloudflared tunnel --url http://localhost:<puerto>`; sin cuenta; 200 peticiones en vuelo; sin SSE; sin uptime garantizado; solo pruebas. |
+| ngrok free plan limits | https://ngrok.com/docs/pricing-limits/free-plan-limits | 1 GB/mes, 20,000 peticiones, 3 endpoints, sin timeout, intersticial en HTML. |
+
+## Power BI Desktop con Fabric (T25)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| How to connect - Fabric Data Warehouse | https://learn.microsoft.com/en-us/fabric/data-warehouse/how-to-connect | Cadena SQL en Settings > SQL connection string; Contributor+; Power BI usa el endpoint como fuente nativa, Import o DirectQuery; Entra ID. Ver `docs/research/power-bi-fabric-connection.md`. |
+| Direct Lake semantic models in Power BI Desktop | https://learn.microsoft.com/en-us/fabric/fundamentals/direct-lake-power-bi-desktop | OneLake catalog > Lakehouse/Warehouse > Connect crea modelo Direct Lake on OneLake con live edit; requiere XMLA RW y permiso Write; no disponible con licencia free. |
+| Understand Microsoft Fabric licenses and capacity | https://learn.microsoft.com/en-us/fabric/enterprise/licenses | Crear/compartir elementos Power BI fuera de My workspace requiere Pro/PPU; F64+/Trial: Free + Viewer puede ver; F<64 el visor necesita Pro/PPU. |

@@ -9,7 +9,7 @@ extend-exclude = ["scratch"]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "main"]
+known-first-party = ["src", "scripts", "main"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -21,7 +21,7 @@ markers = ["slow: downloads the real fastembed model; skipped unless run with -m
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src", "main.py", "tests"]
+files = ["src", "scripts", "main.py", "tests"]
 explicit_package_bases = true
 strict = true
 warn_unreachable = true
