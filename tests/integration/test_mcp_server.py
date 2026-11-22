@@ -91,7 +91,7 @@ def _settings(db: Path, key: str | None = API_KEY) -> Settings:
         }
     )
     secrets = Secrets(api_key=SecretStr(key) if key else None)
-    # Generous request timeout: these tests never exercise it, and a slow CI runner must not trip it.
+    # Generous request timeout: these tests never exercise it; a slow CI runner must not trip it.
     api = settings.api.model_copy(update={"request_timeout_s": GENEROUS_TIMEOUT_S})
     return settings.model_copy(update={"paths": paths, "secrets": secrets, "api": api})
 
