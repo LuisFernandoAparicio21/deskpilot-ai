@@ -242,7 +242,7 @@ Criterios de aceptación:
 
 **API, MCP y despliegue (por PR)**
 - T16 [CÓDIGO] [ALTO RIESGO] FastAPI: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repositorio local/fabric, `main.py serve` — subagente: api-engineer — cubre S8, S17 — commit: 846d541 (PR #20)
-- T17 [CÓDIGO] [ALTO RIESGO] crear_ticket con clasificación de categoría/prioridad y persistencia — subagente: api-engineer — cubre S9 — commit:
+- T17 [CÓDIGO] [ALTO RIESGO] crear_ticket con clasificación de categoría/prioridad y persistencia — subagente: api-engineer — cubre S9 — commit: merge del PR #22
 - T18 [CÓDIGO] Servidor MCP con las 4 herramientas — subagente: api-engineer — cubre S10 — commit:
 - T19 [CÓDIGO] `main.py export-openapi` → openapi.yaml compatible con Copilot Studio + Dockerfile + .dockerignore verificados — subagente: api-engineer — cubre S8, S17 — commit:
 
@@ -989,6 +989,11 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - Ciclo separado por directiva: api-engineer implementó sin tocar `tests/`, qa-tester escribió y ejecutó los tests de forma independiente y security-verifier revisó (ALTO RIESGO). FastAPI con `/health`, `buscar_solucion`, `consultar_estado_ticket`, `metricas_area`, X-API-Key, errores uniformes con `request_id`, límites de cuerpo y timeout, repo local/Fabric y `serve`. 828 tests, 98.80% de cobertura.
 - Hallazgos del security-verifier M1, M2, B1 y B2 corregidos en ciclos de corrección (commits `fix(api)`, `feat(config)`); detalle en `docs/features/api-rest.md`. Fabric no probado contra tenant real (T30).
 
-### L16 — T17 crear_ticket (api-engineer + qa-tester + security-verifier) · PR por definir
+### L16 — T17 crear_ticket (api-engineer + qa-tester + security-verifier) · PR #22
 - Mismo ciclo: api-engineer implementó `POST /tickets` (redacción de datos sensibles, clasificación por reglas con LLM opcional validado, SLA, persistencia en `tickets_nuevos`), qa-tester escribió 206 tests en 5 archivos y security-verifier dio **APROBADO** tras los ciclos de corrección. 1034 tests, 98.79% de cobertura.
 - Hallazgos: M1 el LLM podía degradar un P1 de reglas (corregido: un P1 de reglas nunca cambia); M2 riesgo residual de unicidad de `ticket_id` en el Warehouse (PK NOT ENFORCED, ~1/900k por par concurrente), aceptado como riesgo conocido; baja: una contraseña sin separador no se redacta. Detalle en `docs/features/crear-ticket.md`.
+
+### L17 — T18 servidor MCP (api-engineer + qa-tester + security-verifier) · PR por definir
+- Mismo ciclo: api-engineer implementó `python main.py mcp` (4 herramientas sobre la capa de servicio de la API; stdio por defecto, HTTP streamable con API key), qa-tester escribió 122 tests en 4 archivos y security-verifier dio **APROBADO**. Suite completa: 1156 tests, 98.72% de cobertura.
+- QA encontró 3 bugs, corregidos: argumentos extra aceptados, eco de `categoria`/`canal` inválidos y mensaje de config que nombraba `serve`. Hallazgos bajos aceptados: símbolos privados de `app.py` y `_tool_manager` del SDK, `--host 0.0.0.0` sin aviso ni TLS, `X-API-Key` gana sobre Bearer, falta test de Host/Origin inválido.
+- SDK `mcp` 2.3.0: `FastMCP` pasó a `MCPServer` (anotado en `docs/sources.md`). Verificado con clientes reales por stdio y HTTP (401 sin llave); `data/deskpilot.db` intacta. Detalle en `docs/features/mcp-server.md`.
