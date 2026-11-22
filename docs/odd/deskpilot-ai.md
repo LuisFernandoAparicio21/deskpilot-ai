@@ -250,7 +250,7 @@ Criterios de aceptación:
 - T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit: merge del PR #30
 - T21 [CÓDIGO] 30 casos de evaluación + `main.py eval` + resultados + test e2e + docs/testing-procedure.md — subagente: qa-tester — cubre S12 — commit: merge del PR #32
 - T22 [CÓDIGO] Cobertura ≥80%, ruff/mypy limpios, huecos de tests, CI verde — subagente: qa-tester — cubre S12, S17 — commit: merge del PR #34
-- T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit: rama chore/t23-business-case-adrs (pendiente de PR)
+- T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit: merge del PR #36
 - T24 [CÓDIGO] README completo + docs/architecture.md + docs/job-fit.md + docs/learning-log.md + CHANGELOG — subagente: docs-writer — cubre S13, S14 — commit:
 - T25 [CÓDIGO] Fase B: docs/MANUAL_STEPS.md + scripts/check_fabric.py, check_public_url.py, update_readme_results.py — subagente: docs-writer — cubre S18 — commit:
 - T26 [CÓDIGO] [ALTO RIESGO] Revisión final de secretos + revisión "como reclutador" — subagente: security-verifier — cubre S16, S21 — commit: (solo reporte)
@@ -1031,3 +1031,7 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - `docs/business-case.md` con cifras reales de las 10 consultas SQL (copia temporal de `data/deskpilot.db`, que no se modificó): repetitivo 39.92% (1,996), automatizable RN-06 51.24% (2,562; 88.53% dentro de las 5 repetitivas), quincena 1.90x, SLA 79.50% local contra 60.57% foráneo (brecha 18.93 pp), inglés 9.62%, backlog 16. Horas ahorradas al mes: 35.6 / 53.4 / 71.2 con 10 / 15 / 20 min por ticket, marcados SUPUESTO ILUSTRATIVO (no salen de los datos).
 - Métricas de `main.py eval` leídas de `tests/eval/results.summary.json`: 29/30, top-3 14/14, rechazo 3/4 (EV-16), clasificación 5/5, seguridad 3/3, p50 13.8 ms y p95 31.5 ms (difiere del L22 por ser otra corrida).
 - ADR-0001 a ADR-0008 en `docs/adr/` con README e índice. `ruff format` no procesa Markdown (no hay cambios que aplicar). Pendiente: la validación de las consultas en Fabric (T29) y las métricas en Copilot Studio (T33/T36).
+
+### L26 — T24 README, arquitectura, job-fit y learning-log (docs-writer) · documentada
+- README completo en español (badges de CI, Python 3.13, MIT y ruff, todos apuntando a recursos existentes; sin badge de cobertura porque no se genera), `docs/architecture.md` (componentes, consulta RAG, `crear_ticket`, despliegue), `docs/job-fit.md` (11 puntos de la matriz con estado honesto) y plantilla de `docs/learning-log.md` sin logros inventados. CHANGELOG y roadmap al día (T23 mergeada en el PR #36).
+- **Resultados reales (local, 2026-11-22)**: pytest 1528 passed, 2 skipped, 33 deselected; cobertura 98.24%; eval 29/30 desde `tests/eval/results.summary.json`. Setup no repetido en un clon limpio (lo cubre `eval-smoke` del CI). Pendiente manual: Fabric real, Copilot Studio, Power BI, video y learning log (T28-T35); T25 sigue pendiente.
