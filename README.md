@@ -37,8 +37,8 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 <br>
 <!-- Plataforma Microsoft: generado desde docs/validation-status.json; verde solo si validado con evidencia -->
 <!-- MSBADGES:START -->
-![Copilot Studio: pendiente de validar en tenant real](https://img.shields.io/badge/Copilot%20Studio-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
-![Fabric: pendiente de validar en tenant real](https://img.shields.io/badge/Fabric-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
+![Copilot Studio: pending validation on a real tenant](https://img.shields.io/badge/Copilot%20Studio-pending%20validation%20on%20a%20real%20tenant-6B7280?style=for-the-badge)
+![Fabric: pending validation on a real tenant](https://img.shields.io/badge/Fabric-pending%20validation%20on%20a%20real%20tenant-6B7280?style=for-the-badge)
 <!-- MSBADGES:END -->
 
 </div>
@@ -93,20 +93,20 @@ Diagramas completos y ejemplos reales en español e inglés: [`docs/user-flow.md
 Medidos en local (modo local, sin LLM, índice real) el 2026-11-22. Datos sintéticos.
 
 <!-- RESULTS:START -->
-Evaluación local de 30 casos (backend `local`, 2026-11-22), generada desde `tests/eval/results.summary.json`:
+Local evaluation of 30 cases (backend `local`, 2026-11-22), generated from `tests/eval/results.summary.json`:
 
-| Métrica | Resultado | Umbral | Cumple |
+| Metric | Result | Threshold | Met |
 | --- | --- | --- | --- |
-| Casos aprobados | 30/30 (100.0%) | >= 90% | sí |
-| Recuperación top-3 | 14/14 (100.0%) | >= 90% | sí |
-| Rechazo correcto | 4/4 (100.0%) | >= 100% | sí |
-| Clasificación de tickets | 5/5 (100.0%) | >= 85% | sí |
-| Seguridad | 3/3 (100.0%) | >= 100% | sí |
-| Latencia por caso | p50 380.5 ms, p95 801.6 ms | - | - |
+| Cases passed | 30/30 (100.0%) | >= 90% | yes |
+| Top-3 retrieval | 14/14 (100.0%) | >= 90% | yes |
+| Correct refusal | 4/4 (100.0%) | >= 100% | yes |
+| Ticket classification | 5/5 (100.0%) | >= 85% | yes |
+| Security | 3/3 (100.0%) | >= 100% | yes |
+| Latency per case | p50 380.5 ms, p95 801.6 ms | - | - |
 
-Casos fallidos: ninguno.
+Failed cases: none.
 
-Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía ([`docs/testing-procedure.md`](docs/testing-procedure.md), T32).
+Copilot Studio: **pending (manual)**, no measured results yet ([`docs/testing-procedure.md`](docs/testing-procedure.md), T32).
 <!-- RESULTS:END -->
 
 | Qué | Resultado | Fuente |
@@ -264,12 +264,12 @@ La tabla completa contra la vacante está en [`docs/job-fit.md`](docs/job-fit.md
 Estado por integración, generado desde [`docs/validation-status.json`](docs/validation-status.json):
 
 <!-- VALIDATION:START -->
-| Integración | Estado | Evidencia | Qué falta |
+| Integration | Status | Evidence | What is missing |
 | --- | --- | --- | --- |
-| Microsoft Fabric (lakehouse, Warehouse y consultas SQL) | ⏳ Pendiente de validar en tenant real | - | Ejecutar notebook, DDL, 10 consultas y check_fabric en un tenant real (hoy solo dobles de prueba) |
-| Agente en Copilot Studio | ⏳ Pendiente de validar en tenant real | - | Importar el OpenAPI, crear el agente y correr los 30 casos en el chat (hoy solo diseño y dobles) |
-| Reporte de Power BI | ⏳ Pendiente de validar en tenant real | - | Construir el reporte sobre Fabric y capturarlo |
-| Video de la demo | ⏳ Pendiente de validar en tenant real | - | Grabar el video y enlazarlo en el README |
+| Microsoft Fabric (lakehouse, Warehouse and SQL queries) | ⏳ Pending validation on a real tenant | - | Run the notebook, DDL, 10 queries and check_fabric on a real tenant (today only test doubles) |
+| Copilot Studio agent | ⏳ Pending validation on a real tenant | - | Import the OpenAPI, create the agent and run the 30 cases in the chat (today only design and test doubles) |
+| Power BI report | ⏳ Pending validation on a real tenant | - | Build the report on Fabric and capture it |
+| Demo video | ⏳ Pending validation on a real tenant | - | Record the video and link it in the README |
 <!-- VALIDATION:END -->
 
 Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap.md). La separación Validado / Pendiente está en la tabla de habilidades de arriba.
