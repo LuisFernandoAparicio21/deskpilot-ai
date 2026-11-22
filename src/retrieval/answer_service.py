@@ -132,6 +132,8 @@ class AnswerService:
         self._llm = llm
         self._timeout_s = settings.llm.timeout_s
         self._margin = settings.retrieval.escalation_margin
+        rerank = settings.retrieval.rerank
+        self._noise_cutoff = rerank.min_score * rerank.mandatory_veto_factor
 
     def answer(self, query: str, categoria: str | None = None) -> Answer:
         if not query.strip():
@@ -175,9 +177,7 @@ class AnswerService:
         relevant = [
             a
             for a in mandatory
-            if top is not None
-            and self._is_relevant(a, top)
-            and a.article_id not in result.low_rerank
+            if top is not None and self._is_relevant(a, top) and not self._is_clear_noise(a, result)
         ]
         if len(relevant) < len(mandatory):
             # Never let a mandatory-escalation article that is not relevant reach the LLM
@@ -203,6 +203,15 @@ class AnswerService:
             if generated is not None:
                 return generated
         return self._extractive(language, result, top, sensitive)
+
+    def _is_clear_noise(self, article: ArticleHit, result: RetrievalResult) -> bool:
+        """True when the cross-encoder scores a mandatory article far below ``min_score``.
+
+        RN-03 outranks precision: only a clearly noisy score (below ``min_score`` times the
+        veto factor) removes the article; a borderline one keeps the safe side (escalate).
+        """
+        score = result.rerank_scores.get(article.article_id)
+        return score is not None and score < self._noise_cutoff
 
     def _is_relevant(self, article: ArticleHit, top: ArticleHit) -> bool:
         """Top-1, or within ``escalation_margin`` of the top-1 score ("as relevant as it")."""

@@ -70,6 +70,7 @@ retrieval:
     model: BAAI/bge-reranker-v2-m3-int8   # fastembed TextCrossEncoder; Apache-2.0
     min_score: 0.01
     candidates: 3
+    mandatory_veto_factor: 0.1   # RN-03 (KB-011): se descarta solo si score < min_score x este factor
 
 # --- LLM ---
 llm:

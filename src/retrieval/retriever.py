@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.embeddings import Embedder
+from src.retrieval.policy import MANDATORY_ESCALATION_ARTICLES
 from src.retrieval.reranker import Reranker
 from src.vectordb import ScoredChunk, VectorStore
 
@@ -60,6 +61,8 @@ class RetrievalResult(BaseModel):
     vetoed: bool = False
     low_rerank: frozenset[str] = frozenset()
     """Scored articles whose own cross-encoder score is below the minimum."""
+    rerank_scores: dict[str, float] = Field(default_factory=dict)
+    """Cross-encoder score by article id (candidates plus mandatory-escalation articles)."""
     """True when the cross-encoder found no relevant passage: the answer is no evidence."""
     query_vector: list[float] = Field(default_factory=list, exclude=True, repr=False)
 
@@ -160,8 +163,16 @@ class Retriever:
         if self._reranker is None or not articles or articles[0].score < self.threshold:
             return {}
         candidates = articles[: self._rerank_candidates]
-        scores = self._reranker.score(query, [a.chunks[0].chunk.text for a in candidates])
-        return {a.article_id: s for a, s in zip(candidates, scores, strict=True)}
+        # RN-03 articles are always scored when retrieved, even outside the candidates, so
+        # the policy decides on a score instead of on whether they happened to rank high.
+        extra = [
+            a
+            for a in articles[self._rerank_candidates :]
+            if a.article_id in MANDATORY_ESCALATION_ARTICLES
+        ]
+        scored = candidates + extra
+        scores = self._reranker.score(query, [a.chunks[0].chunk.text for a in scored])
+        return {a.article_id: s for a, s in zip(scored, scores, strict=True)}
 
     def _current_store(self) -> VectorStore:
         if isinstance(self._store, VectorStore):
@@ -187,14 +198,22 @@ class Retriever:
             for article_id, items in grouped.items()
         ]
         articles.sort(key=lambda a: (-a.score, a.article_id))
+        articles = articles[: self.top_k]
         scores = self._rerank(query, articles)
-        rerank_score = max(scores.values()) if scores else None
+        # The veto looks only at the regular candidates, never at an extra RN-03 article.
+        regular = [
+            scores[a.article_id]
+            for a in articles[: self._rerank_candidates]
+            if a.article_id in scores
+        ]
+        rerank_score = max(regular) if regular else None
         return RetrievalResult(
-            articles=articles[: self.top_k],
+            articles=articles,
             threshold=self.threshold,
             rerank_score=rerank_score,
             vetoed=rerank_score is not None and rerank_score < self._rerank_min,
             low_rerank=frozenset(a for a, s in scores.items() if s < self._rerank_min),
+            rerank_scores=scores,
             query_vector=vector,
         )
 
