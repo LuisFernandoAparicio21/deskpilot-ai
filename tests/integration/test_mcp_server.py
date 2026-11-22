@@ -53,6 +53,8 @@ GOOD: dict[str, Any] = {
 SECRET_SENTENCE = "mi contraseña es Zx9secretoPW"
 SECRET = "Zx9secretoPW"
 
+GENEROUS_TIMEOUT_S = 120.0
+
 
 @pytest.fixture(scope="module")
 def template_db(tmp_path_factory: pytest.TempPathFactory) -> Path:
@@ -89,7 +91,9 @@ def _settings(db: Path, key: str | None = API_KEY) -> Settings:
         }
     )
     secrets = Secrets(api_key=SecretStr(key) if key else None)
-    return settings.model_copy(update={"paths": paths, "secrets": secrets})
+    # Generous request timeout: these tests never exercise it, and a slow CI runner must not trip it.
+    api = settings.api.model_copy(update={"request_timeout_s": GENEROUS_TIMEOUT_S})
+    return settings.model_copy(update={"paths": paths, "secrets": secrets, "api": api})
 
 
 def _services(settings: Settings, llm: FakeLLM | None = None) -> ApiServices:
@@ -367,7 +371,8 @@ RUNNER = textwrap.dedent(
         "sqlite_db": work / "deskpilot.db", "logs": work / "logs",
         "vectordb": work / "vectordb", "raw": work / "raw", "sample": work / "sample",
     })
-    patched = settings.model_copy(update={"paths": paths})
+    api = settings.api.model_copy(update={"request_timeout_s": 120})
+    patched = settings.model_copy(update={"paths": paths, "api": api})
     main.load_settings = lambda: patched
     sys.exit(main.main(["mcp", *sys.argv[3:]]))
     """
