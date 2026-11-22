@@ -6,7 +6,7 @@ Every pipeline step runs through a subcommand:
 
 Subcommands without a handler yet only report which task will implement them and exit
 with code 2. Implemented so far: ``generate-data`` (T9), ``load-db`` (T10), ``index`` (T14)
-``serve`` (T16), ``mcp`` (T18) and ``export-openapi`` (T19).
+``serve`` (T16), ``mcp`` (T18), ``export-openapi`` (T19) and ``eval`` (T21).
 """
 
 from __future__ import annotations
@@ -28,6 +28,8 @@ EXIT_CONFIG_ERROR = 1
 EXIT_NOT_IMPLEMENTED = 2
 EXIT_DATA_ERROR = 3
 
+DEFAULT_EVAL_CASES = PROJECT_ROOT / "tests" / "eval" / "cases.csv"
+DEFAULT_EVAL_OUT = PROJECT_ROOT / "tests" / "eval" / "results.csv"
 DEFAULT_OPENAPI_OUT = PROJECT_ROOT / "integrations" / "copilot_studio" / "openapi.json"
 SQL_SUMMARY_MAX_ROWS = 10  # rows printed per query by ``load-db --run-sql``
 
@@ -217,6 +219,33 @@ def cmd_export_openapi(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_eval(args: argparse.Namespace) -> int:
+    """Run the evaluation cases and check the section 12 thresholds (T21, S12).
+
+    Exit code 0: every threshold met; 1: some threshold not met; 2: configuration,
+    cases file, index/database or API connection error. See ``src/api/evaluation.py``.
+    """
+    from src.api.evaluation import EXIT_ERROR, EvalError, format_report, run_eval
+
+    try:
+        settings = load_settings()
+    except ConfigError as exc:
+        print(f"eval: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    configure_logging_from_settings(settings, console=False)
+    cases = Path(args.cases) if args.cases else DEFAULT_EVAL_CASES
+    out = Path(args.out) if args.out else DEFAULT_EVAL_OUT
+    try:
+        report, summary = run_eval(settings, cases, out, args.api_url, args.api_key)
+    except EvalError as exc:
+        print(f"eval: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    print(f"eval: {len(report.results)} cases ({report.backend}) -> {_display(out)}")
+    print(f"  summary -> {_display(summary)}")
+    print(format_report(report))
+    return report.exit_code
+
+
 def cmd_mcp(args: argparse.Namespace) -> int:
     """Start the MCP server (T18, S10): stdio (no network) by default, HTTP behind the API key.
 
@@ -258,6 +287,7 @@ HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "serve": cmd_serve,
     "mcp": cmd_mcp,
     "export-openapi": cmd_export_openapi,
+    "eval": cmd_eval,
 }
 
 
@@ -300,6 +330,21 @@ def build_parser() -> argparse.ArgumentParser:
             subparser.add_argument(
                 "--out",
                 help="output file (default: integrations/copilot_studio/openapi.json)",
+            )
+        elif name == "eval":
+            subparser.add_argument("--cases", help="cases CSV (default: tests/eval/cases.csv)")
+            subparser.add_argument(
+                "--out",
+                help="results CSV; the JSON summary goes next to it "
+                "(default: tests/eval/results.csv)",
+            )
+            subparser.add_argument(
+                "--api-url",
+                help="evaluate a running API over HTTP instead of in-process services",
+            )
+            subparser.add_argument(
+                "--api-key",
+                help="X-API-Key for --api-url (default: DESKPILOT_API_KEY; prefer the env var)",
             )
         elif name == "load-db":
             subparser.add_argument(
