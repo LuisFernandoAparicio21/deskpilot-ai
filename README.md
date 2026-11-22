@@ -93,7 +93,7 @@ Copilot Studio: **pending (manual)**, no measured results yet ([`docs/testing-pr
 | --- | --- | --- |
 | Evaluation cases | **30 of 30** (100.0%); top-3 14/14, refusal 4/4, classification 5/5, security 3/3 | `tests/eval/results.summary.json` |
 | Latency per case (local) | p50 380.5 ms, p95 801.6 ms | `tests/eval/results.summary.json` |
-| Tests (default run, excludes `slow`) | 1999 run, 3 skipped, 35 deselected | `pytest --cov=src`, 2026-11-22 |
+| Tests (default run, excludes `slow`) | 2028 run, 3 skipped, 35 deselected | `pytest --cov=src`, 2026-11-22 |
 | `src/` coverage | 98.12% (threshold 80%) | `pytest --cov=src` |
 | Repetitive (5 subcategories) | 39.92% of tickets | [`docs/business-case.md`](docs/business-case.md) |
 | Automatable (RN-06, ceiling) | 51.24% | business-case |
@@ -198,7 +198,7 @@ flowchart LR
     API --> SVC[Service layer]
     MCP --> SVC
     SVC --> RAG[RAG: retriever, policy, answer_service]
-    SVC --> REPO[(SQLite validated; Fabric designed)]
+    SVC --> REPO[(SQLite validated, Fabric designed)]
     RAG --> VDB[(Chroma)]
 ```
 
@@ -214,7 +214,7 @@ flowchart TD
     F --> G{Did it work?}
     G -- yes --> H([End])
     G -- no --> K[crear_ticket]
-    E -- no --> J[I don't know] --> K
+    E -- no --> J[I do not know] --> K
     K --> L([Ticket ID, priority and SLA])
     C -- status --> N[consultar_estado_ticket]
     C -- human --> K

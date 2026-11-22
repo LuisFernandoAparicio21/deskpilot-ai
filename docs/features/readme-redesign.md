@@ -28,12 +28,11 @@ Rama `chore/readme-redesign`. Absorbe PL-9 (accesibilidad en inglés). Insumos: 
 
 ## Cifras
 
-`.venv\Scripts\python -m pytest --cov=src -q` (sin slow, 2026-11-22): 1982 passed, 17 failed, 3 skipped, 35 deselected; cobertura 98.12%. El README publica 1999 ejecutadas. Las 17 fallas son contratos de test que fijan el README anterior o el texto en español de los scripts; no se editó `tests/`. Pasan al qa-tester:
+`.venvScriptspython -m pytest --cov=src -q` (sin slow, 2026-11-22, tras corregir los contratos de documentación): 2028 passed, 3 skipped, 35 deselected; cobertura 98.12%. README y `docs/testing-procedure.md` publican las mismas cifras (2028 ejecutadas, 98.12%). Antes de la corrección: 1982 passed, 17 failed. Las fallas eran contratos de test que fijaban el README anterior o el texto en español de los scripts; no se editó `tests/`. Pasaron al qa-tester:
 
 - `test_docs.py::test_readme_eval_figures_match_summary` (busca el texto en español) y `test_mermaid_blocks_are_balanced[docs/diagnostics/readme-evaluation.md]` (ya fallaba antes; el documento cita la apertura de un bloque mermaid en prosa).
 - `test_readme_visual.py::test_unvalidated_platform_badges_say_pending...` (2, Fabric y Copilot Studio): esperan "pendiente" y los badges están en inglés.
 - `test_scripts_update_readme_results.py` (7) y `test_validation_status.py` (6): esperan las etiquetas en español del script; el script se pasó al inglés en `bda3acf`.
-- Además, `docs/testing-procedure.md` sigue con 1946 pasadas y 98.02%; hay que alinearlo.
 
 ## No verificado
 

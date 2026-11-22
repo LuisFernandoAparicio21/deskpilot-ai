@@ -73,7 +73,7 @@ sequenceDiagram
     A->>S: answer(query)
     S->>S: contains_sensitive? redact(query)
     S->>R: search(consulta redactada)
-    R-->>S: articulos con score (evidencia: sobre el umbral) y veto del reranker (solo si el top-1 pasa el umbral; puntua 3 pasajes de a uno)
+    R-->>S: articulos con score (evidencia: sobre el umbral) y veto del reranker (solo si el top-1 pasa el umbral, puntua 3 pasajes de a uno)
     S->>P: escalation_reason(query)
     alt frase de fraude, acceso no autorizado o caja (RN-03)
         S-->>A: mandatory_escalation, articulo citado
