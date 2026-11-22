@@ -338,3 +338,110 @@ def test_unknown_tool_never_succeeds(env: Env) -> None:
     assert result.is_error
 
 
+# --- not found and failure mapping -----------------------------------------------------------
+
+
+def test_unknown_ticket_and_metrics_are_fixed_not_found_errors(env: Env) -> None:
+    ticket = call(env, "consultar_estado_ticket", {"ticket_id": "TCK-999999"})
+    assert error_text(ticket).endswith(MSG_TICKET_404)
+    metrics = call(env, "metricas_area", {"area": "Inexistente"})
+    assert error_text(metrics).endswith(MSG_METRICS_404)
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (IndexNotFoundError("path C:/secret/index hunter2"), MSG_INDEX),
+        (RepositoryUnavailableError("dsn=Server=hidden;PWD=hunter2"), MSG_DB),
+        (RuntimeError("boom PWD=hunter2 C:/Users/x"), MSG_INTERNAL),
+    ],
+)
+def test_search_failures_map_to_fixed_messages(
+    env: Env, caplog: pytest.LogCaptureFixture, error: Exception, message: str
+) -> None:
+    env.search.error = error
+    caplog.set_level(logging.DEBUG)
+    text = error_text(call(env, "buscar_solucion", {"query": "hola"}))
+    assert text.endswith(message)
+    assert "hunter2" not in text
+    assert "C:/" not in text
+    assert "hunter2" not in log_dump(caplog)
+    assert "C:/Users" not in log_dump(caplog)
+
+
+@pytest.mark.parametrize("tool", ["consultar_estado_ticket", "metricas_area"])
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (RepositoryUnavailableError("dsn=Server=hidden;PWD=hunter2"), MSG_DB),
+        (RuntimeError("boom PWD=hunter2 C:/Users/x"), MSG_INTERNAL),
+    ],
+)
+def test_repository_failures_map_to_fixed_messages(
+    env: Env, caplog: pytest.LogCaptureFixture, tool: str, error: Exception, message: str
+) -> None:
+    env.repo.error = error
+    caplog.set_level(logging.DEBUG)
+    args = {"ticket_id": "TCK-000001"} if tool == "consultar_estado_ticket" else {"area": "Caja"}
+    text = error_text(call(env, tool, args))
+    assert text.endswith(message)
+    assert "hunter2" not in text
+    assert "hunter2" not in log_dump(caplog)
+
+
+def test_failure_is_logged_with_tool_and_exception_class_only(
+    env: Env, caplog: pytest.LogCaptureFixture
+) -> None:
+    env.search.error = RuntimeError("leaky detail 12345")
+    caplog.set_level(logging.DEBUG)
+    call(env, "buscar_solucion", {"query": "consulta privada xyz"})
+    records = [r for r in caplog.records if r.name == "src.api.mcp_server"]
+    assert records
+    assert any("buscar_solucion" in r.getMessage() for r in records)
+    assert any(getattr(r, "error", None) == "RuntimeError" for r in records)
+    dump = "\n".join(f"{r.getMessage()} {r.__dict__}" for r in records)
+    assert "leaky detail" not in dump
+    assert "consulta privada" not in dump
+
+
+def test_slow_backend_times_out_with_a_fixed_message(tmp_path: Path) -> None:
+    env = Env(settings_with_key(tmp_path, request_timeout_s=0.05))
+    env.search.delay_s = 0.5
+    assert error_text(call(env, "buscar_solucion", {"query": "hola"})).endswith(MSG_TIMEOUT)
+
+
+def test_create_failure_does_not_leak_the_description(
+    env: Env, caplog: pytest.LogCaptureFixture
+) -> None:
+    env.repo.error = RepositoryUnavailableError(f"insert failed {ECHO}")
+    caplog.set_level(logging.DEBUG)
+    text = error_text(call(env, "crear_ticket", GOOD_CREATE))
+    assert text.endswith(MSG_DB)
+    assert ECHO not in text
+    assert ECHO not in log_dump(caplog)
+
+
+# --- RN-05 through MCP -----------------------------------------------------------------------
+
+SECRETS = {
+    "password": ("mi contraseña es Zx9secretoPW", "Zx9secretoPW"),
+    "pin": ("mi NIP es 482193", "482193"),
+    "card": ("la tarjeta 4539 1488 0343 6467 fue rechazada", "4539 1488 0343 6467"),
+    "token": ("token: aB3xKq9ZpLm2Wv7Rt", "aB3xKq9ZpLm2Wv7Rt"),
+}
+
+
+@pytest.mark.parametrize("kind", sorted(SECRETS))
+def test_rn05_secret_is_neither_stored_returned_nor_logged(
+    env: Env, caplog: pytest.LogCaptureFixture, kind: str
+) -> None:
+    sentence, secret = SECRETS[kind]
+    caplog.set_level(logging.DEBUG)
+    description = f"No entra el sistema. {sentence}"
+    result = call(env, "crear_ticket", {**GOOD_CREATE, "descripcion": description})
+    assert not result.is_error
+    (stored,) = env.repo.created
+    assert secret not in stored.descripcion
+    assert "No entra el sistema" in stored.descripcion
+    assert secret not in repr(result)
+    assert secret not in log_dump(caplog)
