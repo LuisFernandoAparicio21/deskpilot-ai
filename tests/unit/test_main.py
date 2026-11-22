@@ -13,7 +13,15 @@ import main
 from src.utils.config import ConfigError, Settings, load_settings
 from src.utils.logging import shutdown_logging
 
-EXPECTED_COMMANDS = {"generate-data", "load-db", "index", "serve", "eval", "export-openapi"}
+EXPECTED_COMMANDS = {
+    "generate-data",
+    "load-db",
+    "index",
+    "serve",
+    "mcp",  # T18: new subcommand
+    "eval",
+    "export-openapi",
+}
 PLACEHOLDER_COMMANDS = EXPECTED_COMMANDS - set(main.HANDLERS)
 
 
@@ -47,7 +55,7 @@ def tmp_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Se
     shutdown_logging()
 
 
-def test_parser_exposes_the_six_subcommands() -> None:
+def test_parser_exposes_the_seven_subcommands() -> None:
     assert _subcommands(main.build_parser()) == EXPECTED_COMMANDS
 
 

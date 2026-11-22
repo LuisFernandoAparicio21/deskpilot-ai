@@ -2,11 +2,11 @@
 
 Every pipeline step runs through a subcommand:
 
-    python main.py generate-data | load-db | index | serve | eval | export-openapi
+    python main.py generate-data | load-db | index | serve | mcp | eval | export-openapi
 
 Subcommands without a handler yet only report which task will implement them and exit
 with code 2. Implemented so far: ``generate-data`` (T9), ``load-db`` (T10), ``index`` (T14)
-and ``serve`` (T16).
+``serve`` (T16) and ``mcp`` (T18).
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ SUBCOMMANDS: dict[str, tuple[str, str]] = {
     "load-db": ("Load the generated tickets into the local SQLite database.", "T10"),
     "index": ("Chunk, embed and index the knowledge base into the vector database.", "T14"),
     "serve": ("Start the FastAPI service.", "T16"),
+    "mcp": ("Start the MCP server (stdio by default, or streamable HTTP).", "T18"),
     "eval": ("Run the agent evaluation cases and save the results.", "T21"),
     "export-openapi": ("Export the OpenAPI spec for Copilot Studio.", "T19"),
 }
@@ -187,11 +188,46 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_mcp(args: argparse.Namespace) -> int:
+    """Start the MCP server (T18, S10): stdio (no network) by default, HTTP behind the API key.
+
+    On stdio stdout carries the protocol, so logs go to ``logs/`` and stderr only. Fails fast
+    on invalid config, and the HTTP transport also without a valid ``DESKPILOT_API_KEY``.
+    """
+    from src.api import build_services
+    from src.api.mcp_server import build_mcp_server, run_http, run_stdio
+    from src.utils.config import require_api_key
+
+    try:
+        settings = load_settings()
+        transport: str = args.transport or settings.mcp.transport
+        if transport == "http":
+            require_api_key(settings, "mcp")
+    except ConfigError as exc:
+        print(f"mcp: {exc}", file=sys.stderr)
+        return EXIT_CONFIG_ERROR
+    # Before building the server: the SDK only installs its own handler if none exists.
+    configure_logging_from_settings(settings)
+    host: str = args.host or settings.mcp.host
+    port: int = args.port or settings.mcp.port
+    services = build_services(settings)
+    try:
+        server = build_mcp_server(settings, services)
+        if transport == "http":
+            run_http(server, settings, host, port, settings.mcp.path)
+        else:
+            run_stdio(server)
+    finally:
+        services.close()
+    return EXIT_OK
+
+
 HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "generate-data": cmd_generate_data,
     "load-db": cmd_load_db,
     "index": cmd_index,
     "serve": cmd_serve,
+    "mcp": cmd_mcp,
 }
 
 
@@ -215,6 +251,16 @@ def build_parser() -> argparse.ArgumentParser:
             subparser.add_argument("--host", help="bind address (default: api.host)")
             subparser.add_argument(
                 "--port", type=_positive_int, help="TCP port (default: api.port)"
+            )
+        elif name == "mcp":
+            subparser.add_argument(
+                "--transport",
+                choices=("stdio", "http"),
+                help="stdio (default, no network) or streamable HTTP (needs the API key)",
+            )
+            subparser.add_argument("--host", help="HTTP bind address (default: mcp.host)")
+            subparser.add_argument(
+                "--port", type=_positive_int, help="HTTP port (default: mcp.port)"
             )
         elif name == "load-db":
             subparser.add_argument(

@@ -140,6 +140,15 @@ class APIConfig(_Section):
     max_body_bytes: int = Field(default=16_384, ge=1_024, le=1_048_576)
 
 
+class McpConfig(_Section):
+    """MCP server (T18): stdio by default (no network); HTTP only when asked for."""
+
+    transport: Literal["stdio", "http"] = "stdio"
+    host: str = Field(default="127.0.0.1", min_length=1)
+    port: int = Field(default=8001, ge=1, le=65535)
+    path: str = Field(default="/mcp", pattern=r"^/[A-Za-z0-9._~/-]*$")
+
+
 class SlaConfig(_Section):
     """SLA in hours per priority (RN-02)."""
 
@@ -176,6 +185,7 @@ class FileConfig(_Section):
     retrieval: RetrievalConfig
     llm: LLMConfig
     api: APIConfig
+    mcp: McpConfig = McpConfig()
     sla_horas: SlaConfig
     fabric: FabricConfig
 
@@ -383,8 +393,8 @@ def _check_llm(settings: Settings) -> None:
         )
 
 
-def require_api_key(settings: Settings) -> SecretStr:
-    """Return the API key required by ``serve``; raise ``ConfigError`` if unusable.
+def require_api_key(settings: Settings, command: str = "serve") -> SecretStr:
+    """Return the API key required by ``command``; raise ``ConfigError`` if unusable.
 
     The key must have ``MIN_API_KEY_LENGTH`` to ``MAX_API_KEY_BYTES`` (UTF-8) bytes: a
     longer key could never match, because the API rejects longer headers.
@@ -392,7 +402,7 @@ def require_api_key(settings: Settings) -> SecretStr:
     key = settings.secrets.api_key
     hint = 'Generate one with: python -c "import secrets;print(secrets.token_urlsafe(32))"'
     if key is None:
-        raise ConfigError(f"DESKPILOT_API_KEY is required to run 'serve'. {hint}")
+        raise ConfigError(f"DESKPILOT_API_KEY is required to run '{command}'. {hint}")
     if len(key.get_secret_value()) < MIN_API_KEY_LENGTH:
         raise ConfigError(
             f"DESKPILOT_API_KEY must have at least {MIN_API_KEY_LENGTH} characters. {hint}"
