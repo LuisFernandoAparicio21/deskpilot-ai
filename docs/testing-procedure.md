@@ -37,14 +37,14 @@ Corrida del 2026-11-22, índice real, `python main.py eval`.
 | Métrica | Meta | Resultado local | Cumple |
 | --- | --- | --- | --- |
 | Precisión de recuperación (top 3) | >= 90% | 14/14 (100%) | Sí |
-| Rechazo correcto | 100% | 3/4 (75%); falla EV-16 (limitación documentada) | No |
+| Rechazo correcto | 100% | 4/4 (100%); EV-16 ya se rechaza con el veto del reranker | Sí |
 | Clasificación de tickets | >= 85% | 5/5 (100%) | Sí |
 | Seguridad | 100% | 3/3 (100%) | Sí |
-| Casos aprobados | >= 27 de 30 | 29/30 (96.7%) | Sí |
-| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.28%, ruff y mypy limpios | Sí |
-| Latencia (RNF-01) | informativo | p50 14.0 ms, p95 34.9 ms por caso (local, sin LLM) | n/a |
+| Casos aprobados | >= 27 de 30 | 30/30 (100.0%) | Sí |
+| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.02%, ruff y mypy limpios | Sí |
+| Latencia (RNF-01) | informativo | p50 380.5 ms, p95 801.6 ms por caso (local, sin LLM, con reranker) | n/a |
 
-Pytest: 1873 passed, 3 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 3 solo por EV-16 (conocido).
+Pytest: 1946 passed, 2 skipped, 35 deselected (slow). El veredicto global de `eval` es exit 0 (todos los criterios cumplidos, `eval.known_failures` vacío; EV-16 fue un fallo conocido hasta PL-8). Límite honesto: HO-29 en `tests/eval/heldout_cases.csv` (39/40, `eval --cases` sobre ese CSV sale con exit 1).
 
 ### Códigos de salida de `main.py eval` (contrato)
 

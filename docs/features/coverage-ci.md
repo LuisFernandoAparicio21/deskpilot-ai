@@ -17,7 +17,7 @@ Los datos son sintéticos (banco ficticio "Banco Altiplano"); las cifras son ilu
   - `quality`: `ruff check`, `ruff format --check`, `mypy src main.py tests` y `pytest --cov=src` (umbral 80%).
   - `eval-smoke`: instala solo `requirements.txt`, cachea el modelo de fastembed (`data/vectordb/models`, clave con
     `hashFiles('config.yaml')`), corre `generate-data`, `load-db`, `index` y `main.py eval`. Acepta código de
-    salida 1 (EV-16 es una limitación documentada) y falla con cualquier otro distinto de 0; luego exige 30 casos
+    salida 0 o 3 (contrato de `eval-e2e.md`; hoy sale 0, EV-16 ya no es fallo conocido) y falla con cualquier otro; luego exige 30 casos
     y al menos 27 aprobados según `results.summary.json`. Sube `results.csv` y el resumen como artefacto.
   - `docker-build`: `docker/build-push-action` con `push: false` y caché de buildx (`type=gha`).
 
@@ -52,7 +52,7 @@ Los 2 omitidos: un test con parámetros vacíos en `test_main.py` y la validaci�
 4. `pytest --cov=src --cov-report=term-missing`: todo en verde y cobertura >= 80%.
 5. Evaluación como en el CI: `python main.py generate-data`, `python main.py load-db`, `python main.py index` y
    `python main.py eval`. Debe salir con código 0 o 1 y `tests/eval/results.summary.json` con `total` 30 y
-   `passed` >= 27 (en local salió 29).
+   `passed` >= 27 (en local salió 30 con el reranker).
 6. Imagen: `docker build -t deskpilot-ai:ci .`.
 7. Jobs de CI: en el PR, pestaña Checks (`quality`, `eval-smoke`, `docker-build`).
 
@@ -61,4 +61,5 @@ Los 2 omitidos: un test con parámetros vacíos en `test_main.py` y la validaci�
 - Un `ResourceWarning` de `anyio` proveniente del cliente MCP sigue apareciendo en algunos tests; no se corrigió
   porque viene de la librería y no de este código.
 - `eval-smoke` y `docker-build` son jobs nuevos y no se han ejecutado en GitHub Actions: ver resultado del PR.
-- EV-16 sigue siendo un fallo conocido (ver `docs/features/eval-e2e.md`), por eso el umbral es >= 27/30 y no 30/30.
+- EV-16 fue un fallo conocido hasta PL-8 (ver `docs/features/eval-e2e.md`); el umbral >= 27/30 se mantiene como mínimo global, aunque hoy `eval` da 30/30.
+- Con el reranker, `eval-smoke` descarga ~0.57 GB más en `index` (la clave de caché cambia al tocar `config.yaml`); ese job y `docker-build` no se verificaron con el reranker en CI (no verificado).

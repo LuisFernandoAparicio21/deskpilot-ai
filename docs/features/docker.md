@@ -56,6 +56,10 @@ El `data/deskpilot.db` del repo no se tocó (0 filas en `tickets_nuevos`): el co
 
 El índice (`data/vectordb/<versión>` + `CURRENT`) y el modelo fastembed (241 MB en `data/vectordb/models`) se generan en una capa del build, como usuario `app`, para no duplicar archivos con `chown -R`. En ejecución `HF_HUB_OFFLINE=1` impide cualquier descarga; la prueba con `--network none` lo confirma. Si cambia la base de conocimiento hay que reconstruir la imagen.
 
+## Reranker (PL-8): tamaño PENDIENTE DE MEDIR
+
+[ADR-0009](../adr/0009-veto-con-reranker-cross-encoder.md) añade el modelo `bge-reranker-v2-m3-int8` (~0.57 GB), que `RUN python main.py index` descarga en el build. **El tamaño final de la imagen con el reranker está PENDIENTE DE MEDIR.** Último dato disponible (build con reranker, sin terminar de verificar): imagen de 2.49 GB en disco y 854 MB de contenido. El `docker run --network none` con el reranker **quedó sin verificar por falta de RAM** local (Docker cerrado a propósito); las cifras de 1.47 GB y 423 MB de arriba son de antes del reranker. Tampoco se verificó el build en CI.
+
 ## Limitaciones
 
 - **Modo Fabric no soportado**: la imagen trae `pyodbc` y `libodbc2`, pero no el **Microsoft ODBC Driver 18 for SQL Server**, cuya licencia debe aceptar quien construya la imagen (ver el encabezado del `Dockerfile`). Sin él `DESKPILOT_MODE=fabric` no puede conectarse.

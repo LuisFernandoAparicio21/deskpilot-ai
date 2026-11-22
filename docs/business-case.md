@@ -118,7 +118,7 @@ No se calcula un ROI en dinero porque no hay costos reales ni tarifas; hacerlo s
 | --- | --- | --- |
 | Datos sensibles (RN-05): el usuario escribe una contraseña o tarjeta | El agente advierte; `crear_ticket` y los logs redactan por regex ([ADR-0006](adr/0006-seguridad-api-key-redaccion-escalamiento.md)) | Una contraseña sin separador no se redacta (L16 del ODD) |
 | Escalamiento obligatorio (RN-03): fraude, acceso no autorizado, caja | Regex de frases más escalamiento por artículo con margen de 0.05 (ADR-0006) | En inglés "POS is not working" sin "terminal" no se detecta (L21) |
-| El agente inventa pasos | Umbral de similitud 0.33, modo extractivo por defecto, citas validadas ([ADR-0001](adr/0001-rag-extractivo-por-defecto.md)) | El umbral es global y sin rerank: EV-16 falla |
+| El agente inventa pasos | Umbral de similitud 0.33, veto del reranker cross-encoder (`min_score` 0.01), modo extractivo por defecto, citas validadas ([ADR-0001](adr/0001-rag-extractivo-por-defecto.md), [ADR-0009](adr/0009-veto-con-reranker-cross-encoder.md)) | HO-29 ("wifi de casa", score 0.052) se responde en vez de rechazar; el reranker suma ~0.57 GB de descarga y ~0.5 a 1 s por consulta |
 | Fabric solo lectura en el endpoint | Tickets nuevos en un Warehouse ([ADR-0004](adr/0004-sql-portable-y-fabric.md)) | Fabric no se probó contra un tenant real (T28-T30) |
 | Unicidad de `ticket_id` en el Warehouse | PK no forzada en Fabric; ID aleatorio | Riesgo residual de colisión aceptado (L16) |
 | Resultados en Copilot Studio no medidos | Evaluación local de 30 casos | Los 30 casos en el chat son manuales (T33) |
@@ -132,16 +132,19 @@ Salida de `python main.py eval` (modo local, índice real), leída de `tests/eva
 
 | Métrica | Meta (requisitos, sección 12) | Resultado | ¿Cumple? |
 | --- | --- | --- | --- |
-| Casos aprobados | >= 27 de 30 | **29 de 30** (96.7%) | Sí |
+| Casos aprobados | >= 27 de 30 | **30 de 30** (100.0%) | Sí |
 | Recuperación en top 3 | >= 90% | 14 de 14 (100%) | Sí |
-| Rechazo correcto | 100% | **3 de 4 (75%)** | **No** |
+| Rechazo correcto | 100% | **4 de 4 (100%)** | Sí |
 | Clasificación de tickets | >= 85% | 5 de 5 (100%) | Sí |
 | Seguridad (datos sensibles) | 100% | 3 de 3 (100%) | Sí |
-| Latencia local sin LLM (RNF-01) | p95 < 1.5 s | p50 14.0 ms, p95 34.9 ms | Sí |
+| Latencia local sin LLM (RNF-01) | p95 < 1.5 s | p50 380.5 ms, p95 801.6 ms (incluye el reranker) | Sí |
 
-El caso que falla es **EV-16**: una consulta fuera de dominio recupera KB-003 con score 0.525, sobre el umbral
-de 0.33, y el agente responde en vez de rechazar. Se documentó como limitación y no se subió el umbral, para no
-rechazar consultas legítimas (L22 del ODD). Por eso `eval` sale con código 3 (criterios no cumplidos por un fallo conocido, ver docs/features/eval-e2e.md).
+`eval` sale con **código 0** (todos los criterios cumplidos, `eval.known_failures` vacío). **EV-16** fue el único fallo
+hasta PL-8: una consulta fuera de dominio recuperaba KB-003 con score 0.525, sobre el umbral de 0.33, y el agente
+respondía en vez de rechazar (por eso `eval` salía con código 3). Subir el umbral habría rechazado consultas
+legítimas (L22 del ODD); lo resuelve el veto del reranker ([ADR-0009](adr/0009-veto-con-reranker-cross-encoder.md)).
+Límite honesto: **HO-29** en el conjunto de validación (`heldout_cases.csv`, 39 de 40) sigue respondiéndose, y ese
+conjunto ya no es ciego porque se usó para fijar el corte. Detalle en `docs/features/eval-e2e.md`.
 Las métricas de Copilot Studio se medirán en la Fase C (T33).
 
 ## 10. Trazabilidad cifra, consulta y valor
@@ -166,7 +169,7 @@ Las métricas de Copilot Studio se medirán en la Fase C (T33).
 | % inglés | `09_distribucion_por_canal.sql` | 481 tickets, 9.62% |
 | Tendencia mensual | `06_tendencia_mensual.sql` | 380 a 453 tickets al mes; 12 meses |
 | Backlog | `10_backlog_por_prioridad.sql` | 16 tickets (P1 0, P2 1, P3 7, P4 8) |
-| Resultado de evaluación | `tests/eval/results.summary.json` | 29/30, rechazo 3/4, p95 34.9 ms |
+| Resultado de evaluación | `tests/eval/results.summary.json` | 30/30, rechazo 4/4, p95 801.6 ms |
 
 ## 11. Cómo reproducir
 
