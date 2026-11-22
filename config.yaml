@@ -42,17 +42,22 @@ vectordb:
 
 # --- Recuperación ---
 retrieval:
-  top_k: 3
-  similarity_threshold: 0.5   # debajo de este valor se responde "no lo sé" — calibrar en T15
+  top_k: 3                    # artículos máximos por consulta (se piden 4 chunks por artículo)
+  # Calibrado en T15 con fastembed real: 20 consultas del dominio (ES/EN) y 8 fuera del
+  # dominio contra la KB real. Score del artículo = máxima similitud coseno de sus chunks.
+  # Mínimo dentro del dominio 0.428, máximo fuera 0.236 => umbral en el punto medio
+  # (0.33, margen ~0.09 a cada lado). Recalibrar si cambia el modelo de embeddings o la KB.
+  similarity_threshold: 0.33  # debajo de este valor se responde "no lo sé" (RF-13)
 
 # --- LLM ---
 llm:
   provider: none         # none | anthropic | openai | gemini. Se puede sobrescribir con LLM_PROVIDER.
   timeout_s: 30
-  models:                # modelo por proveedor; se define al activar cada uno (vacío = sin configurar)
-    anthropic: ""
-    openai: ""
-    gemini: ""
+  models:                # modelo por proveedor (vacío = sin configurar; falla al arrancar si se activa)
+    # ID verificado el 2026-11-21 en https://platform.claude.com/docs/en/about-claude/models/overview
+    anthropic: claude-sonnet-5-5
+    openai: ""           # sin fijar: elige un ID vigente en la doc oficial de OpenAI al activarlo
+    gemini: ""           # sin fijar: elige un ID vigente en la doc oficial de Gemini al activarlo
 
 # --- API ---
 api:

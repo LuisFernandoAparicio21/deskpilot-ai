@@ -283,8 +283,9 @@ def test_llm_provider_requires_its_key_and_model(
         load_settings(env_file=tmp_path / "missing.env")
 
     env_file = _env_file(tmp_path, {"ANTHROPIC_API_KEY": "synthetic-anthropic-key"})
+    no_model = write_config(lambda d: d["llm"]["models"].update(anthropic=""))
     with pytest.raises(ConfigError, match=r"llm\.models\.anthropic"):
-        load_settings(env_file=env_file)
+        load_settings(no_model, env_file=env_file)
 
     path = write_config(lambda d: d["llm"]["models"].update(anthropic="some-model"))
     settings = load_settings(path, env_file=env_file)
