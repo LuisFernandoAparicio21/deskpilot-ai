@@ -54,7 +54,7 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 
 ---
 
-## Por qué este proyecto
+## 💡 Por qué este proyecto
 
 1. Una mesa de servicio L1 gasta casi 4 de cada 10 tickets en cinco problemas repetitivos (contraseña, desbloqueo, token, impresoras, VPN) y sufre picos de quincena.
 2. DeskPilot AI responde esos casos con pasos y artículo citado, dice "no lo sé" cuando no hay evidencia y escala fraude, accesos no autorizados y fallas de caja sin intentar resolverlos.
@@ -62,7 +62,7 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 
 ---
 
-## Cómo funciona
+## ⚙️ Cómo funciona
 
 ```mermaid
 flowchart TD
@@ -140,7 +140,7 @@ eval: 30 cases (local) -> tests/eval/results.csv
 
 La latencia varía entre corridas (la de hoy: p50 14.7 ms, p95 31.0 ms); la tabla de arriba usa el resumen versionado.
 
-## Video
+## 🎬 Video
 
 > PLACEHOLDER (video demo: pendiente de grabar, ver docs/MANUAL_STEPS.md, sección 7).
 
@@ -216,7 +216,7 @@ Detalle y más diagramas en [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
-## Habilidades demostradas
+## 🧩 Habilidades demostradas
 
 | Habilidad | Evidencia | Estado |
 | --- | --- | --- |
@@ -254,7 +254,7 @@ Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap
 
 ---
 
-## Límites conocidos
+## ⚠️ Límites conocidos
 
 - **EV-16:** una consulta fuera de dominio recupera KB-003 con score 0.525, sobre el umbral 0.33, y el agente responde en vez de rechazar (el umbral es global y sin rerank). Por eso `eval` termina con código 1; se documentó y no se subió el umbral para no rechazar casos legítimos ([`docs/features/eval-e2e.md`](docs/features/eval-e2e.md)).
 - **Fabric y Copilot Studio no están verificados contra un tenant real:** el código del modo `fabric` y el agente están diseñados y probados con dobles, no contra Microsoft.
@@ -263,13 +263,13 @@ Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap
 
 ---
 
-## Licencia
+## 📄 Licencia
 
 [MIT](LICENSE). Cómo contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md). Cambios: [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
-## English summary
+## 🌐 English summary
 
 DeskPilot AI is a portfolio project: a level-1 IT service desk assistant for a fictional bank ("Banco Altiplano"). All data is synthetic and the figures are illustrative.
 
