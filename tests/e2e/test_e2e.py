@@ -145,7 +145,7 @@ def test_local_eval_runs_the_30_cases_and_leaves_the_repo_database_alone(
 
     code, summary = _run_eval(fake_settings, monkeypatch, out)
 
-    assert code in (0, 1)  # 2 would be a configuration or infrastructure error
+    assert code in (0, 1, 3)  # 2 would be a configuration or infrastructure error
     assert summary["backend"] == "local"
     assert summary["total"] == 30
     assert len(summary["cases"]) == 30
@@ -217,8 +217,8 @@ def test_http_eval_gives_the_same_verdicts_and_persists_tickets_in_the_server_db
             "--api-key",
             API_KEY,
         )
-    assert code in (0, 1)
-    assert local_code in (0, 1)
+    assert code in (0, 1, 3)
+    assert local_code in (0, 1, 3)
     assert http["backend"] == "http"
     assert http["total"] == 30
     # Same code path behind both backends; article cases differ (HTTP exposes only the cited one).
@@ -311,9 +311,15 @@ def test_real_index_metrics_that_meet_section_12(real_summary: dict[str, Any]) -
 
 
 @pytest.mark.slow
-@pytest.mark.xfail(strict=True, reason="; ".join(KNOWN_BUGS.values()))
-def test_real_index_all_section_12_thresholds_met(real_summary: dict[str, Any]) -> None:
-    assert real_summary["thresholds_met"], {
-        name: (m["passed"], m["total"], m["threshold_pct"])
-        for name, m in real_summary["metrics"].items()
-    }
+def test_real_index_exit_contract_is_3_only_because_of_known_failures(
+    real_summary: dict[str, Any],
+) -> None:
+    # Targets are not all met (rechazo 3/4), but only the documented EV-16 fails: exit 3.
+    assert real_summary["exit_code"] == 3, real_summary["exit_reason"]
+    assert real_summary["thresholds_met"] is False
+    assert real_summary["known_failures_hit"] == sorted(KNOWN_BUGS)
+    assert real_summary["new_failures"] == []
+    assert real_summary["metrics"]["aprobados"]["met"]
+    assert real_summary["metrics"]["seguridad"]["met"]
+    unmet = [k for k, c in real_summary["criteria"].items() if not c["met"]]
+    assert unmet == ["rechazo"], real_summary["criteria"]

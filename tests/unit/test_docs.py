@@ -278,7 +278,8 @@ def test_readme_eval_figures_match_summary() -> None:
     failed = [k for k, v in s["cases"].items() if v != "pasó"]
     assert failed == ["EV-16"], f"README documents EV-16 as the only failure; real: {failed}"
     assert "EV-16" in _section(text, "Límites conocidos")
-    assert s["thresholds_met"] is False and "código 1" in text
+    assert s["thresholds_met"] is False and "código 3" in text
+    assert s["exit_code"] == 3 and s["known_failures_hit"] == ["EV-16"]
 
 
 # (7) roadmap ---------------------------------------------------------------------------

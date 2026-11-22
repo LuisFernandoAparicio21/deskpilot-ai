@@ -133,6 +133,8 @@ def test_summary_json_matches_the_report(tmp_path: Path) -> None:
     assert data["metrics"]["rechazo"]["passed"] == 0
     assert data["metrics"]["seguridad"]["pct"] is None
     assert data["thresholds_met"] is False
+    assert data["exit_code"] == 1  # min_passed broken (1/2) and R1 is not a known failure
+    assert data["new_failures"] == ["R1"]
 
 
 def test_previous_values_of_obtenido_are_overwritten(tmp_path: Path) -> None:
@@ -220,6 +222,7 @@ def test_exit_code_follows_the_thresholds() -> None:
     good = _mixed({"articulo": (14, 14), "rechazo": (4, 4)})
     bad = _mixed({"articulo": (14, 14), "rechazo": (3, 4)})
     assert ev.EvalReport(good, compute_metrics(good), 1, 1, "x").exit_code == 0
+    # 1 unmet target failure that is not a known failure is a regression: exit 1, not 3
     assert ev.EvalReport(bad, compute_metrics(bad), 1, 1, "x").exit_code == 1
 
 
