@@ -6,6 +6,7 @@ and the repository are replaced by fakes that record their calls.
 
 from __future__ import annotations
 
+import os
 import sys
 import types
 from pathlib import Path
@@ -309,12 +310,6 @@ def test_invalid_option_exits_2() -> None:
     assert info.value.code == 2
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG scripts/check_fabric.py describe(): a non-pyodbc exception whose args[0] is a "
-    "str is printed in full as its 'SQLSTATE', so its message (possibly a connection "
-    "string or token) reaches stdout; the docstring promises type only.",
-)
 def test_generic_exception_message_is_not_printed(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -327,3 +322,116 @@ def test_generic_exception_message_is_not_printed(
     _wire(monkeypatch, factory)
     assert check_fabric.main([]) == 1
     _assert_clean(capsys)
+
+
+JWT = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTYifQ.c2lnbmF0dXJl"
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        (("28000", f"{CONNSTRING_MARKER} token={TOKEN}"), "FakePyodbcError (SQLSTATE 28000)"),
+        (("HY000",), "FakePyodbcError (SQLSTATE HY000)"),
+        (("08S01", "Server=a;PWD=secret"), "FakePyodbcError (SQLSTATE 08S01)"),
+        (("Server=tcp:h,1433;PWD=secret",), "FakePyodbcError"),
+        ((JWT,), "FakePyodbcError"),
+        (("28000;Server=h;PWD=secret",), "FakePyodbcError"),
+        (("28000\n",), "FakePyodbcError"),
+        (("2800",), "FakePyodbcError"),
+        (("280000",), "FakePyodbcError"),
+        (("28 00",), "FakePyodbcError"),
+        (("ab123",), "FakePyodbcError"),
+        ((28000, "Server=a;PWD=secret"), "FakePyodbcError"),
+        ((), "FakePyodbcError"),
+    ],
+    ids=[
+        "sqlstate-numeric-secret-in-args1",
+        "sqlstate-alnum",
+        "sqlstate-with-letter-and-digit",
+        "connection-string-as-args0",
+        "jwt-as-args0",
+        "sqlstate-plus-suffix",
+        "sqlstate-trailing-newline",
+        "four-chars",
+        "six-chars",
+        "space-inside",
+        "lowercase",
+        "non-str-args0",
+        "no-args",
+    ],
+)
+def test_describe_emits_only_type_and_five_char_sqlstate(
+    args: tuple[Any, ...], expected: str
+) -> None:
+    exc = FakePyodbcError()
+    exc.args = args
+    result = check_fabric.describe(exc)
+    assert result == expected
+    for forbidden in ("Server=", "PWD=", "secret", JWT, TOKEN, "eyJ"):
+        assert forbidden not in result
+
+
+def test_describe_generic_exception_with_secrets_is_type_only() -> None:
+    exc = RuntimeError(f"{CONNSTRING_MARKER};PWD=secret token={JWT}")
+    assert check_fabric.describe(exc) == "RuntimeError"
+
+
+# --- DESKPILOT_MODE is always restored -------------------------------------------------
+
+
+def _spy_load_settings(
+    monkeypatch: pytest.MonkeyPatch, seen: list[str | None], error: Exception | None = None
+) -> None:
+    def spy() -> Any:
+        seen.append(os.environ.get("DESKPILOT_MODE"))
+        if error is not None:
+            raise error
+        return config_module.load_settings()
+
+    monkeypatch.setattr(check_fabric, "load_settings", spy)
+
+
+@pytest.mark.parametrize(
+    "previous", [None, "local", "fabric", ""], ids=["unset", "local", "fabric", "empty"]
+)
+def test_deskpilot_mode_is_fabric_during_load_and_restored_after_main(
+    monkeypatch: pytest.MonkeyPatch, previous: str | None
+) -> None:
+    if previous is not None:
+        monkeypatch.setenv("DESKPILOT_MODE", previous)
+    seen: list[str | None] = []
+    _spy_load_settings(monkeypatch, seen)
+    _wire(monkeypatch, FakeFactory())
+    assert check_fabric.main([]) == 0
+    assert seen == ["fabric"]
+    assert os.environ.get("DESKPILOT_MODE") == previous
+
+
+@pytest.mark.parametrize("previous", [None, "local"], ids=["unset", "local"])
+def test_deskpilot_mode_is_restored_when_load_settings_raises(
+    monkeypatch: pytest.MonkeyPatch, previous: str | None
+) -> None:
+    if previous is not None:
+        monkeypatch.setenv("DESKPILOT_MODE", previous)
+    seen: list[str | None] = []
+    _spy_load_settings(monkeypatch, seen, RuntimeError("boom"))
+    _wire(monkeypatch, FakeFactory())
+    with pytest.raises(RuntimeError, match="boom"):
+        check_fabric.main([])
+    assert seen == ["fabric"]
+    assert os.environ.get("DESKPILOT_MODE") == previous
+
+
+@pytest.mark.parametrize("previous", [None, "local"], ids=["unset", "local"])
+def test_deskpilot_mode_is_restored_on_config_error(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], previous: str | None
+) -> None:
+    if previous is not None:
+        monkeypatch.setenv("DESKPILOT_MODE", previous)
+    seen: list[str | None] = []
+    _spy_load_settings(monkeypatch, seen, config_module.ConfigError("bad config"))
+    _wire(monkeypatch, FakeFactory())
+    assert check_fabric.main([]) == 2
+    _assert_clean(capsys)
+    assert seen == ["fabric"]
+    assert os.environ.get("DESKPILOT_MODE") == previous

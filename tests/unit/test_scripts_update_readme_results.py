@@ -179,17 +179,33 @@ def test_bad_markers_exit_2_and_leave_readme_intact(
     assert "exactly one" in out and "Traceback" not in out
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG scripts/update_readme_results.py replace_block(): only START is counted, so a "
-    "README with one START and two END markers is accepted and rewritten (exit 0) although "
-    "the docstring requires exactly one pair.",
-)
 def test_duplicate_end_marker_exit_2(env: Env) -> None:
     text = f"{urr.START}\na\n{urr.END}\nmedio\n{urr.END}\n"
     env.write_readme(text)
     assert env.run() == 2
     assert env.bytes() == text.encode()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        f"antes\n{urr.START}\nsin cierre\nfin\n",
+        f"{urr.START}\n{urr.START}\n{urr.END}\n",
+        f"antes\n{urr.END}\nmedio\n{urr.START}\nfin\n",
+        f"{urr.END}{urr.START}",
+    ],
+    ids=["start-without-end", "two-starts-one-end", "end-before-start", "end-right-before-start"],
+)
+def test_unpaired_or_misordered_markers_exit_2_and_do_not_write(
+    env: Env, capsys: pytest.CaptureFixture[str], text: str
+) -> None:
+    env.write_readme(text)
+    assert env.run() == 2
+    assert env.bytes() == text.encode()
+    assert env.run("--check") == 2
+    assert env.run("--dry-run") == 2
+    out = capsys.readouterr().out
+    assert "exactly one" in out and "Traceback" not in out
 
 
 def test_missing_readme_exit_2(env: Env) -> None:
@@ -226,12 +242,6 @@ def test_missing_summary_exit_2(env: Env) -> None:
         lambda s: s.__setitem__("metrics", []),
     ],
     ids=["metric-lacks-met", "metric-empty", "latency-empty", "metrics-not-dict"],
-)
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG scripts/update_readme_results.py load_summary()/render_block(): only the "
-    "top-level keys are validated; inner values missing or of the wrong type raise "
-    "KeyError/AttributeError (traceback, Python exit 1) instead of exit 2.",
 )
 def test_malformed_summary_contents_exit_2_not_a_traceback(env: Env, mutate: Any) -> None:
     """Valid top-level keys but broken inner values must still be 'bad input' (exit 2)."""
