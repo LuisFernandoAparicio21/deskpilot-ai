@@ -273,3 +273,42 @@ Todas consultadas el 2026-11-22. Tipo: oficial / guía reconocida / estudio / op
 | Fuente | URL | Tipo | Qué se tomó |
 | --- | --- | --- | --- |
 | GitHub Docs: Privately reporting a security vulnerability | https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability | documentación oficial | Flujo del reportante: pestaña Security ("Security and quality"), Report a vulnerability, formulario y Submit report; el propietario debe habilitar el reporte privado. Consultada 2026-11-22; no se verificó en pantalla si el repositorio lo tiene habilitado. |
+
+
+## Automatización y conexión SQL de Fabric (fabric-cli-and-rest.md, fabric-sql-from-python.md)
+
+| Fuente | URL | Tipo | Qué se tomó |
+| --- | --- | --- | --- |
+| Fabric CLI (microsoft/fabric-cli), docs de ejemplos | https://github.com/microsoft/fabric-cli/tree/main/docs (renderizada en https://microsoft.github.io/fabric-cli/) | documentación oficial (repo Microsoft) | `pip install ms-fabric-cli` (1.9.0, Python 3.10-3.14), `fab auth login` (interactivo, az CLI, SP, identidad administrada), `fab create`, `fab cp` a OneLake, `fab job run/start/run-status`. Consultada 2026-11-22. ⚠ sin device code documentado. |
+| Job Scheduler - Run On Demand Item Job | https://learn.microsoft.com/en-us/rest/api/fabric/core/job-scheduler/run-on-demand-item-job | documentación oficial | Endpoint, 202 con `Location` y `Retry-After`, scopes `Item.Execute.All`, identidades soportadas. Consultada 2026-11-22. ⚠ el jobType del notebook no aparece. |
+| Enable Microsoft Fabric for your organization | https://learn.microsoft.com/en-us/fabric/admin/fabric-switch | documentación oficial | Setting "Users can create Fabric items" (lo controla el Fabric admin), capacidad requerida (trial, F, P). Consultada 2026-11-22. |
+| Microsoft Entra authentication in Fabric Data Warehouse | https://learn.microsoft.com/en-us/fabric/data-warehouse/entra-id-authentication | documentación oficial | Cadenas ODBC 18 (`ActiveDirectoryInteractive`, `ActiveDirectoryServicePrincipal`, `ActiveDirectoryPassword`), settings de tenant y workspace. Consultada 2026-11-22. |
+| Authenticate with Microsoft Entra ID in sqlcmd | https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-authentication | documentación oficial | `-G -U` (interactivo) en sqlcmd ODBC y `--authentication-method` en sqlcmd Go. Consultada 2026-11-22. ⚠ habla de Azure SQL y Synapse, no de Fabric. |
+| Items - Get Lakehouse (Fabric REST API) | https://learn.microsoft.com/en-us/rest/api/fabric/lakehouse/items/get-lakehouse | documentación oficial | `properties.sqlEndpointProperties.connectionString` y `provisioningStatus`. Consultada 2026-11-22. |
+
+## Power Platform CLI y pruebas automatizadas de Copilot Studio (power-platform-cli-copilot.md, copilot-studio-trial-limits.md)
+
+| Fuente | URL | Tipo | Qué se tomó |
+| --- | --- | --- | --- |
+| Microsoft Power Platform CLI copilot command group | https://learn.microsoft.com/en-us/power-platform/developer/cli/reference/copilot | documentación oficial | Lista de comandos `pac copilot` (init, clone, pull, push, pack, create, extract-template, publish, list), `init --environment` crea el agente, `pack` + `pac solution import`, requiere `pac auth create`. Consultada 2026-11-22. ⚠ no dice si funciona en entorno de prueba. |
+| Microsoft Power Platform CLI solution command group | https://learn.microsoft.com/en-us/power-platform/developer/cli/reference/solution | documentación oficial | `pac solution export` (`--name --path --managed`) e `import` (`--path`, `--settings-file`, `--async`). Consultada 2026-11-22. |
+| Edit your Microsoft Copilot Studio agent in Microsoft Visual Studio Code | https://learn.microsoft.com/en-us/microsoft-copilot-studio/visual-studio-code-extension-edit-agent-components | documentación oficial | Estructura de archivos del agente (agent.mcs.yaml, topics, actions, workflows, trigger, knowledge/files). Consultada 2026-11-22. |
+| Get access to Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-licensing-subscriptions | documentación oficial | Prueba: crear y probar en el panel, no publicar; extensión 30 días; conectores premium en suscripción standalone. Consultada 2026-11-22. |
+| Create a single response test set (agent evaluation) | https://learn.microsoft.com/en-us/microsoft-copilot-studio/analytics-agent-evaluation-create | documentación oficial | Hasta 100 casos; CSV con `Question` y `Expected response`; métodos de prueba; resultados 89 días. Consultada 2026-11-22. |
+| Automate evaluations with the Power Platform API | https://learn.microsoft.com/en-us/microsoft-copilot-studio/analytics-agent-evaluation-rest-api | documentación oficial | Endpoints `makerevaluation/testsets/.../run` y `testruns`, token Entra de usuario. Consultada 2026-11-22. ⚠ no dice si exige publicar ni si aplica a prueba. |
+
+## Dev Tunnels persistente, Power BI como código y captura de la demo (R5-R7)
+
+Consultadas el 2026-11-22. "⚠" marca lo no confirmado. Ver `docs/research/dev-tunnels.md`, `power-bi-pbip.md` y `demo-capture.md`.
+
+| Fuente | URL | Tipo | Qué se tomó |
+| --- | --- | --- | --- |
+| Dev tunnels command-line reference | https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/cli-commands | documentación oficial | `user login` (-g GitHub, -d device code), `create -a`, `port create`, `host <id>`, `access create --anonymous`, `token --scopes connect`, expiración 1h-30d, formato de la línea "Hosting port ... at https://...". ⚠ sin `--json` documentado. |
+| Dev tunnels security | https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/security | documentación oficial | Página anti-phishing se omite si no es GET, si Accept no contiene text/html o con `X-Tunnel-Skip-AntiPhishing-Page`/`X-Tunnel-Authorization`; tokens de acceso (24 h); HTTPS/HSTS, TLS 1.2+. |
+| Azure subscription and service limits (sección Dev tunnels limits) | https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#dev-tunnels-limits | documentación oficial | 5 GB de ancho de banda por usuario, 10 túneles, 1000 conexiones por puerto, 10 puertos, 1500 peticiones/min por puerto, 20 MB/s, cuerpo máx. 16 MB; reinicio mensual. WebFetch no mostró la sección; se leyó el HTML con curl. ⚠ sin timeout publicado. |
+| Power BI Desktop projects (PBIP) | https://learn.microsoft.com/en-us/power-bi/developer/projects/projects-overview | documentación oficial | Estructura de proyecto, TMDL, edición programática, archivos sin esquema documentado, despliegue (Git, API, Desktop), límites (ruta 260 caracteres, UTF-8 sin BOM). |
+| Report definition (Fabric REST APIs) | https://learn.microsoft.com/en-us/rest/api/fabric/articles/item-management/definitions/report-definition | documentación oficial | Partes del reporte PBIR/PBIR-Legacy, `definition.pbir` con `byConnection`, payload base64. |
+| Power BI Semantic Models (Fabric) | https://learn.microsoft.com/en-us/fabric/data-warehouse/semantic-models | documentación oficial | Desde 2025-09-05 no se crea modelo semántico por defecto; hay que crearlo; modelos gestionables por REST. |
+| Playwright Python: Browsers | https://playwright.dev/python/docs/browsers | documentación oficial | `pip install playwright`, `playwright install`, `--only-shell`, `channel=msedge`, caché en `%USERPROFILE%\AppData\Local\ms-playwright`, ~650 MB los tres navegadores, `PLAYWRIGHT_BROWSERS_PATH`. |
+| Use Snipping Tool to capture screenshots (video) | https://support.microsoft.com/en-us/windows/use-snipping-tool-to-capture-screenshots-00246869-1843-655f-f220-97299b865f6b | documentación oficial | Grabación de video con `Win+Shift+R` en Windows 10/11, edición en Clipchamp. ⚠ no menciona micrófono ni formato. |
+| charmbracelet/vhs | https://github.com/charmbracelet/vhs | repositorio oficial del proyecto | GIF/MP4/WebM desde un archivo tape; `winget install charmbracelet.vhs`; requiere ttyd y ffmpeg. ⚠ fiabilidad en Windows no confirmada. |
