@@ -207,3 +207,9 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | How to connect - Fabric Data Warehouse | https://learn.microsoft.com/en-us/fabric/data-warehouse/how-to-connect | Cadena SQL en Settings > SQL connection string; Contributor+; Power BI usa el endpoint como fuente nativa, Import o DirectQuery; Entra ID. Ver `docs/research/power-bi-fabric-connection.md`. |
 | Direct Lake semantic models in Power BI Desktop | https://learn.microsoft.com/en-us/fabric/fundamentals/direct-lake-power-bi-desktop | OneLake catalog > Lakehouse/Warehouse > Connect crea modelo Direct Lake on OneLake con live edit; requiere XMLA RW y permiso Write; no disponible con licencia free. |
 | Understand Microsoft Fabric licenses and capacity | https://learn.microsoft.com/en-us/fabric/enterprise/licenses | Crear/compartir elementos Power BI fuera de My workspace requiere Pro/PPU; F64+/Trial: Free + Viewer puede ver; F<64 el visor necesita Pro/PPU. |
+
+## Flujo del usuario (PL-1)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| Creating diagrams (GitHub Docs) | https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams | GitHub renderiza Mermaid en bloques con el identificador `mermaid`; menciona flowcharts y sequence diagrams (solo muestra ejemplo de flowchart). `docs/user-flow.md` usa solo `flowchart TD` y `sequenceDiagram`. |

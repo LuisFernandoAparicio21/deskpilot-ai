@@ -31,6 +31,28 @@ Asistente de nivel 1 para la mesa de servicio de TI de un banco ficticio: respon
 
 La tabla completa contra la vacante está en [`docs/job-fit.md`](docs/job-fit.md).
 
+## Cómo funciona
+
+```mermaid
+flowchart TD
+    A[Empleado escribe] --> C{Que necesita?}
+    C -- incidencia --> D[buscar_solucion]
+    D --> E{Evidencia?}
+    E -- si --> F[Pasos y articulo citado]
+    F --> G{Funciono?}
+    G -- si --> H([Fin])
+    G -- no --> K[crear_ticket]
+    E -- no --> J[No lo se] --> K
+    K --> L([Folio, prioridad y SLA])
+    C -- estado --> N[consultar_estado_ticket]
+    C -- humano --> K
+    C -- fraude, acceso no autorizado o cajas --> S[crear_ticket P1]
+    C -- dato sensible --> Q[Advertencia, no se guarda]
+    C -- metricas --> T[metricas_area]
+```
+
+Diagramas completos y ejemplos reales en español e inglés: [`docs/user-flow.md`](docs/user-flow.md). Componentes: [`docs/architecture.md`](docs/architecture.md).
+
 ## Arquitectura
 
 ```mermaid

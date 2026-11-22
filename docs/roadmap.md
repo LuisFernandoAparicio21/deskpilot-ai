@@ -52,7 +52,7 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 
 | # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
 |---|---|---|---|---|---|---|---|---|
-| PL-1 | user-flow | chore/user-flow-diagram | docs/user-flow.md: diagrama de decisión y de secuencia del MVP desde el usuario + ejemplo real ES/EN; versión compacta en README | S13, RF de búsqueda/ticket/escalamiento | docs-writer (qa-tester valida) | pendiente | - | - |
+| PL-1 | user-flow | chore/user-flow-diagram | docs/user-flow.md: diagrama de decisión y de secuencia del MVP desde el usuario + ejemplo real ES/EN; versión compacta en README | S13, RF de búsqueda/ticket/escalamiento | docs-writer (qa-tester valida) | documentada | - | - |
 | PL-2 | visual-style-research | chore/visual-style-research | Investigación del estilo visual del perfil y repos del usuario (docs/research/visual-style.md) | S13 | researcher | pendiente | - | - |
 | PL-3 | readme-visual-refresh | chore/readme-visual-refresh | Banner SVG, typing-svg, badges agrupados, resumen EN arriba, resultados en números, orden para reclutador | S13, S14 | docs-writer (qa-tester valida) | pendiente | - | - |
 | PL-4 | diagnostics-review | chore/diagnostics-review | Diagnóstico de 5 problemas de la revisión externa (docs/diagnostics/2026-11-22-review.md) | S12, S14 | diagnostician | pendiente | - | - |

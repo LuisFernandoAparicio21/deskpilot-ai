@@ -29,6 +29,7 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - ADR-0001 a ADR-0008 en `docs/adr/` con su índice: RAG extractivo, Chroma versionado, fastembed, SQL portable y Fabric, API REST y MCP, seguridad, Swagger 2.0 y Docker (T23).
 - Documentación final de Fase A (T24): README completo (setup, comandos, resultados reales, estado, límites, resumen en inglés), `docs/architecture.md` con diagramas Mermaid, `docs/job-fit.md` (11 puntos contra evidencia y estado) y plantilla de `docs/learning-log.md`.
 - Guía manual y scripts de verificación (T25, Fase B): `docs/MANUAL_STEPS.md` (46 pasos numerados para T28 a T36 con cuenta universitaria, alternativas de tenant sin M365 Developer Program, tabla "Si falla" y tiempos), `scripts/check_fabric.py`, `scripts/check_public_url.py` y `scripts/update_readme_results.py` con 97 pruebas (dobles, sin Fabric ni URL real), bloque de resultados del README y `docs/research/` de acceso a Fabric, Copilot Studio, URL pública y Power BI. Ver `docs/features/manual-steps-scripts.md`.
+- Flujo del usuario (PL-1): `docs/user-flow.md` con diagrama de decisión, diagrama de secuencia, tablas paso-herramienta-RF-EV y ejemplos reales ES/EN; versión compacta en la sección "Cómo funciona" del README.
 
 ### Changed
 
