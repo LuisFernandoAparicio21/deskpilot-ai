@@ -110,10 +110,7 @@ def _safe_field(err: Any) -> str:
 
 async def _validation_error(_request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, RequestValidationError)
-    details = [
-        {"field": _safe_field(err), "issue": str(err["type"])}
-        for err in exc.errors()
-    ]
+    details = [{"field": _safe_field(err), "issue": str(err["type"])} for err in exc.errors()]
     logger.info("Request rejected by validation", extra={"errors": len(details)})
     return error_response(422, "validation_error", status_message(422), details=details)
 
