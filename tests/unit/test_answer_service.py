@@ -321,6 +321,22 @@ def test_logs_never_contain_the_query_text(
     assert all("bloque" not in str(r.__dict__) for r in caplog.records)
 
 
+def test_no_log_record_carries_a_unique_sentinel_from_the_query(
+    retriever: Retriever, settings: Settings, caplog: pytest.LogCaptureFixture
+) -> None:
+    sentinel = "zxqvortex7731"
+    llm = FakeLLM(f"1. Espera 15 minutos.\n\n{SOURCE_ES}")
+    with caplog.at_level(logging.DEBUG):
+        _service(retriever, settings, llm).answer(f"se bloqueó mi usuario de Windows {sentinel}")
+        _service(retriever, settings).answer(f"fraude {sentinel}")
+        _service(retriever, settings).answer(f"pozole {sentinel}")
+
+    assert len(caplog.records) >= 3
+    for record in caplog.records:
+        assert sentinel not in record.getMessage()
+        assert sentinel not in str(record.__dict__)
+
+
 # --- with an LLM ---------------------------------------------------------------------
 
 
