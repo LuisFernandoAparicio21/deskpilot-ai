@@ -4,8 +4,10 @@
 max_tokens=..., system=..., messages=[{"role": "user", "content": ...}], timeout=...)``
 come from the installed SDK signature and the Messages API reference. The answer is the
 concatenation of the ``text`` content blocks (other blocks, such as thinking, are
-skipped). Retries are off so ``llm.timeout_s`` bounds the whole call and the extractive
-fallback kicks in on time. The SDK is imported only when the first request is made.
+skipped). Retries are off, so one attempt is made. A float ``timeout`` is applied by
+the SDK to each httpx phase (connect, write, read, pool: verified by building a request
+with ``timeout=7.5``), so it is NOT a total deadline; the read phase is the wait for the
+response. The extractive fallback takes over on any timeout. The SDK is imported only when the first request is made.
 """
 
 from __future__ import annotations
