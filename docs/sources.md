@@ -213,3 +213,11 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | Título | URL | Qué se confirmó (consulta 2026-11-22) |
 | --- | --- | --- |
 | Creating diagrams (GitHub Docs) | https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams | GitHub renderiza Mermaid en bloques con el identificador `mermaid`; menciona flowcharts y sequence diagrams (solo muestra ejemplo de flowchart). `docs/user-flow.md` usa solo `flowchart TD` y `sequenceDiagram`. |
+
+## Investigación de estilo visual (visual-style.md)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| readme-typing-svg (DenverCoder1) | https://github.com/DenverCoder1/readme-typing-svg | Parámetros lines, width, height, size, font, color, center, duration, pause, repeat, etc.; el servicio demolab responde 200 `image/svg+xml`. |
+| Shields.io | https://shields.io | `img.shields.io/badge/...?style=for-the-badge&logo=...` responde 200 `image/svg+xml`. |
+| Repos de LuisFernandoAparicio21 (perfil, agentic-spec-driven-development, proyecto-inaoeV2, factufast) | https://github.com/LuisFernandoAparicio21 | README y assets/banner-dark.svg / banner-light.svg leídos en raw; estilo documentado en docs/research/visual-style.md. |
