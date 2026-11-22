@@ -1,0 +1,34 @@
+[
+  {
+    "id": "fabric",
+    "nombre": "Microsoft Fabric (lakehouse, Warehouse y consultas SQL)",
+    "estado": "pendiente",
+    "fecha": null,
+    "evidencia": null,
+    "que_falta": "Ejecutar notebook, DDL, 10 consultas y check_fabric en un tenant real (hoy solo dobles de prueba)"
+  },
+  {
+    "id": "copilot_studio",
+    "nombre": "Agente en Copilot Studio",
+    "estado": "pendiente",
+    "fecha": null,
+    "evidencia": null,
+    "que_falta": "Importar el OpenAPI, crear el agente y correr los 30 casos en el chat (hoy solo diseño y dobles)"
+  },
+  {
+    "id": "power_bi",
+    "nombre": "Reporte de Power BI",
+    "estado": "pendiente",
+    "fecha": null,
+    "evidencia": null,
+    "que_falta": "Construir el reporte sobre Fabric y capturarlo"
+  },
+  {
+    "id": "video",
+    "nombre": "Video de la demo",
+    "estado": "pendiente",
+    "fecha": null,
+    "evidencia": null,
+    "que_falta": "Grabar el video y enlazarlo en el README"
+  }
+]
