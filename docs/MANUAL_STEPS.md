@@ -361,6 +361,12 @@ Tiempo: 20 min (estimación; T36 la hace docs-writer con tus resultados, aquí s
 42. [ ] **Revisión final de resultados.**
     - Copiar: `.venv\Scripts\python -m scripts.update_readme_results --check`.
     - Verificar: sale 0 (README al día). Si sale 1, corre sin `--check` y revisa `git diff README.md`.
+42b. [ ] **Marcar cada integración validada.** Solo después de cumplir los pasos de su sección (Fabric: 1 y 2; Copilot Studio: 4 y 5; Power BI: 6; video: 7 y 8).
+    - Archivo: `docs/validation-status.json`. En la integración, cambia `"estado"` a `"validado"`, `"fecha"` a `YYYY-MM-DD` y `"evidencia"` a la
+      ruta de la captura (`docs/screenshots/...`) o a la URL; ajusta `que_falta`. El esquema rechaza `validado` sin fecha y evidencia.
+    - Copiar: `.venv\Scripts\python -m scripts.update_readme_results` (regenera los bloques RESULTS, VALIDATION y MSBADGES del README) y
+      luego `.venv\Scripts\python -m scripts.update_readme_results --check`.
+    - Verificar: el check sale 0 y `git diff README.md` muestra la fila en "✅ Validado" y el badge en verde. Si sale 2, el mensaje nombra el campo inválido.
 43. [ ] **Entregar la evidencia.** Pasa a la sesión: tabla T32 llena, capturas de `docs/screenshots/`, link del video y las notas
     de lo que no funcionó. De ahí se actualizan README, business-case y testing-procedure (T36).
 44. [ ] **Push por PR.** Rama `feat/t36-evidencia-real`; nunca push directo a `main`: `git push -u origin feat/t36-evidencia-real` y

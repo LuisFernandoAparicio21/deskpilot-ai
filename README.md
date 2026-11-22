@@ -7,7 +7,7 @@
 </picture>
 
 <p align="center">
-  <a href="https://github.com/DenverCoder1/readme-typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&center=true&width=650&height=45&color=F5E0E0&lines=L1+Service+Desk+Agent;Copilot+Studio+%2B+Microsoft+Fabric;RAG+with+citations+%C2%B7+says+I+don%27t+know" alt="L1 Service Desk Agent · Copilot Studio + Microsoft Fabric · RAG with citations · says I don't know"></a>
+  <a href="https://github.com/DenverCoder1/readme-typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&center=true&width=650&height=45&color=F5E0E0&lines=L1+Service+Desk+Agent;Validated+locally%3A+RAG+%2B+REST+%2B+MCP;Designed+for+Copilot+Studio+%2B+Fabric;RAG+with+citations+%C2%B7+says+I+don%27t+know" alt="L1 Service Desk Agent · validated locally: RAG, REST, MCP · designed for Copilot Studio + Microsoft Fabric · RAG with citations · says I don't know"></a>
 </p>
 
 **English:** DeskPilot AI is a level-1 IT service desk assistant for a fictional bank. It answers with cited knowledge-base articles and says "I don't know" when there is no evidence.
@@ -35,9 +35,11 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 ![pytest](https://img.shields.io/badge/pytest-1770%20tests-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
 ![Ruff](https://img.shields.io/badge/Ruff-lint-D7FF64?style=for-the-badge&logo=ruff&logoColor=white)
 <br>
-<!-- Plataforma Microsoft: solo probada con dobles; nunca verde -->
+<!-- Plataforma Microsoft: generado desde docs/validation-status.json; verde solo si validado con evidencia -->
+<!-- MSBADGES:START -->
 ![Copilot Studio: pendiente de validar en tenant real](https://img.shields.io/badge/Copilot%20Studio-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
-![Microsoft Fabric: pendiente de validar en tenant real](https://img.shields.io/badge/Fabric-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
+![Fabric: pendiente de validar en tenant real](https://img.shields.io/badge/Fabric-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
+<!-- MSBADGES:END -->
 
 </div>
 
@@ -49,8 +51,8 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 | --- | --- |
 | **Qué hace** | Responde incidencias de TI de nivel 1 con pasos y artículo citado, dice "no lo sé" sin evidencia y crea o consulta tickets. |
 | **Para quién** | Empleados de la mesa de servicio de "Banco Altiplano" (ficticio) y su equipo L1. |
-| **Cómo se usa** | API REST (FastAPI), servidor MCP y agente de Copilot Studio (diseño) sobre una misma capa de servicio. |
-| **Qué lo respalda** | RAG extractivo (fastembed + Chroma), 10 consultas SQL portables a Fabric y 30 casos de evaluación. |
+| **Cómo se usa** | API REST (FastAPI) y servidor MCP sobre una misma capa de servicio (validado en local); el agente de Copilot Studio está diseñado para consumirla (pendiente de validar en tenant real). |
+| **Qué lo respalda** | RAG extractivo (fastembed + Chroma), 10 consultas SQL escritas para Fabric (validadas en SQLite; Fabric pendiente) y 30 casos de evaluación. |
 
 ---
 
@@ -203,12 +205,12 @@ docs/              architecture, business-case, job-fit, requirements, roadmap, 
 
 ```mermaid
 flowchart LR
-    CS[Copilot Studio] -->|Swagger 2.0, X-API-Key| API[FastAPI]
+    CS[Copilot Studio, diseñado] -.->|Swagger 2.0, X-API-Key| API[FastAPI]
     MCPC[Cliente MCP] --> MCP[Servidor MCP]
     API --> SVC[Capa de servicio]
     MCP --> SVC
     SVC --> RAG[RAG: retriever, policy, answer_service]
-    SVC --> REPO[(SQLite o Fabric)]
+    SVC --> REPO[(SQLite validado; Fabric diseñado)]
     RAG --> VDB[(Chroma)]
 ```
 
@@ -218,8 +220,28 @@ Detalle y más diagramas en [`docs/architecture.md`](docs/architecture.md).
 
 ## 🧩 Habilidades demostradas
 
+### ✅ Validado (ejecutado y medido en local)
+
 | Habilidad | Evidencia | Estado |
 | --- | --- | --- |
+| SQL / T-SQL portable | 10 consultas en [`integrations/fabric/sql/`](integrations/fabric/sql/), ejecutadas en SQLite | Hecho en local |
+| API REST / MCP | [API REST](docs/features/api-rest.md), [MCP](docs/features/mcp-server.md), [crear_ticket](docs/features/crear-ticket.md) | Hecho |
+| RAG con citas | [ADR-0001](docs/adr/0001-rag-extractivo-por-defecto.md), [evaluación e2e](docs/features/eval-e2e.md) (29 de 30 casos; EV-16 es un límite conocido) | Hecho |
+| Pruebas y documentación de pruebas | [Procedimiento](docs/testing-procedure.md), [evaluación e2e](docs/features/eval-e2e.md) | Hecho |
+| CI y Docker | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [cobertura y CI](docs/features/coverage-ci.md) | Hecho |
+| Procesos de negocio | [Caso de negocio](docs/business-case.md), [ADR](docs/adr/README.md) | Hecho (datos sintéticos) |
+
+### ⏳ Diseñado y probado con dobles — pendiente de validar en tenant real
+
+| Habilidad | Evidencia | Estado |
+| --- | --- | --- |
+| Microsoft Fabric | [Notebook PySpark/Delta](integrations/fabric/notebooks/01_load_tickets_delta.ipynb), [DDL del Warehouse](integrations/fabric/sql/warehouse_ddl.sql), [conexión Entra por env](src/utils/fabric.py) | Diseñado; no verificado contra un tenant real |
+| Copilot Studio | Agente y herramienta REST: [`integrations/copilot_studio/`](integrations/copilot_studio/README.md), [feature](docs/features/copilot-studio-agent.md); 30 casos por correr en el chat | Diseñado; agente en el tenant pendiente (manual) |
+| Power BI | Reporte sobre Fabric, sin construir | Pendiente (manual) |
+
+La tabla completa contra la vacante está en [`docs/job-fit.md`](docs/job-fit.md).
+
+--- | --- | --- |
 | Copilot Studio | Diseño del agente: [`integrations/copilot_studio/`](integrations/copilot_studio/README.md), [feature](docs/features/copilot-studio-agent.md) | Diseño hecho; agente en el tenant pendiente (manual) |
 | SQL | 10 consultas en [`integrations/fabric/sql/`](integrations/fabric/sql/), validadas en SQLite | Hecho en local; Fabric pendiente (manual) |
 | Microsoft Fabric | [Notebook PySpark/Delta](integrations/fabric/notebooks/01_load_tickets_delta.ipynb), [DDL del Warehouse](integrations/fabric/sql/warehouse_ddl.sql), [conexión por env](src/utils/fabric.py) | Código listo; no verificado contra un tenant real |
@@ -240,7 +262,18 @@ La tabla completa contra la vacante está en [`docs/job-fit.md`](docs/job-fit.md
 | API REST y servidor MCP; `crear_ticket` con redacción de datos sensibles; export Swagger 2.0 | Agente en Copilot Studio y sus 30 casos en el chat |
 | Imagen Docker; evaluación de 30 casos; CI; caso de negocio y ADR | Reporte de Power BI, video y learning log |
 
-Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap.md). La separación completa Validado / Pendiente llega con la feature PL-6.
+Estado por integración, generado desde [`docs/validation-status.json`](docs/validation-status.json):
+
+<!-- VALIDATION:START -->
+| Integración | Estado | Evidencia | Qué falta |
+| --- | --- | --- | --- |
+| Microsoft Fabric (lakehouse, Warehouse y consultas SQL) | ⏳ Pendiente de validar en tenant real | - | Ejecutar notebook, DDL, 10 consultas y check_fabric en un tenant real (hoy solo dobles de prueba) |
+| Agente en Copilot Studio | ⏳ Pendiente de validar en tenant real | - | Importar el OpenAPI, crear el agente y correr los 30 casos en el chat (hoy solo diseño y dobles) |
+| Reporte de Power BI | ⏳ Pendiente de validar en tenant real | - | Construir el reporte sobre Fabric y capturarlo |
+| Video de la demo | ⏳ Pendiente de validar en tenant real | - | Grabar el video y enlazarlo en el README |
+<!-- VALIDATION:END -->
+
+Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap.md). La separación Validado / Pendiente está en la tabla de habilidades de arriba.
 
 ---
 

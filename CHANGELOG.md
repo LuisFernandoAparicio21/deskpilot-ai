@@ -16,6 +16,7 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Changed
 
+- Validado vs. pendiente (PL-6): la tabla "Habilidades demostradas" del README separa lo validado en local (SQL, API REST/MCP, RAG con citas, pruebas, CI, Docker) de lo diseñado y probado con dobles, pendiente de validar en tenant real (Fabric, Copilot Studio, Power BI); se ajustan la línea animada, "Qué es" y el diagrama del README, `docs/job-fit.md` y `docs/business-case.md` (en condicional: el diseño prevé; validado solo en local).
 - Roadmap de pulido posterior a v0.1.0 (PL-1 a PL-8) y agente `diagnostician` (#44).
 
 ## [0.1.0] - 2026-11-22

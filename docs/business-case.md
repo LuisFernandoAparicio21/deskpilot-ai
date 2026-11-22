@@ -32,11 +32,11 @@ mes en promedio (5,000 / 12, cálculo propio sobre el total de `01`).
 
 ## 3. Solución: DeskPilot AI
 
-Un agente L1 en Microsoft Copilot Studio (español e inglés) que usa una API propia con pipeline RAG sobre 15
-artículos de soporte. Las herramientas son `buscar_solucion`, `consultar_estado_ticket`, `crear_ticket` y
+El diseño prevé un agente L1 en Microsoft Copilot Studio (español e inglés) que use una API propia con pipeline RAG sobre 15
+artículos de soporte. Las herramientas previstas son `buscar_solucion`, `consultar_estado_ticket`, `crear_ticket` y
 `metricas_area`, expuestas como REST (Swagger 2.0 para Copilot Studio) y como servidor MCP, sobre una sola capa
-de servicio. Los tickets viven en un lakehouse de Microsoft Fabric (lectura) y los nuevos se escriben en un
-Warehouse; el modo local (SQLite + ChromaDB) corre sin llaves de pago. Las decisiones de diseño están en
+de servicio. El diseño prevé que los tickets vivan en un lakehouse de Microsoft Fabric (lectura) y que los nuevos se escriban en un
+Warehouse. Validado solo en local (SQLite + ChromaDB, sin llaves de pago): Copilot Studio y Fabric no se han probado en un tenant real. Las decisiones de diseño están en
 [`docs/adr/`](adr/README.md).
 
 Qué hace el agente: responde con pasos y artículo citado (RN-04), dice "no lo sé" y ofrece ticket si no hay
