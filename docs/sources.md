@@ -140,3 +140,14 @@ Las URLs de abajo respondieron con WebFetch el 2026-11-21. Todavía no se usaron
 | --- | --- | --- |
 | Conventional Commits 1.0.0 | https://www.conventionalcommits.org/en/v1.0.0/ | Formato `<type>[scope]: <description>`, tipos `feat`/`fix` obligatorios, `!` y `BREAKING CHANGE`, relación con SemVer. Verificada 2026-11-21: responde. Ver `docs/research/branch-and-feature-naming.md`. |
 | Conventional Branch | https://conventional-branch.github.io/ | Formato `<type>/<description>`, prefijos `feat/`, `fix/`, `hotfix/`, `release/`, `chore/` y reglas de caracteres. Verificada 2026-11-21: redirige (301) a https://conventionalbranch.org/. |
+
+## API REST (T16)
+
+Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn 0.54.0 instalados (scratch con TestClient y `main.py serve` real), no solo leyendo documentación.
+
+| Tema | URL | Qué se confirmó |
+| --- | --- | --- |
+| Dependencias de seguridad (`APIKeyHeader`, `Security`) | https://fastapi.tiangolo.com/reference/security/ | `auto_error=False` deja el control del 401 a la app y declara el esquema `apiKey` en OpenAPI. |
+| Manejadores de excepciones | https://fastapi.tiangolo.com/tutorial/handling-errors/ | `RequestValidationError` y `HTTPException` de Starlette se reemplazan con `add_exception_handler`. |
+| `uvicorn.run` | https://www.uvicorn.org/settings/ | Con `log_config=None` los logs de uvicorn se propagan al logging JSON del proyecto; `access_log=False` y `server_header=False` verificados con la firma instalada. |
+| SQLite `mode=ro` | https://www.sqlite.org/uri.html | URI `file:...?mode=ro` abre solo lectura y no crea el archivo si falta (verificado). |
