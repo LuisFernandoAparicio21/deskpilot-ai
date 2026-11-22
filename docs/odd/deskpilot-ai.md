@@ -238,7 +238,7 @@ Criterios de aceptación:
 - T12 [CÓDIGO] 15 artículos de base de conocimiento + test de formato — subagente: docs-writer — cubre S4 — commit: f2752e2 (PR #10)
 - T13 [CÓDIGO] src/ingestion (Markdown/PDF/CSV) + src/chunking por sección con metadatos — subagente: rag-engineer — cubre S7 — commit: e1ffbb6 (PR #12)
 - T14 [CÓDIGO] src/embeddings (fastembed + fake) + src/vectordb (Chroma tras interfaz) + `main.py index` — subagente: rag-engineer — cubre S7, S17 — commit: c7a8a84 (PR #14)
-- T15 [CÓDIGO] [ALTO RIESGO] src/retrieval (umbral) + src/prompts + src/llm (none/Claude/OpenAI/Gemini) + servicio de respuesta con cita + integración RAG — subagente: rag-engineer — cubre S7, S16 — commit:
+- T15 [CÓDIGO] [ALTO RIESGO] src/retrieval (umbral) + src/prompts + src/llm (none/Claude/OpenAI/Gemini) + servicio de respuesta con cita + integración RAG — subagente: rag-engineer — cubre S7, S16 — commit: 309ee8e
 
 **API, MCP y despliegue (por PR)**
 - T16 [CÓDIGO] [ALTO RIESGO] FastAPI: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repositorio local/fabric, `main.py serve` — subagente: api-engineer — cubre S8, S17 — commit:
@@ -977,3 +977,10 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - Verificado: modelo de 384 dimensiones, unos 241 MB, corta a 128 tokens. Index real: 15 artículos → 64 chunks en 66.7 s la primera vez (con descarga) y 4.2 s después. Concurrencia: la doc oficial de Chroma no la cubre y el Chroma Cookbook dice "not process-safe for concurrent writers" ⇒ diseño de versión nueva + puntero. Prueba real: un lector hizo 3841 consultas mientras otro proceso reindexaba, sin errores (RF-15).
 - Similitudes: "se bloqueó mi usuario de Windows" → KB-002 0.683; "my VPN does not connect" → KB-004 0.814; dentro del dominio ≥0.57, fuera ≤0.16 ⇒ calibrar el umbral en T15.
 - Caché del modelo en `data/vectordb/models` (ignorado). Pendientes: `CurrentStore.from_settings` en la API (T16), modelo en Docker (T19).
+
+### L14 — T15 retrieval + prompts + LLM + respuesta (rag-engineer + security-verifier) · PR #16 · merge 309ee8e
+- El subagente original murió por límite de uso (429) a mitad; el orquestador revisó la rama, la encontró coherente (retriever/prompts/llm commiteados, `answer_service` sin commit) y continuó desde ahí. Un test frágil (consulta con "password" sí recupera KB) se corrigió por el orquestador.
+- Umbral calibrado con fastembed real: mínimo dentro del dominio 0.428, máximo fuera 0.236 ⇒ `retrieval.similarity_threshold: 0.33`. Modo extractivo por defecto; LLM opcional (none/Claude/OpenAI/Gemini).
+- security-verifier: CHANGES REQUESTED (0 altos, 3 medios, 4 bajos) ⇒ todos corregidos: RN-03 ampliado con tests ±, KB-011 en cualquier posición escala, ids KB de la salida del LLM validados contra la evidencia, salida del LLM filtrada con `contains_sensitive`, `categoria` en lista blanca (ValueError), test de logs con centinela, timeouts de SDK verificados (son por fase, no totales; documentado).
+- 602 tests, 99% cobertura, ruff/mypy limpios.
+- Nueva directiva del usuario (L15): a partir de T16 el ciclo por feature separa desarrollo (sin tocar tests/) y qa-tester independiente; roadmap en docs/roadmap.md; researcher antes de cualquier duda.
