@@ -330,22 +330,36 @@ def test_every_cited_query_exists_and_all_are_cited(doc: str) -> None:
 def test_eval_metrics_match_summary(doc: str) -> None:
     s = json.loads(SUMMARY.read_text(encoding="utf-8"))
     m = s["metrics"]
-    assert (s["passed"], s["total"]) == (29, 30)
-    assert (m["retrieval_top3"]["passed"], m["retrieval_top3"]["total"]) == (14, 14)
-    assert (m["rechazo"]["passed"], m["rechazo"]["total"]) == (3, 4)
-    assert (m["clasificacion"]["passed"], m["clasificacion"]["total"]) == (5, 5)
-    assert (m["seguridad"]["passed"], m["seguridad"]["total"]) == (3, 3)
-    assert m["aprobados"]["pct"] == pytest.approx(round(29 / 30 * 100, 1))
-    assert [k for k, v in s["cases"].items() if v != "pasó"] == ["EV-16"]
+    lat = s["latency_ms"]
+    failed = [k for k, v in s["cases"].items() if v != "pasó"]
+    assert s["passed"] == len(s["cases"]) - len(failed) and s["total"] == len(s["cases"])
     assert f"**{s['passed']} de {s['total']}** ({m['aprobados']['pct']}%)" in doc
-    assert "**3 de 4 (75%)**" in doc and "EV-16" in doc
-    assert f"p50 {s['latency_ms']['p50']} ms, p95 {s['latency_ms']['p95']} ms" in doc
-    expected = f"29/30, rechazo 3/4, p95 {s['latency_ms']['p95']} ms"
+    sec9 = doc.split("## 9. Métricas de éxito", 1)[1].split("\n## ", 1)[0]
+    rows9 = {
+        ln.split("|")[1].strip(): ln
+        for ln in sec9.splitlines()
+        if ln.startswith("| ") and "---" not in ln
+    }
+    for key, label in (
+        ("retrieval_top3", "Recuperación en top 3"),
+        ("rechazo", "Rechazo correcto"),
+        ("clasificacion", "Clasificación de tickets"),
+        ("seguridad", "Seguridad (datos sensibles)"),
+    ):
+        x = m[key]
+        cited = f"{x['passed']} de {x['total']} ({x['pct']:g}%)"
+        assert cited in rows9[label], f"{label}: doc vs summary {cited}"
+    assert f"p50 {lat['p50']} ms, p95 {lat['p95']} ms" in doc
+    expected = (
+        f"{s['passed']}/{s['total']}, rechazo {m['rechazo']['passed']}/{m['rechazo']['total']}, "
+        f"p95 {lat['p95']} ms"
+    )
     assert expected in _table_rows(doc)["Resultado de evaluación"]
-    assert s["thresholds_met"] is False
-    # Known failure EV-16 only => exit 3 per docs/features/eval-e2e.md.
-    assert s["exit_code"] == 3
-    assert f"sale con código {s['exit_code']}" in doc
+    assert f"sale con **código {s['exit_code']}**" in doc
+    assert s["thresholds_met"] is (s["exit_code"] == 0)
+    if s["exit_code"] == 0:
+        assert s["known_failures_hit"] == [] and failed == []
+        assert "`eval.known_failures` vacío" in doc
 
 
 # --------------------------------------------------------------------- ADRs
@@ -353,11 +367,13 @@ def test_eval_metrics_match_summary(doc: str) -> None:
 ADRS = sorted(ADR_DIR.glob("[0-9][0-9][0-9][0-9]-*.md"))
 
 
-def test_adr_numbering_is_continuous_0001_to_0008() -> None:
-    assert [p.name[:4] for p in ADRS] == [f"{i:04d}" for i in range(1, 9)]
+def test_adr_numbering_is_continuous_from_0001() -> None:
+    assert ADRS, "no ADR files found"
+    assert [p.name[:4] for p in ADRS] == [f"{i:04d}" for i in range(1, len(ADRS) + 1)]
     readme = (ADR_DIR / "README.md").read_text(encoding="utf-8")
     for p in ADRS:
-        assert f"({p.name})" in readme
+        assert f"({p.name})" in readme, f"{p.name} not listed in adr/README.md"
+    assert len(re.findall(r"^\| \[\d{4}\]\(", readme, re.MULTILINE)) == len(ADRS)
 
 
 @pytest.mark.parametrize("path", ADRS, ids=lambda p: p.name[:4])

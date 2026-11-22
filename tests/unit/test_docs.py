@@ -276,10 +276,16 @@ def test_readme_eval_figures_match_summary() -> None:
     assert f"p95 {s['latency_ms']['p95']} ms" in lat
     assert f"{s['passed']}/{s['total']} cases pass" in text
     failed = [k for k, v in s["cases"].items() if v != "pasó"]
-    assert failed == ["EV-16"], f"README documents EV-16 as the only failure; real: {failed}"
-    assert "EV-16" in _section(text, "Límites conocidos")
-    assert s["thresholds_met"] is False and "código 3" in text
-    assert s["exit_code"] == 3 and s["known_failures_hit"] == ["EV-16"]
+    assert s["thresholds_met"] is (s["exit_code"] == 0)
+    if not failed:
+        assert "Casos fallidos: ninguno." in text
+        assert s["known_failures_hit"] == [] and s["exit_code"] == 0
+        assert "código 3" not in text
+    else:
+        for case in failed:
+            assert case in _section(text, "Límites conocidos")
+        assert f"código {s['exit_code']}" in text
+        assert sorted(s["known_failures_hit"] + s["new_failures"]) == sorted(failed)
 
 
 # (7) roadmap ---------------------------------------------------------------------------
