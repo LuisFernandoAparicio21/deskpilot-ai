@@ -58,11 +58,11 @@ TESTING_PATH = PROJECT_ROOT / "docs" / "testing-procedure.md"
 T32_HEADING = "## Resultados en Copilot Studio (T32)"
 
 METRIC_LABELS = {
-    "aprobados": "Casos aprobados",
-    "retrieval_top3": "Recuperación top-3",
-    "rechazo": "Rechazo correcto",
-    "clasificacion": "Clasificación de tickets",
-    "seguridad": "Seguridad",
+    "aprobados": "Cases passed",
+    "retrieval_top3": "Top-3 retrieval",
+    "rechazo": "Correct refusal",
+    "clasificacion": "Ticket classification",
+    "seguridad": "Security",
 }
 
 
@@ -168,12 +168,12 @@ def render_block(summary: dict[str, Any], copilot: tuple[int, int] | None) -> st
     try:
         datetime.strptime(day, "%Y-%m-%d")
     except ValueError:
-        day = "fecha desconocida"
+        day = "unknown date"
     lines = [
-        f"Evaluación local de {summary['total']} casos (backend `{summary.get('backend', '?')}`,"
-        f" {day}), generada desde `tests/eval/results.summary.json`:",
+        f"Local evaluation of {summary['total']} cases (backend `{summary.get('backend', '?')}`,"
+        f" {day}), generated from `tests/eval/results.summary.json`:",
         "",
-        "| Métrica | Resultado | Umbral | Cumple |",
+        "| Metric | Result | Threshold | Met |",
         "| --- | --- | --- | --- |",
     ]
     metrics: dict[str, Any] = summary["metrics"]
@@ -181,27 +181,27 @@ def render_block(summary: dict[str, Any], copilot: tuple[int, int] | None) -> st
         m = metrics.get(key)
         if m is None:
             continue
-        mark = "sí" if m["met"] else "no"
+        mark = "yes" if m["met"] else "no"
         lines.append(
             f"| {label} | {m['passed']}/{m['total']} ({m['pct']}%) | "
             f">= {m['threshold_pct']}% | {mark} |"
         )
     latency = summary["latency_ms"]
     lines.append(
-        f"| Latencia por caso | p50 {latency['p50']} ms, p95 {latency['p95']} ms | - | - |"
+        f"| Latency per case | p50 {latency['p50']} ms, p95 {latency['p95']} ms | - | - |"
     )
     failed = sorted(k for k, v in summary.get("cases", {}).items() if v != "pasó")
-    lines += ["", f"Casos fallidos: {', '.join(failed) if failed else 'ninguno'}.", ""]
+    lines += ["", f"Failed cases: {', '.join(failed) if failed else 'none'}.", ""]
     if copilot is None:
         lines.append(
-            "Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía "
+            "Copilot Studio: **pending (manual)**, no measured results yet "
             "([`docs/testing-procedure.md`](docs/testing-procedure.md), T32)."
         )
     else:
         passed, answered = copilot
         lines.append(
-            f"Copilot Studio (T32, medido a mano): {passed} de {answered} casos respondidos "
-            "pasaron ([`docs/testing-procedure.md`](docs/testing-procedure.md))."
+            f"Copilot Studio (T32, measured by hand): {passed} of {answered} answered cases "
+            "passed ([`docs/testing-procedure.md`](docs/testing-procedure.md))."
         )
     return "\n".join(lines)
 
@@ -259,15 +259,15 @@ def load_status(path: Path) -> list[dict[str, Any]]:
 
 def render_validation(status: list[dict[str, Any]]) -> str:
     lines = [
-        "| Integración | Estado | Evidencia | Qué falta |",
+        "| Integration | Status | Evidence | What is missing |",
         "| --- | --- | --- | --- |",
     ]
     for item in status:
         if item["estado"] == "validado":
-            mark = f"✅ Validado ({item['fecha']})"
+            mark = f"✅ Validated ({item['fecha']})"
             evidence = f"[{item['evidencia']}]({item['evidencia']})"
         else:
-            mark, evidence = "⏳ Pendiente de validar en tenant real", "-"
+            mark, evidence = "⏳ Pending validation on a real tenant", "-"
         lines.append(f"| {item['nombre']} | {mark} | {evidence} | {item['que_falta']} |")
     return "\n".join(lines)
 
@@ -278,9 +278,9 @@ def render_badges(status: list[dict[str, Any]]) -> str:
     for key, label in BADGES.items():
         item = by_id[key]
         if item["estado"] == "validado":
-            text, color, alt = "validado", "2EA043", f"{label}: validado el {item['fecha']}"
+            text, color, alt = "validated", "2EA043", f"{label}: validated on {item['fecha']}"
         else:
-            text = "pendiente de validar en tenant real"
+            text = "pending validation on a real tenant"
             color, alt = "6B7280", f"{label}: {text}"
         url = (
             f"https://img.shields.io/badge/{quote(label)}-{quote(text)}-{color}?style=for-the-badge"
@@ -365,7 +365,7 @@ def run(args: argparse.Namespace) -> int:
         return EXIT_OK
     if args.check:
         print("✗ README results block is out of date")
-        print("  Qué hacer: run `python -m scripts.update_readme_results` and commit README.md")
+        print("  What to do: run `python -m scripts.update_readme_results` and commit README.md")
         return EXIT_OUTDATED
     with args.readme.open("w", encoding="utf-8", newline="") as handle:
         handle.write(updated)
