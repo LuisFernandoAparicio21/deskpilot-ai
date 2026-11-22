@@ -60,6 +60,7 @@ import anyio, json
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+
 async def main():
     params = StdioServerParameters(command=".venv/Scripts/python.exe", args=["main.py", "mcp"])
     async with stdio_client(params) as (r, w):
@@ -71,6 +72,8 @@ async def main():
             print(res.is_error, json.dumps(res.structured_content, ensure_ascii=False, indent=1))
             bad = await s.call_tool("buscar_solucion", {"query": "x", "extra": 1})
             print(bad.is_error, bad.content[0].text)
+
+
 anyio.run(main)
 ```
 
