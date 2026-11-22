@@ -95,6 +95,11 @@ _P1 = re.compile(
     r" de (?:la )?sucursal|clientes? (?:no|sin)\b|no (?:podemos|se puede) (?:atender|operar)"
     r"|(?:whole|entire|all of the) branch|branch is down|cannot serve (?:the )?customers"
     r"|everyone (?:in|at) the branch"
+    r"|nadie (?:puede|podemos|pueden) (?:trabajar|operar|atender)|nadie (?:en|de) la sucursal"
+    r"|(?:nobody|no one) (?:can|is able to) (?:work|operate|log|access)"
+    r"|(?:todo|toda) (?:el|la) (?:personal|sucursal)|sucursal (?:esta )?(?:caida|fuera de linea)"
+    r"|(?:all|whole|entire) (?:of )?(?:the )?branch (?:is )?(?:down|offline)"
+    r"|(?:everyone|all (?:of )?(?:us|staff|users)) (?:can.?t|cannot|is unable to) work"
 )
 _P2 = re.compile(
     r"no puedo (?:entrar|ingresar|acceder|iniciar|trabajar|operar|abrir|conectar|usar)"
