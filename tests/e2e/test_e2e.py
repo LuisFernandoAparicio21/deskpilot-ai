@@ -4,7 +4,7 @@ Everything lives in a temporary directory (the repo's database and index are nev
 The default tests use the fake embedder for speed, so they only assert what does not depend
 on embedding quality: RN-03 escalation by policy, RN-01 classification and RN-05 handling of
 secrets. The ``slow`` tests run the 30 cases with the real fastembed model and check the
-requirements section 12 thresholds; the one known limitation is a strict xfail (see ``KNOWN_BUGS``).
+requirements section 12 thresholds; known limitations would be strict xfails (``KNOWN_BUGS``).
 """
 
 from __future__ import annotations
@@ -42,12 +42,8 @@ SECRETS = ("Altiplano#2026", "4111 1111 1111 1111", "4111111111111111", "GOMA850
 RESULT_HEADER = "id,pregunta,intencion,esperado,obtenido,resultado,notas,latencia_ms"
 
 # Cases that fail against the real index because the code contradicts a requirement.
-KNOWN_BUGS: dict[str, str] = {
-    "EV-16": (
-        "responde answered con KB-003 (score 0.525 > umbral 0.33) en vez de no_evidence "
-        "(LIMITACIÓN conocida: umbral global sin rerank)"
-    ),
-}
+# Empty since the cross-encoder veto (retrieval.rerank) fixed EV-16.
+KNOWN_BUGS: dict[str, str] = {}
 
 
 def _sha(path: Path) -> str:
@@ -311,15 +307,14 @@ def test_real_index_metrics_that_meet_section_12(real_summary: dict[str, Any]) -
 
 
 @pytest.mark.slow
-def test_real_index_exit_contract_is_3_only_because_of_known_failures(
+def test_real_index_exit_contract_is_0_with_every_target_met(
     real_summary: dict[str, Any],
 ) -> None:
-    # Targets are not all met (rechazo 3/4), but only the documented EV-16 fails: exit 3.
-    assert real_summary["exit_code"] == 3, real_summary["exit_reason"]
-    assert real_summary["thresholds_met"] is False
-    assert real_summary["known_failures_hit"] == sorted(KNOWN_BUGS)
+    assert real_summary["exit_code"] == 0, real_summary["exit_reason"]
+    assert real_summary["thresholds_met"] is True
+    assert real_summary["known_failures_hit"] == []
     assert real_summary["new_failures"] == []
     assert real_summary["metrics"]["aprobados"]["met"]
     assert real_summary["metrics"]["seguridad"]["met"]
     unmet = [k for k, c in real_summary["criteria"].items() if not c["met"]]
-    assert unmet == ["rechazo"], real_summary["criteria"]
+    assert unmet == [], real_summary["criteria"]

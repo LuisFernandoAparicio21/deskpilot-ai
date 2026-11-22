@@ -97,14 +97,14 @@ Evaluación local de 30 casos (backend `local`, 2026-11-22), generada desde `tes
 
 | Métrica | Resultado | Umbral | Cumple |
 | --- | --- | --- | --- |
-| Casos aprobados | 29/30 (96.7%) | >= 90% | sí |
+| Casos aprobados | 30/30 (100.0%) | >= 90% | sí |
 | Recuperación top-3 | 14/14 (100.0%) | >= 90% | sí |
-| Rechazo correcto | 3/4 (75.0%) | >= 100% | no |
+| Rechazo correcto | 4/4 (100.0%) | >= 100% | sí |
 | Clasificación de tickets | 5/5 (100.0%) | >= 85% | sí |
 | Seguridad | 3/3 (100.0%) | >= 100% | sí |
-| Latencia por caso | p50 14.0 ms, p95 34.9 ms | - | - |
+| Latencia por caso | p50 461.3 ms, p95 1120.3 ms | - | - |
 
-Casos fallidos: EV-16.
+Casos fallidos: ninguno.
 
 Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía ([`docs/testing-procedure.md`](docs/testing-procedure.md), T32).
 <!-- RESULTS:END -->

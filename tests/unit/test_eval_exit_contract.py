@@ -111,10 +111,22 @@ def test_invalid_eval_config_is_a_config_error_and_exit_2(
     assert not (tmp_path / "o.csv").exists()
 
 
-def test_repo_config_has_ev16_as_the_only_known_failure(tmp_path: Path) -> None:
+def test_repo_config_has_no_known_failures_since_the_rerank_veto(tmp_path: Path) -> None:
+    # Contract change: EV-16 used to be the only documented limit (global threshold, no
+    # rerank). With retrieval.rerank it passes, so nothing may be tolerated any more.
     cfg = load_settings(env_file=tmp_path / "missing.env").eval
-    assert [k.id for k in cfg.known_failures] == ["EV-16"]
-    assert cfg.known_failures[0].reason.strip()
+    assert cfg.known_failures == []
+
+
+def test_committed_eval_summary_is_all_green_with_exit_0() -> None:
+    summary = json.loads(
+        (PROJECT_ROOT / "tests" / "eval" / "results.summary.json").read_text(encoding="utf-8")
+    )
+    assert (summary["passed"], summary["total"]) == (30, 30)
+    assert summary["exit_code"] == 0 and summary["thresholds_met"] is True
+    assert summary["known_failures_hit"] == [] and summary["new_failures"] == []
+    assert all(c["met"] for c in summary["criteria"].values())
+    assert summary["metrics"]["rechazo"]["passed"] == summary["metrics"]["rechazo"]["total"]
 
 
 # --- exit-code matrix with synthetic cases ---------------------------------------------------

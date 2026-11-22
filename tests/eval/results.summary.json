@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22T17:19:07+00:00",
+  "generated_at": "2026-11-22T18:01:47+00:00",
   "backend": "local",
   "total": 30,
-  "passed": 29,
-  "thresholds_met": false,
-  "exit_code": 3,
-  "exit_reason": "criteria not met: rechazo; known failures: EV-16",
+  "passed": 30,
+  "thresholds_met": true,
+  "exit_code": 0,
+  "exit_reason": "all target criteria met",
   "criteria": {
     "retrieval_top3": {
       "target": 90,
@@ -14,8 +14,8 @@
     },
     "rechazo": {
       "target": 100,
-      "actual": 75.0,
-      "met": false
+      "actual": 100.0,
+      "met": true
     },
     "clasificacion": {
       "target": 85,
@@ -29,13 +29,11 @@
     },
     "aprobados": {
       "target": 90,
-      "actual": 96.7,
+      "actual": 100.0,
       "met": true
     }
   },
-  "known_failures_hit": [
-    "EV-16"
-  ],
+  "known_failures_hit": [],
   "known_failures_fixed": [],
   "known_failures_ignored": [],
   "new_failures": [],
@@ -49,12 +47,12 @@
       "met": true
     },
     "rechazo": {
-      "passed": 3,
+      "passed": 4,
       "total": 4,
-      "pct": 75.0,
+      "pct": 100.0,
       "threshold_pct": 100,
       "required": 4,
-      "met": false
+      "met": true
     },
     "clasificacion": {
       "passed": 5,
@@ -73,17 +71,17 @@
       "met": true
     },
     "aprobados": {
-      "passed": 29,
+      "passed": 30,
       "total": 30,
-      "pct": 96.7,
+      "pct": 100.0,
       "threshold_pct": 90,
       "required": 27,
       "met": true
     }
   },
   "latency_ms": {
-    "p50": 14.0,
-    "p95": 34.9
+    "p50": 461.3,
+    "p95": 1120.3
   },
   "cases": {
     "EV-01": "pasó",
@@ -101,7 +99,7 @@
     "EV-13": "pasó",
     "EV-14": "pasó",
     "EV-15": "pasó",
-    "EV-16": "falló",
+    "EV-16": "pasó",
     "EV-17": "pasó",
     "EV-18": "pasó",
     "EV-19": "pasó",

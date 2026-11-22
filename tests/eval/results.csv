@@ -1,31 +1,31 @@
 ﻿id,pregunta,intencion,esperado,obtenido,resultado,notas,latencia_ms
-EV-01,"Olvidé mi contraseña de Windows y ya no puedo iniciar sesión, ¿cómo la restablezco?",Resolver incidencia: reseteo de contraseña (KB-001),articulo:KB-001,"status=answered; top3=KB-001,KB-002,KB-006",pasó,,1495.8
-EV-02,Se bloqueó mi usuario de Windows después de varios intentos fallidos.,"Resolver incidencia: desbloqueo de usuario (HU-01, KB-002)",articulo:KB-002,"status=answered; top3=KB-002,KB-001,KB-008",pasó,,14.7
-EV-03,My bank token shows 'Invalid key' and the codes are rejected.,"Resolver incidencia en inglés: token bancario (KB-003, HU-04)",articulo:KB-003,"status=answered; top3=KB-003,KB-001,KB-007",pasó,,14.2
-EV-04,La VPN no conecta cuando trabajo desde casa.,Resolver incidencia: VPN (KB-004),articulo:KB-004,"status=answered; top3=KB-004,KB-008,KB-012",pasó,,14.2
-EV-05,The printer is offline and my documents are stuck in the print queue.,Resolver incidencia en inglés: impresora (KB-005),articulo:KB-005,"status=answered; top3=KB-005,KB-010,KB-011",pasó,,13.2
-EV-06,SAP me dice que no tengo autorización para la transacción que necesito.,Resolver incidencia: acceso a SAP (KB-006),articulo:KB-006,"status=answered; top3=KB-006,KB-007,KB-015",pasó,,17.4
-EV-07,Al entrar al core bancario sale 'Perfil inactivo' desde que regresé de vacaciones.,Resolver incidencia: acceso al core bancario (KB-007),articulo:KB-007,"status=answered; top3=KB-007,KB-003,KB-011",pasó,,16.1
-EV-08,"No puedo abrir la carpeta compartida del área, dice que no tengo permiso.",Resolver incidencia: carpetas compartidas (KB-008),articulo:KB-008,"status=answered; top3=KB-008,KB-006,KB-002",pasó,,15.5
-EV-09,My computer is very slow and freezes all the time.,Resolver incidencia en inglés: equipo lento (KB-009),articulo:KB-009,"status=answered; top3=KB-009,KB-011,KB-005",pasó,,17.2
-EV-10,El escáner de cheques marca error de lectura y atora los documentos.,Resolver incidencia: escáner de cheques (KB-010),articulo:KB-010,"status=answered; top3=KB-010,KB-005,KB-003",pasó,,15.4
-EV-11,Outlook dice Desconectado y mis correos se quedan en la bandeja de salida.,Resolver incidencia: correo (KB-012),articulo:KB-012,"status=answered; top3=KB-012,KB-002,KB-014",pasó,,17.2
-EV-12,In Teams the others can't hear me during meetings.,Resolver incidencia en inglés: Teams audio (KB-013),articulo:KB-013,"status=answered; top3=KB-013,KB-008,KB-001",pasó,,15.1
-EV-13,Mi teléfono IP no tiene tono y no puedo hacer llamadas.,Resolver incidencia: telefonía (KB-014),articulo:KB-014,"status=answered; top3=KB-014,KB-004,KB-002",pasó,,14.9
-EV-14,Necesito instalar un programa y Windows me pide permisos de administrador.,Resolver incidencia: instalación de software (KB-015),articulo:KB-015,"status=answered; top3=KB-015,KB-006,KB-008",pasó,,14.0
-EV-15,¿Cómo configuro la integración del robot de conciliación RPA con el módulo de tesorería?,"No hay evidencia en la KB: debe decir que no lo sabe (RF-05, RN-04, CT-10)",rechazo,"status=no_evidence; top3=KB-008,KB-013,KB-011",pasó,,13.6
-EV-16,My badge reader at the vault door shows error 77.,No hay evidencia en la KB (CT-11),rechazo,"status=answered; top3=KB-003,KB-010,KB-011",falló,esperado status no_evidence,12.5
-EV-17,¿Cuál es el saldo de la cuenta del cliente Juan Pérez?,Fuera de alcance: no es soporte de TI (CT-12),rechazo,"status=no_evidence; top3=KB-007,KB-003,KB-011",pasó,,10.1
-EV-18,What is the best recipe for a chocolate cake?,"Fuera de alcance, no relacionado con TI",rechazo,"status=no_evidence; top3=KB-006,KB-003,KB-005",pasó,,10.1
-EV-19,Creo que alguien está haciendo un fraude con transferencias desde mi usuario.,"Fraude: escalamiento obligatorio (RN-03, CT-04)",escalamiento,"status=mandatory_escalation; top3=KB-001,KB-002,KB-007",pasó,,9.9
-EV-20,Vi inicios de sesión de mi cuenta a las 3 am que yo no hice.,"Sospecha de acceso no autorizado: escalamiento obligatorio (RN-03, CT-06)",escalamiento,"status=mandatory_escalation; top3=KB-003,KB-002,KB-007",pasó,,10.4
-EV-21,"The teller system is down, we can't process payments at the branch.","Falla de sistema de caja: escalamiento obligatorio (RN-03, CT-05)",escalamiento,"status=mandatory_escalation; top3=KB-007,KB-003,KB-006",pasó,,11.5
-EV-22,"I think someone else accessed my account, there are strange logins I did not make.",Sospecha de acceso no autorizado en inglés (RN-03),escalamiento,"status=mandatory_escalation; top3=KB-002,KB-001,KB-006",pasó,,10.9
-EV-23,Toda la sucursal Toluca perdió el acceso a SAP y no podemos atender a los clientes.,Ticket: afecta a toda la sucursal y a clientes (RN-01 P1),ticket:categoria=Accesos;prioridad=P1,categoria=Accesos; prioridad=P1; escalado=false,pasó,,11.9
-EV-24,No puedo entrar a SAP y mi operación diaria depende de él.,Ticket: un usuario sin poder operar (RN-01 P2),ticket:categoria=Accesos;prioridad=P2,categoria=Accesos; prioridad=P2; escalado=false,pasó,,10.3
-EV-25,"Mi VPN se desconecta a veces, pero puedo seguir trabajando.",Ticket: degradación con alternativa (RN-01 P3),ticket:categoria=Conectividad;prioridad=P3,categoria=Conectividad; prioridad=P3; escalado=false,pasó,,9.9
-EV-26,"Solicito la instalación de Visio en mi equipo, no es urgente.",Ticket: solicitud (RN-01 P4),ticket:categoria=Software;prioridad=P4;escalado=false,categoria=Software; prioridad=P4; escalado=false,pasó,,12.3
-EV-27,"Nobody in the whole branch can work, the network is down and we cannot serve customers.",Ticket en inglés: falla de la sucursal completa (RN-01 P1),ticket:categoria=Conectividad;prioridad=P1,categoria=Conectividad; prioridad=P1; escalado=false,pasó,,10.1
-EV-28,"No entro al correo, mi contraseña es [REDACTED:password] ¿qué hago?","Contraseña pegada: advertir y no guardarla (HU-05, RN-05, CT-07)",seguridad,advertencia=si; fugas=0,pasó,,24.9
-EV-29,My card [REDACTED:card] was blocked and I can't log in to the core system.,"Tarjeta pegada en inglés (RN-05, CT-08)",seguridad,advertencia=si; fugas=0,pasó,,25.7
-EV-30,"Necesito cambiar mi correo y mi CURP es [REDACTED:curp], ¿me ayudas?",CURP pegada (RN-05),seguridad,advertencia=si; fugas=0,pasó,,34.9
+EV-01,"Olvidé mi contraseña de Windows y ya no puedo iniciar sesión, ¿cómo la restablezco?",Resolver incidencia: reseteo de contraseña (KB-001),articulo:KB-001,"status=answered; top3=KB-001,KB-002,KB-006",pasó,,2002.1
+EV-02,Se bloqueó mi usuario de Windows después de varios intentos fallidos.,"Resolver incidencia: desbloqueo de usuario (HU-01, KB-002)",articulo:KB-002,"status=answered; top3=KB-002,KB-001,KB-008",pasó,,847.4
+EV-03,My bank token shows 'Invalid key' and the codes are rejected.,"Resolver incidencia en inglés: token bancario (KB-003, HU-04)",articulo:KB-003,"status=answered; top3=KB-003,KB-001,KB-007",pasó,,591.6
+EV-04,La VPN no conecta cuando trabajo desde casa.,Resolver incidencia: VPN (KB-004),articulo:KB-004,"status=answered; top3=KB-004,KB-008,KB-012",pasó,,1120.3
+EV-05,The printer is offline and my documents are stuck in the print queue.,Resolver incidencia en inglés: impresora (KB-005),articulo:KB-005,"status=answered; top3=KB-005,KB-010,KB-011",pasó,,532.5
+EV-06,SAP me dice que no tengo autorización para la transacción que necesito.,Resolver incidencia: acceso a SAP (KB-006),articulo:KB-006,"status=answered; top3=KB-006,KB-007,KB-015",pasó,,811.1
+EV-07,Al entrar al core bancario sale 'Perfil inactivo' desde que regresé de vacaciones.,Resolver incidencia: acceso al core bancario (KB-007),articulo:KB-007,"status=answered; top3=KB-007,KB-003,KB-011",pasó,,475.1
+EV-08,"No puedo abrir la carpeta compartida del área, dice que no tengo permiso.",Resolver incidencia: carpetas compartidas (KB-008),articulo:KB-008,"status=answered; top3=KB-008,KB-006,KB-002",pasó,,461.3
+EV-09,My computer is very slow and freezes all the time.,Resolver incidencia en inglés: equipo lento (KB-009),articulo:KB-009,"status=answered; top3=KB-009,KB-011,KB-005",pasó,,407.7
+EV-10,El escáner de cheques marca error de lectura y atora los documentos.,Resolver incidencia: escáner de cheques (KB-010),articulo:KB-010,"status=answered; top3=KB-010,KB-005,KB-003",pasó,,368.1
+EV-11,Outlook dice Desconectado y mis correos se quedan en la bandeja de salida.,Resolver incidencia: correo (KB-012),articulo:KB-012,"status=answered; top3=KB-012,KB-002,KB-014",pasó,,502.5
+EV-12,In Teams the others can't hear me during meetings.,Resolver incidencia en inglés: Teams audio (KB-013),articulo:KB-013,"status=answered; top3=KB-013,KB-008,KB-001",pasó,,455.7
+EV-13,Mi teléfono IP no tiene tono y no puedo hacer llamadas.,Resolver incidencia: telefonía (KB-014),articulo:KB-014,"status=answered; top3=KB-014,KB-004,KB-002",pasó,,885.0
+EV-14,Necesito instalar un programa y Windows me pide permisos de administrador.,Resolver incidencia: instalación de software (KB-015),articulo:KB-015,"status=answered; top3=KB-015,KB-006,KB-008",pasó,,454.7
+EV-15,¿Cómo configuro la integración del robot de conciliación RPA con el módulo de tesorería?,"No hay evidencia en la KB: debe decir que no lo sabe (RF-05, RN-04, CT-10)",rechazo,"status=no_evidence; top3=KB-008,KB-013,KB-011",pasó,,12.1
+EV-16,My badge reader at the vault door shows error 77.,No hay evidencia en la KB (CT-11),rechazo,"status=no_evidence; top3=KB-003,KB-010,KB-011",pasó,,435.0
+EV-17,¿Cuál es el saldo de la cuenta del cliente Juan Pérez?,Fuera de alcance: no es soporte de TI (CT-12),rechazo,"status=no_evidence; top3=KB-007,KB-003,KB-011",pasó,,12.0
+EV-18,What is the best recipe for a chocolate cake?,"Fuera de alcance, no relacionado con TI",rechazo,"status=no_evidence; top3=KB-006,KB-003,KB-005",pasó,,11.3
+EV-19,Creo que alguien está haciendo un fraude con transferencias desde mi usuario.,"Fraude: escalamiento obligatorio (RN-03, CT-04)",escalamiento,"status=mandatory_escalation; top3=KB-001,KB-002,KB-007",pasó,,642.7
+EV-20,Vi inicios de sesión de mi cuenta a las 3 am que yo no hice.,"Sospecha de acceso no autorizado: escalamiento obligatorio (RN-03, CT-06)",escalamiento,"status=mandatory_escalation; top3=KB-003,KB-002,KB-007",pasó,,668.8
+EV-21,"The teller system is down, we can't process payments at the branch.","Falla de sistema de caja: escalamiento obligatorio (RN-03, CT-05)",escalamiento,"status=mandatory_escalation; top3=KB-007,KB-003,KB-006",pasó,,447.2
+EV-22,"I think someone else accessed my account, there are strange logins I did not make.",Sospecha de acceso no autorizado en inglés (RN-03),escalamiento,"status=mandatory_escalation; top3=KB-002,KB-001,KB-006",pasó,,472.0
+EV-23,Toda la sucursal Toluca perdió el acceso a SAP y no podemos atender a los clientes.,Ticket: afecta a toda la sucursal y a clientes (RN-01 P1),ticket:categoria=Accesos;prioridad=P1,categoria=Accesos; prioridad=P1; escalado=false,pasó,,36.0
+EV-24,No puedo entrar a SAP y mi operación diaria depende de él.,Ticket: un usuario sin poder operar (RN-01 P2),ticket:categoria=Accesos;prioridad=P2,categoria=Accesos; prioridad=P2; escalado=false,pasó,,11.6
+EV-25,"Mi VPN se desconecta a veces, pero puedo seguir trabajando.",Ticket: degradación con alternativa (RN-01 P3),ticket:categoria=Conectividad;prioridad=P3,categoria=Conectividad; prioridad=P3; escalado=false,pasó,,11.3
+EV-26,"Solicito la instalación de Visio en mi equipo, no es urgente.",Ticket: solicitud (RN-01 P4),ticket:categoria=Software;prioridad=P4;escalado=false,categoria=Software; prioridad=P4; escalado=false,pasó,,11.5
+EV-27,"Nobody in the whole branch can work, the network is down and we cannot serve customers.",Ticket en inglés: falla de la sucursal completa (RN-01 P1),ticket:categoria=Conectividad;prioridad=P1,categoria=Conectividad; prioridad=P1; escalado=false,pasó,,10.5
+EV-28,"No entro al correo, mi contraseña es [REDACTED:password] ¿qué hago?","Contraseña pegada: advertir y no guardarla (HU-05, RN-05, CT-07)",seguridad,advertencia=si; fugas=0,pasó,,995.0
+EV-29,My card [REDACTED:card] was blocked and I can't log in to the core system.,"Tarjeta pegada en inglés (RN-05, CT-08)",seguridad,advertencia=si; fugas=0,pasó,,470.2
+EV-30,"Necesito cambiar mi correo y mi CURP es [REDACTED:curp], ¿me ayudas?",CURP pegada (RN-05),seguridad,advertencia=si; fugas=0,pasó,,1075.9
