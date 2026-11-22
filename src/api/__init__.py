@@ -7,13 +7,16 @@ from src.api.repository import (
     TicketRepository,
     build_repository,
 )
+from src.api.ticket_service import TicketCreator, TicketService
 
 __all__ = [
     "ApiServices",
     "RepositoryUnavailableError",
     "SearchService",
     "SqlTicketRepository",
+    "TicketCreator",
     "TicketRepository",
+    "TicketService",
     "build_repository",
     "build_services",
     "create_app",
