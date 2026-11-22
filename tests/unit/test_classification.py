@@ -49,17 +49,20 @@ RULE_CASES = [
     ("La VPN es intermitente desde mi casa", "Conectividad", "VPN", "P3"),
     ("The VPN keeps disconnecting every few minutes", "Conectividad", "VPN", "P3"),
     ("Toda la sucursal sin internet desde hace una hora", "Conectividad", "Red de sucursal", "P1"),
+    ("The whole branch is down, there is no internet", "Conectividad", "Red de sucursal", "P1"),
     pytest.param(
-        "The whole branch is down, there is no internet",
+        "The network is down at the branch, nobody can work",
         "Conectividad",
         "Red de sucursal",
         "P1",
         marks=pytest.mark.xfail(
             strict=True,
-            reason="BUG src/api/classification.py Red de sucursal rule: English 'no internet' "
-            "is not matched (Spanish 'sin internet' is), so the ticket lands in General",
+            reason="BUG src/api/classification.py _P1: English 'network down at the branch' "
+            "is a branch-wide outage (RN-01 P1) but no P1 pattern matches, so it gets P4",
         ),
     ),
+    ("We lost internet in the whole branch", "Conectividad", "Red de sucursal", "P1"),
+    ("Internet is not working for the entire branch", "Conectividad", "Red de sucursal", "P1"),
     ("No puedo acceder a las carpetas compartidas", "Conectividad", "Carpetas compartidas", "P2"),
     ("La impresora del piso 2 no imprime", "Hardware", "Impresoras", "P4"),
     ("The printer on floor 2 is jammed", "Hardware", "Impresoras", "P4"),
