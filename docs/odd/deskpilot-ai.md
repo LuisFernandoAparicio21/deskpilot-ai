@@ -1050,3 +1050,6 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 ### L29 — Pulido posterior a v0.1.0 (decisión del usuario, 2026-11-22)
 - El usuario pide pulir el repo para un reclutador de Stefanini: (1) diagrama del flujo del MVP desde el usuario, (2) renovación visual del README inspirada en su perfil de GitHub, (3) diagnóstico y corrección de 5 problemas de una revisión externa (P1 sin Release, P2 README poco accesible en inglés, P3 tabla de habilidades sobrevende integraciones no validadas, P4 CI tolera exit 1 de eval, P5 rechazo con muestra pequeña y EV-16).
 - Features PL-1..PL-8 registradas en docs/roadmap.md. Reglas vigentes: ciclo a–f, researcher ante dudas, tests solo por qa-tester, todo por PR.
+
+### L30 — PL-1 user-flow (docs-writer) · rama chore/user-flow-diagram
+- Creado `docs/user-flow.md` (2 diagramas Mermaid, tablas paso/herramienta/RF/EV con ids existentes, ejemplos reales ES/EN de una corrida local con `main.py serve`; tickets de prueba borrados, `tickets_nuevos` = 0 filas). README: sección "Cómo funciona" con versión compacta. Fuente Mermaid de GitHub en `docs/sources.md`. Estado PL-1: documentada. Pendiente: validación de qa-tester.
