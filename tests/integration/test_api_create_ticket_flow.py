@@ -8,6 +8,7 @@ import shutil
 import sqlite3
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -252,7 +253,8 @@ def test_secret_is_nowhere_in_the_database_response_logs_or_llm_prompt(
     (row,) = _rows(db)
     assert "[REDACTED:" in row["descripcion"]
     assert not any(secret in str(value) for value in row.values())
-    dump = "\n".join(sqlite3.connect(db).iterdump())  # every table, every column
+    with closing(sqlite3.connect(db)) as conn:
+        dump = "\n".join(conn.iterdump())  # every table, every column
     assert secret not in dump
     assert len(llm.prompts) == 1
     assert secret not in " ".join(llm.prompts[0])
