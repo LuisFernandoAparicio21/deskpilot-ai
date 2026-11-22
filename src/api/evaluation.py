@@ -45,7 +45,9 @@ Exit-code contract (see docs/features/eval-e2e.md):
   criterion is unmet or a documented ``known_failures`` case failed (separate report).
 - 1: the global minimum or security broke, or a case NOT in ``known_failures`` failed
   (regression). 1 never means "target not met" any more (it did before this contract).
-- 2: configuration, cases file, database, index or API error.
+- 2: configuration, cases file, database, index or API error. A ``known_failures`` id absent
+  from the cases file in use (custom ``--cases``, test CSVs) is NOT an error: it is ignored
+  with a stderr warning and listed as ``known_failures_ignored`` in the summary.
 
 Logs carry ids, counts and statuses only, never questions or answers.
 """
@@ -57,6 +59,7 @@ import json
 import logging
 import math
 import sqlite3
+import sys
 import tempfile
 import time
 from collections.abc import Callable, Iterator, Sequence
@@ -643,6 +646,7 @@ class EvalReport:
     p95_ms: float
     backend: str
     config: EvalConfig = field(default_factory=EvalConfig)
+    known_failures_ignored: list[str] = field(default_factory=list)
 
     @property
     def thresholds_met(self) -> bool:
@@ -698,6 +702,7 @@ def run_cases(
     backend_name: str,
     clock: Callable[[], float] = time.perf_counter,
     config: EvalConfig | None = None,
+    known_failures_ignored: Sequence[str] = (),
 ) -> EvalReport:
     config = config or EvalConfig()
     results = [run_case(case, backend, clock) for case in cases]
@@ -709,6 +714,7 @@ def run_cases(
         percentile(latencies, 95),
         backend_name,
         config,
+        list(known_failures_ignored),
     )
 
 
@@ -753,6 +759,7 @@ def write_results(report: EvalReport, out: Path) -> Path:
         },
         "known_failures_hit": report.known_failures_hit,
         "known_failures_fixed": report.known_failures_fixed,
+        "known_failures_ignored": report.known_failures_ignored,
         "new_failures": report.new_failures,
         "metrics": {
             m.name: {
@@ -811,9 +818,19 @@ def run_eval(
     if cases_path.resolve() == out_path.resolve():
         raise EvalError("--out must not be the cases file")
     cases = load_cases(cases_path)
-    unknown = sorted({k.id for k in settings.eval.known_failures} - {c.id for c in cases})
-    if unknown:
-        raise EvalError(f"eval.known_failures ids not in the cases file: {', '.join(unknown)}")
+    present = {c.id for c in cases}
+    ignored = sorted({k.id for k in settings.eval.known_failures} - present)
+    for case_id in ignored:
+        print(f"known failure {case_id} not in this cases file; ignored", file=sys.stderr)
+    config = settings.eval.model_copy(
+        update={"known_failures": [k for k in settings.eval.known_failures if k.id in present]}
+    )
     with open_backend(settings, api_url, api_key) as backend:
-        report = run_cases(cases, backend, "http" if api_url else "local", config=settings.eval)
+        report = run_cases(
+            cases,
+            backend,
+            "http" if api_url else "local",
+            config=config,
+            known_failures_ignored=ignored,
+        )
     return report, write_results(report, out_path)

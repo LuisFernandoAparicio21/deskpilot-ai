@@ -56,7 +56,7 @@ Pytest: 1770 passed, 3 skipped, 33 deselected (slow). El veredicto global de `ev
 | 2 | Error de configuración, CSV, base, índice o API (el CI falla) |
 
 Metas y `known_failures` (con motivo) en la sección `eval:` de `config.yaml`; detalle y migración desde el antiguo
-"1 = umbral no cumplido" en `docs/features/eval-e2e.md`. `known_failures` no oculta regresiones.
+"1 = umbral no cumplido" en `docs/features/eval-e2e.md`. `known_failures` no oculta regresiones. Un id de `known_failures` ausente del CSV usado (`--cases` personalizado, CSV de prueba) no da exit 2: se ignora con advertencia en stderr y se lista en `known_failures_ignored` del resumen JSON; exit 2 queda solo para errores reales de config, CSV, base, índice o API.
 
 ## Resultados en Copilot Studio (T32)
 

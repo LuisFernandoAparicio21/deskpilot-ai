@@ -55,11 +55,11 @@ la sección 12 de `docs/requirements.md`; no se bajan para que pase una corrida.
 | **0** | Todo cumple | Todos los criterios `target` cumplidos y ningún caso falla |
 | **3** | Objetivo no cumplido, sin regresión | El mínimo global (`min_passed`) y la seguridad (`security_pct` = 100) se cumplen y ningún caso nuevo falla, pero algún criterio no se cumple o falla un caso de `known_failures` |
 | **1** | Regresión | Se rompe el mínimo global o la seguridad, o falla un caso que NO está en `known_failures` |
-| **2** | Error de configuración o infraestructura | `config.yaml` inválido, CSV inválido, sin índice o base, `--out` igual al archivo de casos, `known_failures` con un id que no existe en el CSV, clave HTTP rechazada 401/403, servidor inalcanzable |
+| **2** | Error de configuración o infraestructura | `config.yaml` inválido, CSV inválido, sin índice o base, `--out` igual al archivo de casos, clave HTTP rechazada 401/403, servidor inalcanzable |
 
 El reporte por consola y `results.summary.json` separan los criterios no cumplidos, los fallos conocidos que
 fallaron (`known_failures_hit`, con su motivo), los fallos nuevos (`new_failures`) y los fallos conocidos que ya
-pasan (`known_failures_fixed`: hay que quitarlos de la config). El JSON añade `criteria` (por criterio: `target`,
+pasan (`known_failures_fixed`: hay que quitarlos de la config). El JSON añade `known_failures_ignored` (ids de `known_failures` que no están en el CSV usado, p. ej. un `--cases` personalizado o CSV de prueba: se ignoran con una advertencia en stderr, `known failure EV-16 not in this cases file; ignored`, y no dan exit 2), `criteria` (por criterio: `target`,
 `actual`, `met`), `exit_code` y `exit_reason`.
 
 **Migración (cambio de contrato).** Antes: 0 = umbrales cumplidos, 1 = algún umbral no cumplido, 2 = error.
