@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import anyio
@@ -100,7 +100,7 @@ def test_safe_client_request_id_is_kept_everywhere(client: TestClient, env: Env)
     "bad", ["short", "has spaces in it!", "x" * 65, "ñandú-request-id", "a;b<c>d1234"]
 )
 def test_unsafe_client_request_id_is_replaced(client: TestClient, bad: str) -> None:
-    response = client.get("/health", headers={"X-Request-ID": bad.encode()})
+    response = client.get("/health", headers={b"X-Request-ID": bad.encode()})
     assert response.headers["X-Request-ID"] != bad
     assert GENERATED_ID.match(response.headers["X-Request-ID"])
 
@@ -137,7 +137,7 @@ def test_declared_body_over_the_limit_is_413_without_reaching_the_service(
 def test_chunked_body_over_the_limit_is_413(client: TestClient, env: Env) -> None:
     limit = env.settings.api.max_body_bytes
 
-    def chunks():  # type: ignore[no-untyped-def]
+    def chunks() -> Iterator[bytes]:
         for _ in range(4):
             yield b"a" * (limit // 2)
 

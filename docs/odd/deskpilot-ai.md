@@ -248,8 +248,8 @@ Criterios de aceptación:
 
 **Agente, pruebas y documentación (por PR)**
 - T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit: merge del PR #30
-- T21 [CÓDIGO] 30 casos de evaluación + `main.py eval` + resultados + test e2e + docs/testing-procedure.md — subagente: qa-tester — cubre S12 — commit:
-- T22 [CÓDIGO] Cobertura ≥80%, ruff/mypy limpios, huecos de tests, CI verde — subagente: qa-tester — cubre S12, S17 — commit:
+- T21 [CÓDIGO] 30 casos de evaluación + `main.py eval` + resultados + test e2e + docs/testing-procedure.md — subagente: qa-tester — cubre S12 — commit: merge del PR #32
+- T22 [CÓDIGO] Cobertura ≥80%, ruff/mypy limpios, huecos de tests, CI verde — subagente: qa-tester — cubre S12, S17 — commit: rama chore/t22-coverage-ci (pendiente de PR)
 - T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit:
 - T24 [CÓDIGO] README completo + docs/architecture.md + docs/job-fit.md + docs/learning-log.md + CHANGELOG — subagente: docs-writer — cubre S13, S14 — commit:
 - T25 [CÓDIGO] Fase B: docs/MANUAL_STEPS.md + scripts/check_fabric.py, check_public_url.py, update_readme_results.py — subagente: docs-writer — cubre S18 — commit:
@@ -1019,3 +1019,10 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - **Ciclos de corrección**: (1) QA encontró sobre-escalamiento por KB-011 en cualquier posición (EV-05, EV-07, EV-09); se añadió `retrieval.escalation_margin` = 0.05. (2) EV-20 no escalaba; se detecta actividad de acceso no reconocida. (3) Patrones RN-03 de caja y acceso no autorizado ampliados (ES/EN). (4) security pidió avisar por stderr que `--api-url` crea tickets reales.
 - **Métricas reales (local, índice real)**: 29/30 aprobados (96.7%), top-3 14/14, rechazo 3/4 (75%), clasificación 5/5, seguridad 3/3, p50 12.9 ms y p95 27.3 ms; `data/deskpilot.db` intacta (sha256 igual). Pytest: 1479 passed, 2 skipped, cobertura 98.24%; ruff y mypy limpios.
 - **Decisión**: EV-16 (responde KB-003 con score 0.525 > umbral 0.33) se deja como limitación documentada (umbral global sin rerank) y xfail estricto, en lugar de subir el umbral y arriesgar casos legítimos. Por eso `eval` sale con 1. Detalle en `docs/features/eval-e2e.md` y `docs/testing-procedure.md`; los resultados en Copilot Studio son T32 (manual, pendiente).
+
+### L23 — Estructura de docs/ (decisión)
+- `docs/features/` y `docs/research/` se añaden a la estructura L2 por la directiva del usuario de ciclo por feature (un documento por feature y las investigaciones previas). Los `.md` de research ya estaban en `docs/research/` (no había nada que mover desde `docs/odd/`). Registrado en CLAUDE.md y CONTRIBUTING.md.
+
+### L24 — T22 cobertura y CI (qa-tester + docs-writer) · documentada
+- mypy sobre `src`, `main.py` y `tests` (`explicit_package_bases`); dos tests de integración renombrados (`test_api_create_ticket_flow.py`, `test_mcp_server_integration.py`); ResourceWarning de sqlite corregido; CI con jobs `quality`, `eval-smoke` (caché del modelo, acepta exit 1 por EV-16 y exige 30 casos con >=27 aprobados) y `docker-build` (buildx con caché gha).
+- **Resultados reales (local)**: 1479 passed, 2 skipped, 33 deselected; cobertura 98.24%; ruff y mypy limpios. Los jobs nuevos de CI no se han ejecutado: ver resultado del PR. Limitación: ResourceWarning de anyio del cliente MCP. Detalle en `docs/features/coverage-ci.md`.

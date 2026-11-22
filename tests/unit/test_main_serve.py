@@ -85,7 +85,12 @@ def test_serve_starts_uvicorn_with_safe_options(
     settings = _patch_settings(monkeypatch, tmp_path, key=API_KEY)
     built: list[Settings] = []
     marker = object()
-    monkeypatch.setattr(src.api, "create_app", lambda s: built.append(s) or marker)
+
+    def fake_create_app(s: Settings) -> object:
+        built.append(s)
+        return marker
+
+    monkeypatch.setattr(src.api, "create_app", fake_create_app)
     calls: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
     monkeypatch.setattr(uvicorn, "run", lambda *a, **k: calls.append((a, k)))
 

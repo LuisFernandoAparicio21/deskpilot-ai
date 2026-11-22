@@ -154,7 +154,8 @@ def test_invalid_values_fail_fast_without_echoing_them(
     field: str, value: str, env_name: str
 ) -> None:
     with pytest.raises(ConfigError) as excinfo:
-        FabricConnectionFactory(_credentials(**{field: value}))
+        overrides: dict[str, Any] = {field: value}
+        FabricConnectionFactory(_credentials(**overrides))
     message = str(excinfo.value)
     assert env_name in message
     assert SECRET not in message

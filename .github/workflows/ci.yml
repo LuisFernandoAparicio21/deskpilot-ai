@@ -41,7 +41,97 @@ jobs:
         run: ruff format --check .
 
       - name: Mypy
-        run: mypy src main.py
+        run: mypy src main.py tests
 
       - name: Pytest with coverage
         run: pytest --cov=src --cov-report=term-missing
+
+  eval-smoke:
+    name: Eval smoke (local mode, real index)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # The fastembed model (~240 MB) is downloaded once by `index` into this folder
+      # (embeddings.cache_dir). The key follows config.yaml, where the model name lives.
+      - name: Cache the fastembed model
+        uses: actions/cache@v6
+        with:
+          path: data/vectordb/models
+          key: fastembed-${{ runner.os }}-${{ hashFiles('config.yaml') }}
+
+      - name: Generate data, load the database and build the index
+        run: |
+          python main.py generate-data
+          python main.py load-db
+          python main.py index
+
+      # `main.py eval` exits 0 (thresholds met), 1 (thresholds not met) or 2 (cases file or
+      # backend unusable). Exit 1 is expected: EV-16 is a documented rejection limitation
+      # (rechazo 3/4), so the step tolerates 1 and fails on any other code. It then reads
+      # results.summary.json and requires all 30 cases run and at least 27 passed.
+      - name: Run the 30 evaluation cases
+        run: |
+          set +e
+          python main.py eval
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 1 ]; then
+            echo "::error::main.py eval exited with $code (expected 0 or 1)"
+            exit "$code"
+          fi
+          python - <<'PY'
+          import json
+          import sys
+
+          summary = json.load(open("tests/eval/results.summary.json", encoding="utf-8"))
+          total, passed = summary["total"], summary["passed"]
+          print(f"eval: {passed}/{total} passed")
+          if total != 30 or passed < 27:
+              sys.exit(f"expected 30 cases and at least 27 passed, got {passed}/{total}")
+          PY
+
+      - name: Upload the evaluation results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: eval-results
+          path: |
+            tests/eval/results.csv
+            tests/eval/results.summary.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  docker-build:
+    name: Docker build (no push)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build the image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          tags: deskpilot-ai:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

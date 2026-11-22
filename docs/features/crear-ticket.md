@@ -29,7 +29,7 @@
 | `tests/unit/test_ticket_service.py` | 21 | SLA por prioridad y desde configuración, fecha límite = apertura + SLA, escalamiento sin consultar al LLM, modo `rules`/`llm`, campos guardados, idioma, un secreto no llega a la fila, respuesta, logs ni LLM, varios secretos, recorte al límite, log solo con metadatos, fallo del repositorio => no disponible. |
 | `tests/unit/test_api_create_ticket.py` | 49 | 201 con los campos documentados, la respuesta no devuelve la descripción, canal por defecto, 401 sin llave (antes del 422), 422 y nada guardado, límites de longitud, no se refleja el texto rechazado, SQL injection como texto inerte, JSON mal formado, content-type incorrecto, 413, 405, 503 sin traza, 500 genérico, access log sin cuerpo ni llave, 504 por lentitud. |
 | `tests/unit/test_repository_create.py` | 13 | INSERT parametrizado (el texto del usuario nunca va en el SQL), commit/rollback, reintento con un id nuevo si está tomado, id libre en todas las tablas, reintentos agotados sin insertar, error de Fabric => no disponible sin traza ni texto, formato `TCK-` no secuencial, escritura en el Warehouse. |
-| `tests/integration/test_api_create_ticket.py` | 39 | Sobre SQLite temporal: el ticket guardado coincide con la respuesta y se consulta con `GET`, tickets históricos intactos, SLA 4/8/24/72 h en la fila, escalamiento guardado como P1 sin LLM, modo LLM, LLM no confiable no cambia la prioridad, secreto ausente de BD/respuesta/logs/prompt, SQL injection, 400 inserciones concurrentes con ids únicos, colisiones forzadas con reintento y 503 si no cesan, BD inaccesible o tabla ausente => 503. |
+| `tests/integration/test_api_create_ticket_flow.py` | 39 | Sobre SQLite temporal: el ticket guardado coincide con la respuesta y se consulta con `GET`, tickets históricos intactos, SLA 4/8/24/72 h en la fila, escalamiento guardado como P1 sin LLM, modo LLM, LLM no confiable no cambia la prioridad, secreto ausente de BD/respuesta/logs/prompt, SQL injection, 400 inserciones concurrentes con ids únicos, colisiones forzadas con reintento y 503 si no cesan, BD inaccesible o tabla ausente => 503. |
 
 ## Resultados reales
 
@@ -105,7 +105,7 @@ HTTP/1.1 401 Unauthorized
 Al terminar se detuvo el servidor (`/health` dejó de responder) y se borraron de `tickets_nuevos` los 4 tickets de prueba. Para repetir solo los tests:
 
 ```powershell
-.venv\Scripts\python -m pytest tests/unit/test_classification.py tests/unit/test_ticket_service.py tests/unit/test_api_create_ticket.py tests/unit/test_repository_create.py tests/integration/test_api_create_ticket.py
+.venv\Scripts\python -m pytest tests/unit/test_classification.py tests/unit/test_ticket_service.py tests/unit/test_api_create_ticket.py tests/unit/test_repository_create.py tests/integration/test_api_create_ticket_flow.py
 ```
 
 ## Decisiones de seguridad

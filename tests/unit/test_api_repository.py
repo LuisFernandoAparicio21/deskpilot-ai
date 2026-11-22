@@ -6,7 +6,7 @@ import logging
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -55,8 +55,14 @@ class FakeConnection:
         self.closed = True
 
 
-def _repo(*conns: FakeConnection, tables: Sequence[str] = ("dbo.tickets", "dbo.tickets_nuevos")):
-    sources = [TicketSource(lambda c=c: c, t) for c, t in zip(conns, tables, strict=False)]
+def _source(conn: FakeConnection, table: str) -> TicketSource:
+    return TicketSource(lambda: cast(Any, conn), table)
+
+
+def _repo(
+    *conns: FakeConnection, tables: Sequence[str] = ("dbo.tickets", "dbo.tickets_nuevos")
+) -> SqlTicketRepository:
+    sources = [_source(c, t) for c, t in zip(conns, tables, strict=False)]
     return SqlTicketRepository(sources, backend="fabric")
 
 
@@ -84,7 +90,9 @@ def test_connection_failure_is_also_wrapped(caplog: pytest.LogCaptureFixture) ->
     def boom() -> FakeConnection:
         raise OSError(LEAK)
 
-    repo = SqlTicketRepository([TicketSource(boom, "dbo.tickets")], backend="fabric")
+    repo = SqlTicketRepository(
+        [TicketSource(lambda: cast(Any, boom()), "dbo.tickets")], backend="fabric"
+    )
     with pytest.raises(RepositoryUnavailableError):
         repo.area_metrics("area", "Caja")
     assert repo.ping() is False

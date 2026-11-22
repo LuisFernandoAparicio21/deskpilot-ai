@@ -7,12 +7,13 @@ from pathlib import Path
 import pytest
 
 from src.api.classification import classify, classify_by_rules
+from src.api.ticket_service import TicketService
 from src.llm import LLMError
 from src.retrieval import escalation_reason
 from src.utils.config import Settings
 from tests.unit.conftest import FakeRepository, settings_with_key
 from tests.unit.test_classification import FakeLLM
-from tests.unit.test_ticket_service import NOW, TicketService, _request
+from tests.unit.test_ticket_service import NOW, _request
 
 CASH_SYSTEM = [
     "la caja registradora no abre",

@@ -38,8 +38,8 @@ Orden por dependencias; un subagente a la vez.
 | T19 | openapi-docker | feat/t19-openapi-docker | `export-openapi` (OpenAPI v2 JSON compatible con Copilot Studio). Dockerfile separado como T19b (ver fila siguiente) | S8, S17, RF-25, RNF-10 | api-engineer | mergeada | #26 | 2026-11-22 |
 | T19b | docker-image | feat/t19b-dockerfile | Dockerfile y .dockerignore de una etapa (modo local, no root, modelo e índice en el build), verificados con docker build/run | S17, RNF-10 | api-engineer | mergeada | #28 | 2026-11-22 |
 | T20 | copilot-studio-design | feat/t20-copilot-studio | Instrucciones, temas, frases ES/EN y escalamiento del agente | S11, RF-01-09, RNF-12 | copilot-studio-designer | mergeada | #30 | 2026-11-22 |
-| T21 | eval-e2e | feat/t21-eval-e2e | 30 casos de evaluación, comando `eval`, resultados, test e2e (p95), testing-procedure.md | S12, RNF-01 | qa-tester | documentada | - | - |
-| T22 | coverage-ci | chore/t22-coverage-ci | Cobertura >=80%, ruff/mypy limpios, huecos de tests, CI verde | S12, S17, RNF-08/09 | qa-tester | pendiente | - | - |
+| T21 | eval-e2e | feat/t21-eval-e2e | 30 casos de evaluación, comando `eval`, resultados, test e2e (p95), testing-procedure.md | S12, RNF-01 | qa-tester | mergeada | #32 | 2026-11-22 |
+| T22 | coverage-ci | chore/t22-coverage-ci | Cobertura >=80%, ruff/mypy limpios, huecos de tests, CI verde | S12, S17, RNF-08/09 | qa-tester | documentada | - | - |
 | T23 | business-case-adrs | chore/t23-business-case-adrs | business-case.md con cifras del SQL + ADRs en docs/adr | S13 | docs-writer | pendiente | - | - |
 | T24 | docs-readme | chore/t24-docs-readme | README completo, architecture.md, job-fit.md, learning-log.md, CHANGELOG | S13, S14, RNF-13 | docs-writer | pendiente | - | - |
 | T25 | manual-steps-scripts (Fase B) | chore/t25-manual-steps | MANUAL_STEPS.md + scripts check_fabric.py, check_public_url.py, update_readme_results.py | S18 | docs-writer | pendiente | - | - |

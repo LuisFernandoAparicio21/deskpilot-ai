@@ -6,6 +6,7 @@ import json
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import NoReturn
 
 import httpx
 import pytest
@@ -132,10 +133,8 @@ def test_cli_exit_2_when_the_backend_cannot_start(
 ) -> None:
     _cases_file(tmp_path)
 
-    @contextmanager
-    def broken(*args: object, **kwargs: object) -> Iterator[FakeBackend]:
+    def broken(*args: object, **kwargs: object) -> NoReturn:
         raise EvalError("no vector index; run: python main.py index")
-        yield FakeBackend()  # pragma: no cover
 
     monkeypatch.setattr(ev, "open_backend", broken)
     assert main.main(_argv(tmp_path)) == 2
@@ -173,7 +172,7 @@ def _mock_http(monkeypatch: pytest.MonkeyPatch, handler: Handler) -> None:
     def factory(**kwargs: object) -> httpx.Client:
         return real(transport=httpx.MockTransport(handler), **kwargs)  # type: ignore[arg-type]
 
-    monkeypatch.setattr(ev.httpx, "Client", factory)
+    monkeypatch.setattr(httpx, "Client", factory)
 
 
 def _ok_handler(request: httpx.Request) -> httpx.Response:

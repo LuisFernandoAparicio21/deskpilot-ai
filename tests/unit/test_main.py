@@ -10,7 +10,8 @@ from pathlib import Path
 import pytest
 
 import main
-from src.utils.config import ConfigError, Settings, load_settings
+from src.ingestion import ticket_generator
+from src.utils.config import PROJECT_ROOT, ConfigError, Settings, load_settings
 from src.utils.logging import shutdown_logging
 
 EXPECTED_COMMANDS = {
@@ -91,7 +92,7 @@ def test_generate_data_defaults_come_from_config(
     tmp_settings: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[tuple[int, int]] = []
-    real: Callable[..., object] = main.generate_dataset
+    real: Callable[..., object] = ticket_generator.generate_dataset
 
     def spy(seed: int, n: int, *args: object) -> object:
         calls.append((seed, n))
@@ -196,7 +197,7 @@ def index_settings(
 def test_index_builds_the_vector_index(
     index_settings: Callable[[Path], Settings], capsys: pytest.CaptureFixture[str]
 ) -> None:
-    settings = index_settings(main.PROJECT_ROOT / "data" / "knowledge_base")
+    settings = index_settings(PROJECT_ROOT / "data" / "knowledge_base")
     assert main.main(["index"]) == main.EXIT_OK
     out = capsys.readouterr().out
     assert "15 articles -> " in out
