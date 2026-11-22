@@ -66,7 +66,7 @@ Por archivo: `test_copilot_studio.py` 34 pasan; los casos de policy de `test_ans
 
 ## Hallazgos del QA y su corrección
 
-- Seis frases de escalamiento obligatorio no estaban cubiertas por RN-03 (cargos o transacciones no reconocidos, phishing, robo de identidad, cajero automático, caja fuerte y POS). Se amplió `src/retrieval/policy.py` (ES/EN) y se agregaron pruebas positivas y negativas. Ahora cada frase del tema de escalamiento activa la policy y crea un ticket P1.
+- Seis frases de escalamiento obligatorio no estaban cubiertas por RN-03 (ES: «vi movimientos extraños con mi usuario», «no podemos cobrar en caja»; EN: «there is a transaction I don't recognize», «strange activity with my user», «we can't process payments at the counter», «the cash terminal is not working»). Se amplió `src/retrieval/policy.py` (ES/EN) y se agregaron pruebas positivas y negativas. Ahora cada frase del tema de escalamiento activa la policy y crea un ticket P1.
 - Faltaba el marcador "⚠ verificar en pantalla" sobre idiomas soportados (español e inglés). Se añadió una nota en `integrations/copilot_studio/README.md` y una prueba que lo exige.
 
 ## Límites verificados y pendientes
