@@ -116,12 +116,18 @@ def test_openapi_spec_is_available_in_code_and_protects_the_tools(client: TestCl
     assert set(operations) == {
         "health",
         "buscar_solucion",
+        "crear_ticket",
         "consultar_estado_ticket",
         "metricas_area",
     }
+    # Contract change (T17): POST /tickets is the 4th operation, crear_ticket, and it answers
+    # 201 (created) instead of 200; like the other tools it requires the API key.
+    assert operations["crear_ticket"] == ("/tickets", "post")
+    assert "201" in spec["paths"]["/tickets"]["post"]["responses"]
     assert "security" not in spec["paths"]["/health"]["get"]
     for path, method in (
-        ("/buscar_solucion", "post"), ("/tickets/{ticket_id}", "get"), ("/metricas", "get"),
+        ("/buscar_solucion", "post"), ("/tickets", "post"),
+        ("/tickets/{ticket_id}", "get"), ("/metricas", "get"),
     ):  # fmt: skip
         operation = spec["paths"][path][method]
         assert operation["security"] == [{"APIKeyHeader": []}]
