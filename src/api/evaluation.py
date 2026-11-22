@@ -35,9 +35,19 @@ Metrics (requirements section 12) and thresholds:
 - ``seguridad``: ``seguridad`` cases passed, 100%.
 - ``aprobados``: all cases passed, >= 27 of 30 (90%, rounded up).
 
-A metric with no cases is "n/a" and does not fail. Exit codes of ``run_eval``: 0 all
-thresholds met, 1 some not met, 2 configuration or infrastructure error. Logs carry ids,
-counts and statuses only, never questions or answers.
+A metric with no cases is "n/a" and does not fail. Targets and ``known_failures`` come from
+the ``eval:`` section of ``config.yaml`` (defaults = section 12).
+
+Exit-code contract (see docs/features/eval-e2e.md):
+
+- 0: every target criterion met and no case failed.
+- 3: the global minimum (``min_passed``) and security hold and no NEW case failed, but some
+  criterion is unmet or a documented ``known_failures`` case failed (separate report).
+- 1: the global minimum or security broke, or a case NOT in ``known_failures`` failed
+  (regression). 1 never means "target not met" any more (it did before this contract).
+- 2: configuration, cases file, database, index or API error.
+
+Logs carry ids, counts and statuses only, never questions or answers.
 """
 
 from __future__ import annotations
@@ -61,14 +71,15 @@ import httpx
 from src.api.repository import SqlTicketRepository, build_sqlite_repository
 from src.api.schemas import build_create_request, build_search_request
 from src.api.ticket_service import TicketService
-from src.utils.config import ConfigError, Settings, require_api_key
+from src.utils.config import ConfigError, EvalConfig, Settings, require_api_key
 from src.utils.redaction import redact, sensitive_values
 
 logger = logging.getLogger(__name__)
 
 EXIT_OK = 0
-EXIT_BELOW_THRESHOLD = 1
+EXIT_REGRESSION = 1
 EXIT_ERROR = 2
+EXIT_TARGETS_NOT_MET = 3
 
 PASSED = "pasó"
 FAILED = "falló"
@@ -82,14 +93,8 @@ TICKET_SUCURSAL = "Centro"
 TICKET_AREA = "Soporte"
 TICKET_CANAL: Literal["Teams"] = "Teams"
 HTTP_TIMEOUT_MARGIN_S = 5.0
-# Metric name -> (minimum fraction, label shown in the summary).
-THRESHOLDS: dict[str, float] = {
-    "retrieval_top3": 0.90,
-    "rechazo": 1.0,
-    "clasificacion": 0.85,
-    "seguridad": 1.0,
-    "aprobados": 0.90,
-}
+# Metrics that must hold for the run to be anything but a regression (exit 1 otherwise).
+HARD_METRICS = ("seguridad", "aprobados")
 
 
 class EvalError(RuntimeError):
@@ -575,7 +580,22 @@ def _required(total: int, fraction: float) -> int:
     return -(-total * percent // 100)
 
 
-def compute_metrics(results: Sequence[CaseResult]) -> list[Metric]:
+def thresholds_by_metric(config: EvalConfig) -> dict[str, float]:
+    """Metric name -> minimum fraction, from the ``eval.thresholds`` percentages."""
+    t = config.thresholds
+    return {
+        "retrieval_top3": t.retrieval_top3_pct / 100,
+        "rechazo": t.rejection_pct / 100,
+        "clasificacion": t.classification_pct / 100,
+        "seguridad": t.security_pct / 100,
+        "aprobados": t.min_passed / 100,
+    }
+
+
+def compute_metrics(
+    results: Sequence[CaseResult], config: EvalConfig | None = None
+) -> list[Metric]:
+    thresholds = thresholds_by_metric(config or EvalConfig())
     by_kind = {
         "retrieval_top3": "articulo",
         "rechazo": "rechazo",
@@ -591,8 +611,8 @@ def compute_metrics(results: Sequence[CaseResult]) -> list[Metric]:
                 name,
                 sum(r.passed for r in subset),
                 total,
-                THRESHOLDS[name],
-                _required(total, THRESHOLDS[name]),
+                thresholds[name],
+                _required(total, thresholds[name]),
             )
         )
     total = len(results)
@@ -601,8 +621,8 @@ def compute_metrics(results: Sequence[CaseResult]) -> list[Metric]:
             "aprobados",
             sum(r.passed for r in results),
             total,
-            THRESHOLDS["aprobados"],
-            _required(total, THRESHOLDS["aprobados"]),
+            thresholds["aprobados"],
+            _required(total, thresholds["aprobados"]),
         )
     )
     return metrics
@@ -622,14 +642,54 @@ class EvalReport:
     p50_ms: float
     p95_ms: float
     backend: str
+    config: EvalConfig = field(default_factory=EvalConfig)
 
     @property
     def thresholds_met(self) -> bool:
         return all(m.met for m in self.metrics)
 
     @property
+    def failed_ids(self) -> list[str]:
+        return [r.case.id for r in self.results if not r.passed]
+
+    @property
+    def known_failures_hit(self) -> list[str]:
+        known = {k.id for k in self.config.known_failures}
+        return [i for i in self.failed_ids if i in known]
+
+    @property
+    def known_failures_fixed(self) -> list[str]:
+        """Known failures that passed in this run (stale entries to remove from the config)."""
+        failed = set(self.failed_ids)
+        return [k.id for k in self.config.known_failures if k.id not in failed]
+
+    @property
+    def new_failures(self) -> list[str]:
+        known = {k.id for k in self.config.known_failures}
+        return [i for i in self.failed_ids if i not in known]
+
+    @property
+    def unmet(self) -> list[Metric]:
+        return [m for m in self.metrics if not m.met]
+
+    @property
     def exit_code(self) -> int:
-        return EXIT_OK if self.thresholds_met else EXIT_BELOW_THRESHOLD
+        return self.verdict[0]
+
+    @property
+    def verdict(self) -> tuple[int, str]:
+        """(exit code, reason) per the contract in the module docstring."""
+        broken = [m.name for m in self.unmet if m.name in HARD_METRICS]
+        if broken:
+            return EXIT_REGRESSION, f"global minimum or security broken: {', '.join(broken)}"
+        if self.new_failures:
+            ids = ", ".join(self.new_failures)
+            return EXIT_REGRESSION, f"new failures not in known_failures: {ids}"
+        if self.unmet or self.known_failures_hit:
+            unmet = ", ".join(m.name for m in self.unmet) or "none"
+            hit = ", ".join(self.known_failures_hit) or "none"
+            return EXIT_TARGETS_NOT_MET, f"criteria not met: {unmet}; known failures: {hit}"
+        return EXIT_OK, "all target criteria met"
 
 
 def run_cases(
@@ -637,15 +697,18 @@ def run_cases(
     backend: EvalBackend,
     backend_name: str,
     clock: Callable[[], float] = time.perf_counter,
+    config: EvalConfig | None = None,
 ) -> EvalReport:
+    config = config or EvalConfig()
     results = [run_case(case, backend, clock) for case in cases]
     latencies = [r.latencia_ms for r in results]
     return EvalReport(
         results,
-        compute_metrics(results),
+        compute_metrics(results, config),
         percentile(latencies, 50),
         percentile(latencies, 95),
         backend_name,
+        config,
     )
 
 
@@ -682,6 +745,15 @@ def write_results(report: EvalReport, out: Path) -> Path:
         "total": total,
         "passed": sum(r.passed for r in report.results),
         "thresholds_met": report.thresholds_met,
+        "exit_code": report.exit_code,
+        "exit_reason": report.verdict[1],
+        "criteria": {
+            m.name: {"target": round(m.threshold * 100), "actual": m.pct, "met": m.met}
+            for m in report.metrics
+        },
+        "known_failures_hit": report.known_failures_hit,
+        "known_failures_fixed": report.known_failures_fixed,
+        "new_failures": report.new_failures,
         "metrics": {
             m.name: {
                 "passed": m.passed,
@@ -712,11 +784,19 @@ def format_report(report: EvalReport) -> str:
             f"(goal >= {round(m.threshold * 100)}%)  {state}"
         )
     lines.append(f"  latency per case: p50 {report.p50_ms:.1f} ms, p95 {report.p95_ms:.1f} ms")
-    failed = [r.case.id for r in report.results if not r.passed]
+    reasons = {k.id: k.reason for k in report.config.known_failures}
+    failed = report.failed_ids
     lines.append(f"  failed cases: {', '.join(failed) if failed else 'none'}")
-    lines.append(
-        "  verdict: " + ("thresholds met" if report.thresholds_met else "thresholds NOT met")
-    )
+    for case_id in report.known_failures_hit:
+        lines.append(f"  known failure {case_id}: {reasons[case_id]}")
+    for case_id in report.new_failures:
+        lines.append(f"  NEW failure {case_id}: not in eval.known_failures (regression)")
+    for case_id in report.known_failures_fixed:
+        lines.append(f"  known failure {case_id} now passes: remove it from eval.known_failures")
+    if report.unmet:
+        lines.append("  criteria not met: " + ", ".join(m.name for m in report.unmet))
+    code, reason = report.verdict
+    lines.append(f"  verdict: exit {code} ({reason})")
     return "\n".join(lines)
 
 
@@ -731,6 +811,9 @@ def run_eval(
     if cases_path.resolve() == out_path.resolve():
         raise EvalError("--out must not be the cases file")
     cases = load_cases(cases_path)
+    unknown = sorted({k.id for k in settings.eval.known_failures} - {c.id for c in cases})
+    if unknown:
+        raise EvalError(f"eval.known_failures ids not in the cases file: {', '.join(unknown)}")
     with open_backend(settings, api_url, api_key) as backend:
-        report = run_cases(cases, backend, "http" if api_url else "local")
+        report = run_cases(cases, backend, "http" if api_url else "local", config=settings.eval)
     return report, write_results(report, out_path)

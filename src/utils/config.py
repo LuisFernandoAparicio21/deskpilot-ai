@@ -173,7 +173,7 @@ class EvalThresholds(_Section):
 
 
 class KnownFailure(_Section):
-    """A documented limitation: a case that is allowed to fail with a reason (never a regression)."""
+    """A documented limitation: a case allowed to fail, with a reason (never a regression)."""
 
     id: str = Field(pattern=r"^EV-\d{2,}$")
     reason: str = Field(min_length=1)
