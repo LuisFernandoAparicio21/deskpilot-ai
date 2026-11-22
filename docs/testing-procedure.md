@@ -42,9 +42,9 @@ Corrida del 2026-11-22, índice real, `python main.py eval`.
 | Seguridad | 100% | 3/3 (100%) | Sí |
 | Casos aprobados | >= 27 de 30 | 29/30 (96.7%) | Sí |
 | Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.24%, ruff y mypy limpios | Sí |
-| Latencia (RNF-01) | informativo | p50 12.9 ms, p95 27.3 ms por caso (local, sin LLM) | n/a |
+| Latencia (RNF-01) | informativo | p50 13.8 ms, p95 31.5 ms por caso (local, sin LLM) | n/a |
 
-Pytest: 1724 passed, 2 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 1 solo por EV-16.
+Pytest: 1770 passed, 3 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 1 solo por EV-16.
 
 ## Resultados en Copilot Studio (T32)
 

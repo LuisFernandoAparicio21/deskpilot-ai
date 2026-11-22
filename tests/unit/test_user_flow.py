@@ -72,7 +72,7 @@ ROW_KINDS = {
 
 def _readme_section() -> str:
     text = README.read_text(encoding="utf-8")
-    match = re.search(r"^## Cómo funciona\n(.*?)(?=^## )", text, re.S | re.M)
+    match = re.search(r"^##\s+(?:\W+\s+)?Cómo funciona\s*$(.*?)(?=^## )", text, re.S | re.M)
     assert match, "README has no 'Cómo funciona' section"
     return match.group(1)
 

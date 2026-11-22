@@ -44,11 +44,15 @@ def _strip_code(text: str) -> str:
 
 
 def _slug(heading: str) -> str:
-    """GitHub heading anchor: lowercase, drop punctuation, spaces to hyphens."""
+    """GitHub heading anchor: lowercase, drop punctuation/emoji, spaces to hyphens.
+
+    Emoji are dropped like any symbol; the space that followed is stripped, so a decorative
+    prefix leaves no leading or trailing hyphen.
+    """
     text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", heading.strip().lower())
     text = re.sub(r"[`*_]", "", text)
     text = re.sub(r"[^\w\- ]", "", text, flags=re.UNICODE)
-    return text.replace(" ", "-")
+    return text.strip(" ").replace(" ", "-")
 
 
 def _anchors(path: Path) -> set[str]:
@@ -80,7 +84,9 @@ def _table_rows(text: str) -> list[list[str]]:
 
 
 def _section(text: str, heading: str) -> str:
-    match = re.search(rf"^##\s+{re.escape(heading)}\s*$(.*?)(?=^##\s|\Z)", text, re.S | re.M)
+    match = re.search(
+        rf"^##\s+(?:\W+\s+)?{re.escape(heading)}\s*$(.*?)(?=^##\s|\Z)", text, re.S | re.M
+    )
     assert match, f"section '## {heading}' missing"
     return match.group(1)
 
@@ -123,7 +129,9 @@ def test_readme_required_content() -> None:
     text = README.read_text(encoding="utf-8")
     assert f"**{NOTE}.**" in text
     for heading in ("Por qué este proyecto", "Habilidades demostradas", "English summary"):
-        assert re.search(rf"^##\s+{heading}\s*$", text, re.M), f"missing section {heading}"
+        assert re.search(rf"^##\s+(?:\W+\s+)?{heading}\s*$", text, re.M), (
+            f"missing section {heading}"
+        )
     video = _section(text, "Video")
     assert "PLACEHOLDER" in video and "http" not in video, "video must stay a placeholder"
     english = _section(text, "English summary")

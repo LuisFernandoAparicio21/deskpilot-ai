@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 320" width="1180" height="320" role="img" aria-labelledby="t d">
+  <title id="t">DeskPilot AI</title>
+  <desc id="d">Terminal-style banner: python main.py serve, then python main.py eval, for a level-1 IT service desk agent with cited answers, using synthetic data.</desc>
+  <style>
+    text{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;white-space:pre}
+    .fg{fill:#F5E0E0} .ac{fill:#FF6B6B} .mu{fill:#B08080} .ok{fill:#F5E0E0}
+    .big{font-size:52px;font-weight:700} .m{font-size:22px} .s{font-size:18px}
+  </style>
+  <rect width="1180" height="320" rx="14" fill="#150404"/>
+  <rect x="1" y="1" width="1178" height="318" rx="13" fill="none" stroke="#3D1010" stroke-width="2"/>
+  <rect x="1" y="1" width="1178" height="44" rx="13" fill="#210808"/>
+  <circle cx="30" cy="23" r="7" fill="#FF6B6B"/><circle cx="54" cy="23" r="7" fill="#B08080"/><circle cx="78" cy="23" r="7" fill="#3D1010"/>
+  <text x="590" y="29" text-anchor="middle" class="mu s">deskpilot-ai : bash</text>
+  <text x="40" y="96" class="m"><tspan class="ac">$ </tspan><tspan class="fg">python main.py serve</tspan></text>
+  <text x="40" y="170" class="big fg">DeskPilot AI</text>
+  <text x="40" y="206" class="m ac">L1 Service Desk Agent</text>
+  <text x="40" y="238" class="s mu">RAG with citations  ·  says "I don't know"  ·  escalates fraud</text>
+  <text x="40" y="282" class="m"><tspan class="ac">$ </tspan><tspan class="fg">python main.py eval</tspan><tspan class="mu">   # 30 cases · local mode · synthetic data</tspan><tspan class="ac" dx="8">_<animate attributeName="opacity" values="1;0;1" dur="1.2s" repeatCount="indefinite"/></tspan></text>
+</svg>

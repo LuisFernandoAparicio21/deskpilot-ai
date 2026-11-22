@@ -221,3 +221,11 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | readme-typing-svg (DenverCoder1) | https://github.com/DenverCoder1/readme-typing-svg | Parámetros lines, width, height, size, font, color, center, duration, pause, repeat, etc.; el servicio demolab responde 200 `image/svg+xml`. |
 | Shields.io | https://shields.io | `img.shields.io/badge/...?style=for-the-badge&logo=...` responde 200 `image/svg+xml`. |
 | Repos de LuisFernandoAparicio21 (perfil, agentic-spec-driven-development, proyecto-inaoeV2, factufast) | https://github.com/LuisFernandoAparicio21 | README y assets/banner-dark.svg / banner-light.svg leídos en raw; estilo documentado en docs/research/visual-style.md. |
+
+## Badges y banner del README (PL-3)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| Shields.io GitHub tag y workflow | https://shields.io/badges/git-hub-tag | `img.shields.io/github/v/tag/<repo>` y `/github/actions/workflow/status/<repo>/ci.yml` responden 200 `image/svg+xml`; el tag muestra v0.1.0. |
+| Shields.io badge estático | https://shields.io/badges/static-badge | `img.shields.io/badge/<label>-<mensaje>-<color>` para cobertura medida a mano y plataforma Microsoft. |
+| Simple Icons | https://simpleicons.org | Existen python, fastapi, sqlite, docker, pytest, ruff y modelcontextprotocol; no hay icono de Chroma, Copilot Studio ni Fabric (badges sin logo). |
