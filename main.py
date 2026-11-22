@@ -5,7 +5,8 @@ Every pipeline step runs through a subcommand:
     python main.py generate-data | load-db | index | serve | eval | export-openapi
 
 Subcommands without a handler yet only report which task will implement them and exit
-with code 2. Implemented so far: ``generate-data`` (T9), ``load-db`` (T10) and ``index`` (T14).
+with code 2. Implemented so far: ``generate-data`` (T9), ``load-db`` (T10), ``index`` (T14)
+and ``serve`` (T16).
 """
 
 from __future__ import annotations
@@ -162,10 +163,35 @@ def cmd_index(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    """Start the FastAPI service (T16, S8). Fails fast on invalid config or a missing API key."""
+    # Imported here: the API pulls in FastAPI, uvicorn and chromadb, only this command needs them.
+    import uvicorn
+
+    from src.api import create_app
+    from src.utils.config import require_api_key
+
+    try:
+        settings = load_settings()
+        require_api_key(settings)
+    except ConfigError as exc:
+        print(f"serve: {exc}", file=sys.stderr)
+        return EXIT_CONFIG_ERROR
+    configure_logging_from_settings(settings)
+    host: str = args.host or settings.api.host
+    port: int = args.port or settings.api.port
+    app = create_app(settings)
+    # log_config=None: uvicorn logs propagate to our JSON handlers; the access log is off
+    # because the request middleware logs method, route and status without the query string.
+    uvicorn.run(app, host=host, port=port, log_config=None, access_log=False, server_header=False)
+    return EXIT_OK
+
+
 HANDLERS: dict[str, Callable[[argparse.Namespace], int]] = {
     "generate-data": cmd_generate_data,
     "load-db": cmd_load_db,
     "index": cmd_index,
+    "serve": cmd_serve,
 }
 
 
@@ -184,6 +210,11 @@ def build_parser() -> argparse.ArgumentParser:
             )
             subparser.add_argument(
                 "--n", type=_positive_int, help="number of tickets (default: data.n_tickets)"
+            )
+        elif name == "serve":
+            subparser.add_argument("--host", help="bind address (default: api.host)")
+            subparser.add_argument(
+                "--port", type=_positive_int, help="TCP port (default: api.port)"
             )
         elif name == "load-db":
             subparser.add_argument(

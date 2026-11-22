@@ -66,6 +66,7 @@ api:
   request_timeout_s: 30
   max_query_chars: 500          # longitud máxima de la consulta en buscar_solucion
   max_description_chars: 2000   # longitud máxima de la descripción en crear_ticket
+  max_body_bytes: 16384         # tamaño máximo del cuerpo de una petición (413 si lo supera)
 
 # --- SLA en horas por prioridad (RN-02, ilustrativo) ---
 sla_horas:

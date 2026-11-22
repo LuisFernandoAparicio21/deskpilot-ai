@@ -17,3 +17,4 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - CI en GitHub Actions (ruff, mypy, pytest con cobertura), plantilla de PR y plantillas de issues.
 - Subagentes de Claude Code en `.claude/agents/` y documento de feature ODD en `docs/odd/`.
 - LICENSE (MIT), CONTRIBUTING.md y este CHANGELOG.
+- API REST (T16): `/health`, `POST /buscar_solucion`, `GET /tickets/{id}`, `GET /metricas`, autenticación `X-API-Key`, errores uniformes con `request_id`, límites de cuerpo y timeout, comando `serve` y `api.max_body_bytes`. Ver `docs/features/api-rest.md`.

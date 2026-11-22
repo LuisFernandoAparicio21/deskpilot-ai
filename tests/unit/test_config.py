@@ -338,3 +338,28 @@ def test_secret_values_lists_configured_secrets(tmp_path: Path) -> None:
     values = load_settings(env_file=env_file).secret_values()
     assert API_KEY in values
     assert FABRIC_VARS["AZURE_CLIENT_SECRET"] in values
+
+
+def test_require_api_key_rejects_keys_over_256_bytes_without_printing_them(
+    tmp_path: Path,
+) -> None:
+    long_key = "K9" * 129  # 258 ASCII bytes
+    settings = load_settings(env_file=_env_file(tmp_path, {"DESKPILOT_API_KEY": long_key}))
+    with pytest.raises(ConfigError, match=r"must not exceed 256 bytes") as excinfo:
+        require_api_key(settings)
+    assert "DESKPILOT_API_KEY" in str(excinfo.value)
+    assert long_key not in str(excinfo.value)
+    assert long_key not in repr(excinfo.value)
+
+
+def test_api_key_limit_counts_utf8_bytes_not_characters(tmp_path: Path) -> None:
+    multibyte = "ñ" * 129  # 129 characters but 258 bytes
+    settings = load_settings(env_file=_env_file(tmp_path, {"DESKPILOT_API_KEY": multibyte}))
+    with pytest.raises(ConfigError, match="256 bytes"):
+        require_api_key(settings)
+
+
+def test_require_api_key_accepts_exactly_256_bytes(tmp_path: Path) -> None:
+    key = "k" * 256
+    settings = load_settings(env_file=_env_file(tmp_path, {"DESKPILOT_API_KEY": key}))
+    assert require_api_key(settings).get_secret_value() == key
