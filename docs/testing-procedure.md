@@ -20,7 +20,7 @@ Detalle de la evaluación en `docs/features/eval-e2e.md`.
 python -m pytest                          # todo salvo `slow` (addopts: -m "not slow")
 python -m pytest -m slow                  # solo las lentas (modelo fastembed real; el último -m manda)
 python -m pytest -m slow tests/e2e        # los 30 casos con el modelo real
-python main.py eval                       # evaluación local; exit 0, 1 o 2
+python main.py eval                       # evaluación local; exit 0, 3 (aceptables), 1 (regresión) o 2 (error)
 python main.py eval --api-url http://localhost:8000   # contra la API; crea tickets reales
 ```
 
@@ -28,7 +28,7 @@ python main.py eval --api-url http://localhost:8000   # contra la API; crea tick
 - **Cobertura**: `python -m pytest --cov=src --cov-report=term-missing`; el umbral es 80% (`fail_under`).
 - **Lint y tipos**: `ruff check .`, `ruff format --check .`, `mypy src main.py tests`.
 - **CI** (`.github/workflows/ci.yml`, en cada push y PR, Python 3.13): ruff check, ruff format --check, mypy (src, main.py, tests) y
-  pytest con cobertura. Dos jobs más: `eval-smoke` (generate-data, load-db, index y `main.py eval`; tolera exit 1 por EV-16, exige 30 casos y >= 27 aprobados; cachea el modelo fastembed) y `docker-build` (build sin push, cache buildx).
+  pytest con cobertura. Dos jobs más: `eval-smoke` (generate-data, load-db, index y `main.py eval`; acepta solo exit 0 o 3 y anota como `::warning::` los criterios no cumplidos; cachea el modelo fastembed) y `docker-build` (build sin push, cache buildx).
 
 ## Métricas de éxito (sección 12) con resultado real en modo local
 
@@ -41,10 +41,22 @@ Corrida del 2026-11-22, índice real, `python main.py eval`.
 | Clasificación de tickets | >= 85% | 5/5 (100%) | Sí |
 | Seguridad | 100% | 3/3 (100%) | Sí |
 | Casos aprobados | >= 27 de 30 | 29/30 (96.7%) | Sí |
-| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.24%, ruff y mypy limpios | Sí |
-| Latencia (RNF-01) | informativo | p50 13.8 ms, p95 31.5 ms por caso (local, sin LLM) | n/a |
+| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.28%, ruff y mypy limpios | Sí |
+| Latencia (RNF-01) | informativo | p50 14.0 ms, p95 34.9 ms por caso (local, sin LLM) | n/a |
 
-Pytest: 1770 passed, 3 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 1 solo por EV-16.
+Pytest: 1873 passed, 3 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 3 solo por EV-16 (conocido).
+
+### Códigos de salida de `main.py eval` (contrato)
+
+| Código | Significado |
+| --- | --- |
+| 0 | Todos los criterios `target` cumplidos |
+| 3 | Mínimo global y seguridad cumplidos, pero hay criterios no cumplidos o fallos conocidos (el CI lo acepta y lo anota como warning) |
+| 1 | Regresión: se rompe el mínimo global o la seguridad, o falla un caso fuera de `known_failures` (el CI falla) |
+| 2 | Error de configuración, CSV, base, índice o API (el CI falla) |
+
+Metas y `known_failures` (con motivo) en la sección `eval:` de `config.yaml`; detalle y migración desde el antiguo
+"1 = umbral no cumplido" en `docs/features/eval-e2e.md`. `known_failures` no oculta regresiones. Un id de `known_failures` ausente del CSV usado (`--cases` personalizado, CSV de prueba) no da exit 2: se ignora con advertencia en stderr y se lista en `known_failures_ignored` del resumen JSON; exit 2 queda solo para errores reales de config, CSV, base, índice o API.
 
 ## Resultados en Copilot Studio (T32)
 

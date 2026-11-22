@@ -16,6 +16,7 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Changed
 
+- Contrato de exit codes de `main.py eval` (PL-7, P4): 0 = todo cumple; 3 = mínimo global y seguridad cumplidos pero hay criterios no cumplidos o fallos conocidos; 1 = regresión (mínimo, seguridad o caso fuera de `known_failures`); 2 = error. **Cambio de contrato**: el 1 ya no significa "objetivo no cumplido" (ahora es 3). Nueva sección `eval:` en `config.yaml` (`thresholds`, `known_failures` con motivo) validada con Pydantic; `results.summary.json` añade `criteria`, `known_failures_hit`, `new_failures`, `exit_code` y `exit_reason`. El job `eval-smoke` acepta solo 0 o 3, anota los criterios no cumplidos como `::warning::` y elimina la comprobación ad hoc `passed >= 27`.
 - Validado vs. pendiente (PL-6): la tabla "Habilidades demostradas" del README separa lo validado en local (SQL, API REST/MCP, RAG con citas, pruebas, CI, Docker) de lo diseñado y probado con dobles, pendiente de validar en tenant real (Fabric, Copilot Studio, Power BI); se ajustan la línea animada, "Qué es" y el diagrama del README, `docs/job-fit.md` y `docs/business-case.md` (en condicional: el diseño prevé; validado solo en local).
 - Roadmap de pulido posterior a v0.1.0 (PL-1 a PL-8) y agente `diagnostician` (#44).
 

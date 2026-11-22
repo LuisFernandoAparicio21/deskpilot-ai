@@ -220,10 +220,11 @@ def cmd_export_openapi(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    """Run the evaluation cases and check the section 12 thresholds (T21, S12).
+    """Run the evaluation cases and check the ``eval:`` targets (T21, S12).
 
-    Exit code 0: every threshold met; 1: some threshold not met; 2: configuration,
-    cases file, index/database or API connection error. See ``src/api/evaluation.py``.
+    Exit code 0: every target met; 3: minimum and security hold but some target is unmet or a
+    documented known failure failed; 1: minimum/security broken or a NEW failure (regression);
+    2: configuration, cases file, index/database or API error. See ``src/api/evaluation.py``.
     """
     from src.api.evaluation import EXIT_ERROR, EvalError, format_report, run_eval
 

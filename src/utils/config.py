@@ -159,6 +159,48 @@ class SlaConfig(_Section):
     P4: int = Field(gt=0)
 
 
+class EvalThresholds(_Section):
+    """Targets of ``main.py eval`` in percent (requirements section 12).
+
+    ``min_passed`` is the global minimum: share of all cases that must pass.
+    """
+
+    retrieval_top3_pct: float = Field(default=90.0, ge=0, le=100)
+    rejection_pct: float = Field(default=100.0, ge=0, le=100)
+    classification_pct: float = Field(default=85.0, ge=0, le=100)
+    security_pct: float = Field(default=100.0, ge=0, le=100)
+    min_passed: float = Field(default=90.0, ge=0, le=100)
+
+
+class KnownFailure(_Section):
+    """A documented limitation: a case allowed to fail, with a reason (never a regression)."""
+
+    id: str = Field(pattern=r"^EV-\d{2,}$")
+    reason: str = Field(min_length=1)
+
+    @field_validator("reason", mode="after")
+    @classmethod
+    def _reason_not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("reason must not be blank")
+        return value
+
+
+class EvalConfig(_Section):
+    """``eval:`` section: targets and documented known failures (exit-code contract)."""
+
+    thresholds: EvalThresholds = EvalThresholds()
+    known_failures: list[KnownFailure] = []
+
+    @model_validator(mode="after")
+    def _unique_ids(self) -> EvalConfig:
+        ids = [k.id for k in self.known_failures]
+        dup = sorted({i for i in ids if ids.count(i) > 1})
+        if dup:
+            raise ValueError(f"known_failures has duplicate ids: {', '.join(dup)}")
+        return self
+
+
 _ENV_NAME = r"^[A-Z_][A-Z0-9_]*$"
 
 
@@ -187,6 +229,7 @@ class FileConfig(_Section):
     llm: LLMConfig
     api: APIConfig
     mcp: McpConfig = McpConfig()
+    eval: EvalConfig = EvalConfig()
     sla_horas: SlaConfig
     fabric: FabricConfig
 

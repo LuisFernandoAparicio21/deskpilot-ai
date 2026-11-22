@@ -22,8 +22,8 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 <a href="https://github.com/LuisFernandoAparicio21/deskpilot-ai/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/LuisFernandoAparicio21/deskpilot-ai/ci.yml?style=for-the-badge&label=CI&logo=githubactions&logoColor=white" alt="Estado del CI"></a>
 <a href="https://github.com/LuisFernandoAparicio21/deskpilot-ai/tags"><img src="https://img.shields.io/github/v/tag/LuisFernandoAparicio21/deskpilot-ai?style=for-the-badge&label=release&color=E53535" alt="Última versión etiquetada"></a>
 <a href="LICENSE"><img src="https://img.shields.io/github/license/LuisFernandoAparicio21/deskpilot-ai?style=for-the-badge&color=2563EB" alt="Licencia MIT"></a>
-<!-- Cobertura: badge ESTATICO medido con `pytest --cov=src` el 2026-11-22 (98.24%). No es un servicio de cobertura: se refresca a mano (update_readme_results solo mantiene el bloque RESULTS). -->
-![Cobertura medida 98.24%](https://img.shields.io/badge/coverage-98.24%25-brightgreen?style=for-the-badge)
+<!-- Cobertura: badge ESTATICO medido con `pytest --cov=src` el 2026-11-22 (98.28%). No es un servicio de cobertura: se refresca a mano (update_readme_results solo mantiene el bloque RESULTS). -->
+![Cobertura medida 98.28%](https://img.shields.io/badge/coverage-98.28%25-brightgreen?style=for-the-badge)
 <br>
 <!-- Stack -->
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -32,7 +32,7 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 ![MCP](https://img.shields.io/badge/MCP-server-000000?style=for-the-badge&logo=modelcontextprotocol&logoColor=white)
 ![SQL SQLite](https://img.shields.io/badge/SQL-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-local-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![pytest](https://img.shields.io/badge/pytest-1770%20tests-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
+![pytest](https://img.shields.io/badge/pytest-1873%20tests-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
 ![Ruff](https://img.shields.io/badge/Ruff-lint-D7FF64?style=for-the-badge&logo=ruff&logoColor=white)
 <br>
 <!-- Plataforma Microsoft: generado desde docs/validation-status.json; verde solo si validado con evidencia -->
@@ -102,7 +102,7 @@ Evaluación local de 30 casos (backend `local`, 2026-11-22), generada desde `tes
 | Rechazo correcto | 3/4 (75.0%) | >= 100% | no |
 | Clasificación de tickets | 5/5 (100.0%) | >= 85% | sí |
 | Seguridad | 3/3 (100.0%) | >= 100% | sí |
-| Latencia por caso | p50 13.8 ms, p95 31.5 ms | - | - |
+| Latencia por caso | p50 14.0 ms, p95 34.9 ms | - | - |
 
 Casos fallidos: EV-16.
 
@@ -112,9 +112,9 @@ Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía ([`docs/
 | Qué | Resultado | Fuente |
 | --- | --- | --- |
 | Casos de evaluación | **29 de 30** (96.7%); top-3 14/14, rechazo 3/4, clasificación 5/5, seguridad 3/3 | `tests/eval/results.summary.json` |
-| Latencia por caso (local) | p50 13.8 ms, p95 31.5 ms | `tests/eval/results.summary.json` |
-| Pytest | 1770 passed, 3 skipped, 33 deselected (`slow`) | `pytest --cov=src`, 2026-11-22 |
-| Cobertura de `src/` | 98.24% (umbral 80%) | `pytest --cov=src` |
+| Latencia por caso (local) | p50 14.0 ms, p95 34.9 ms | `tests/eval/results.summary.json` |
+| Pytest | 1873 passed, 3 skipped, 33 deselected (`slow`) | `pytest --cov=src`, 2026-11-22 |
+| Cobertura de `src/` | 98.28% (umbral 80%) | `pytest --cov=src` |
 | Repetitivo (5 subcategorías) | 39.92% de los tickets | [`docs/business-case.md`](docs/business-case.md) |
 | Automatizable (RN-06, techo) | 51.24% | business-case |
 | Factor de quincena | 1.90 veces | business-case |
@@ -289,7 +289,7 @@ Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap
 
 ## ⚠️ Límites conocidos
 
-- **EV-16:** una consulta fuera de dominio recupera KB-003 con score 0.525, sobre el umbral 0.33, y el agente responde en vez de rechazar (el umbral es global y sin rerank). Por eso `eval` termina con código 1; se documentó y no se subió el umbral para no rechazar casos legítimos ([`docs/features/eval-e2e.md`](docs/features/eval-e2e.md)).
+- **EV-16:** una consulta fuera de dominio recupera KB-003 con score 0.525, sobre el umbral 0.33, y el agente responde en vez de rechazar (el umbral es global y sin rerank). Por eso `eval` termina con código 3 (fallo conocido, sin regresiones); se documentó y no se subió el umbral para no rechazar casos legítimos ([`docs/features/eval-e2e.md`](docs/features/eval-e2e.md)).
 - **Fabric y Copilot Studio no están verificados contra un tenant real:** el código del modo `fabric` y el agente están diseñados y probados con dobles, no contra Microsoft.
 - Las horas ahorradas dependen de minutos por ticket supuestos; no hay ROI en dinero.
 - Más límites en [`docs/business-case.md`](docs/business-case.md) (sección 8).
@@ -309,6 +309,6 @@ DeskPilot AI is a portfolio project: a level-1 IT service desk assistant for a f
 - Extractive RAG (fastembed + Chroma) answers with a cited knowledge-base article, says "I don't know" below a similarity threshold, and always escalates fraud, unauthorized access and cash-system failures.
 - One service layer is exposed as a REST API (FastAPI, `X-API-Key`) and as an MCP server; a Swagger 2.0 file is exported for Copilot Studio.
 - Ten portable SQL queries run on SQLite and are written for Microsoft Fabric; Fabric mode is coded but not verified against a real tenant.
-- Local evaluation: 29/30 cases pass (known limitation EV-16); 1753 tests, 98.24% coverage; CI with ruff, mypy, pytest, eval smoke test and Docker build.
+- Local evaluation: 29/30 cases pass (known limitation EV-16); 1753 tests, 98.28% coverage; CI with ruff, mypy, pytest, eval smoke test and Docker build.
 - Pending manual work: Fabric setup, Copilot Studio agent and chat evaluation, Power BI, demo video.
 - See `docs/job-fit.md` for the mapping to an AI Developer Trainee profile.

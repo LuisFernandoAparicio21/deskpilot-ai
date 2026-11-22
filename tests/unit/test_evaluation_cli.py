@@ -79,7 +79,7 @@ def test_cli_exit_0_when_every_threshold_is_met(
     assert backend.closed
     assert (tmp_path / "res.csv").is_file()
     assert (tmp_path / "res.summary.json").is_file()
-    assert "thresholds met" in capsys.readouterr().out
+    assert "verdict: exit 0 (all target criteria met)" in capsys.readouterr().out
 
 
 def test_cli_exit_1_when_a_threshold_is_not_met(
@@ -93,7 +93,9 @@ def test_cli_exit_1_when_a_threshold_is_not_met(
     assert main.main(_argv(tmp_path)) == 1
     out = capsys.readouterr().out
     assert "R1" in out
-    assert "NOT met" in out
+    assert "NEW failure R1" in out
+    assert "verdict: exit 1" in out
+    assert "global minimum or security broken: aprobados" in out
 
 
 def test_cli_exit_2_when_out_is_the_cases_file(
