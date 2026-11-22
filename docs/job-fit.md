@@ -10,7 +10,7 @@ Estados: **hecho** (verificado en este repo), **parcial** (hay código o diseño
 
 | # | Requisito | Evidencia en este repo | Estado |
 | --- | --- | --- | --- |
-| 1 | Programación, razonamiento lógico y manejo de datos | Código Python tipado y modular en [`src/`](../src/), generador de datos con reglas de negocio ([`ticket_generator.py`](../src/ingestion/ticket_generator.py)), pipeline RAG, 1528 pruebas con 98.24% de cobertura ([procedimiento](testing-procedure.md)) | Hecho |
+| 1 | Programación, razonamiento lógico y manejo de datos | Código Python tipado y modular en [`src/`](../src/), generador de datos con reglas de negocio ([`ticket_generator.py`](../src/ingestion/ticket_generator.py)), pipeline RAG, 1724 pruebas con 98.24% de cobertura ([procedimiento](testing-procedure.md)) | Hecho |
 | 2 | SQL básico | 10 consultas comentadas con JOIN, GROUP BY, CTE y funciones de ventana en [`integrations/fabric/sql/`](../integrations/fabric/sql/), ejecutadas en SQLite (`load-db --run-sql`) | Parcial: validación en Fabric pendiente manual (T29) |
 | 3 | Interés demostrado en IA y agentes | RAG con citas ([ADR-0001](adr/0001-rag-extractivo-por-defecto.md)), [API con herramientas](features/api-rest.md), [servidor MCP](features/mcp-server.md), [diseño del agente](features/copilot-studio-agent.md) | Parcial: video pendiente manual (T35) |
 | 4 | Pensamiento analítico y resolución de problemas | [Caso de negocio](business-case.md) con hipótesis y cifras por consulta; [ADR](adr/README.md) con alternativas descartadas; limitación EV-16 documentada en [eval-e2e](features/eval-e2e.md) | Hecho |

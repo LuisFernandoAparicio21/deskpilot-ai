@@ -101,7 +101,7 @@ visible (xfail estricto en e2e) en lugar de ajustar el umbral, que arriesga caso
 
 ### Pruebas y calidad
 
-`pytest --cov=src --cov-report=term`: **1479 passed, 2 skipped, 33 deselected (slow)**, cobertura total
+`pytest --cov=src --cov-report=term`: **1724 passed, 2 skipped, 33 deselected (slow)**, cobertura total
 **98.24%** (meta >= 80%). Los 2 omitidos: un test sin parámetros y el validador opcional `openapi-spec-validator`.
 `pytest -m slow tests/e2e`: 30 passed, 2 xfailed (EV-16 y el umbral global), 10 deselected. `ruff check .`: sin
 errores. `mypy src main.py`: sin errores en 53 archivos.

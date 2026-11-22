@@ -109,7 +109,7 @@ Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía ([`docs/
 | --- | --- | --- |
 | Casos de evaluación | **29 de 30** (96.7%); top-3 14/14, rechazo 3/4, clasificación 5/5, seguridad 3/3 | `tests/eval/results.summary.json` |
 | Latencia por caso (local) | p50 13.8 ms, p95 31.5 ms | `tests/eval/results.summary.json` |
-| Pytest | 1528 passed, 2 skipped, 33 deselected (`slow`) | `pytest --cov=src`, 2026-11-22 |
+| Pytest | 1724 passed, 2 skipped, 33 deselected (`slow`) | `pytest --cov=src`, 2026-11-22 |
 | Cobertura de `src/` | 98.24% (umbral 80%) | `pytest --cov=src` |
 | Repetitivo (5 subcategorías) | 39.92% de los tickets | [`docs/business-case.md`](docs/business-case.md) |
 | Automatizable (RN-06, techo) | 51.24% | business-case |
@@ -127,7 +127,7 @@ El CI (ruff, mypy, pytest, `eval-smoke`, `docker-build`) corre en cada push y PR
 
 ## Video
 
-> PLACEHOLDER: enlace al video de demo (2-3 min), pendiente de grabar.
+> PLACEHOLDER (video demo: pendiente de grabar, ver docs/MANUAL_STEPS.md, sección 7).
 
 ## Estructura del repo
 
@@ -160,6 +160,6 @@ DeskPilot AI is a portfolio project: a level-1 IT service desk assistant for a f
 - Extractive RAG (fastembed + Chroma) answers with a cited knowledge-base article, says "I don't know" below a similarity threshold, and always escalates fraud, unauthorized access and cash-system failures.
 - One service layer is exposed as a REST API (FastAPI, `X-API-Key`) and as an MCP server; a Swagger 2.0 file is exported for Copilot Studio.
 - Ten portable SQL queries run on SQLite and are written for Microsoft Fabric; Fabric mode is coded but not verified against a real tenant.
-- Local evaluation: 29/30 cases pass (known limitation EV-16); 1528 tests, 98.24% coverage; CI with ruff, mypy, pytest, eval smoke test and Docker build.
+- Local evaluation: 29/30 cases pass (known limitation EV-16); 1724 tests, 98.24% coverage; CI with ruff, mypy, pytest, eval smoke test and Docker build.
 - Pending manual work: Fabric setup, Copilot Studio agent and chat evaluation, Power BI, demo video.
 - See `docs/job-fit.md` for the mapping to an AI Developer Trainee profile.

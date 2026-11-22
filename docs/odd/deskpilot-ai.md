@@ -253,7 +253,7 @@ Criterios de aceptación:
 - T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit: merge del PR #36
 - T24 [CÓDIGO] README completo + docs/architecture.md + docs/job-fit.md + docs/learning-log.md + CHANGELOG — subagente: docs-writer — cubre S13, S14 — commit: merge del PR #38
 - T25 [CÓDIGO] Fase B: docs/MANUAL_STEPS.md + scripts/check_fabric.py, check_public_url.py, update_readme_results.py — subagente: docs-writer — cubre S18 — commit:
-- T26 [CÓDIGO] [ALTO RIESGO] Revisión final de secretos + revisión "como reclutador" — subagente: security-verifier — cubre S16, S21 — commit: (solo reporte)
+- T26 [CÓDIGO] [ALTO RIESGO] Revisión final de secretos + revisión "como reclutador" — subagente: security-verifier — cubre S16, S21 — commit: (solo reporte, ver L28)
 - T27 [CÓDIGO] Correcciones de T26, suite completa, tag v0.1.0 — subagente: según hallazgo — cubre S12, S21 — commit:
 
 ### Fase C: Manual (usuario, ~6 h)
@@ -1041,3 +1041,8 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - **3 bugs de los scripts corregidos**: (1) `check_fabric` imprimía texto crudo de excepciones (ahora tipo y SQLSTATE); (2) no restauraba `DESKPILOT_MODE`; (3) `update_readme_results` no validaba marcadores ni esquema del resumen (ahora sale con 2).
 - **Resultados reales (local, 2026-11-22)**: pytest 1718 passed, 2 skipped, 33 deselected; cobertura de `src/` 98.24%; scripts 96% (97 pruebas); ruff y mypy limpios. Detalle en `docs/features/manual-steps-scripts.md`.
 - **No verificado**: los scripts no se probaron contra un Fabric real ni contra una URL pública real (solo dobles de prueba); scope `database.windows.net/.default`, notebook en Spark, DDL en Warehouse y `datetime2` de la consulta 07 (T29/T30); subida de archivos como knowledge, MCP y clics no confirmados de Copilot Studio (marcados "⚠ verificar en pantalla").
+
+### L28 — T26 revisión final + T27 correcciones (security-verifier + api-engineer) · PR #42
+- T25 mergeada (PR #40). T26 (solo lectura): historial de 50 commits sin secretos ni PII; autor noreply de GitHub; árbol sin .env/BD/logs; Dockerfile sin secretos; dependencias pineadas = pip freeze; auth, redacción RN-05, escalamiento RN-03, SQL parametrizado y límites correctos. Veredicto CHANGES REQUESTED (0 bloqueantes).
+- Hallazgos de documentación y su corrección en T27: cifras de pruebas desactualizadas (ahora 1724 passed, 2 skipped, 33 deselected, cobertura 98.24%), texto del video (queda `PLACEHOLDER (video demo: pendiente de grabar, ver docs/MANUAL_STEPS.md, sección 7)`), Dockerfile con continuaciones `\` restauradas (docker build verificado), READMEs de src/ingestion|embeddings|vectordb en 3 líneas (detalle en docs/features/ingestion.md). El punto de `safe_query` ya estaba correcto en el código.
+- Pendiente: MANUAL_STEPS.md l.355 cita el texto antiguo del placeholder del video (cosmético).
