@@ -32,7 +32,7 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 ![MCP](https://img.shields.io/badge/MCP-server-000000?style=for-the-badge&logo=modelcontextprotocol&logoColor=white)
 ![SQL SQLite](https://img.shields.io/badge/SQL-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-local-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![pytest](https://img.shields.io/badge/pytest-1753%20tests-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
+![pytest](https://img.shields.io/badge/pytest-1770%20tests-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
 ![Ruff](https://img.shields.io/badge/Ruff-lint-D7FF64?style=for-the-badge&logo=ruff&logoColor=white)
 <br>
 <!-- Plataforma Microsoft: solo probada con dobles; nunca verde -->
@@ -111,7 +111,7 @@ Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía ([`docs/
 | --- | --- | --- |
 | Casos de evaluación | **29 de 30** (96.7%); top-3 14/14, rechazo 3/4, clasificación 5/5, seguridad 3/3 | `tests/eval/results.summary.json` |
 | Latencia por caso (local) | p50 13.8 ms, p95 31.5 ms | `tests/eval/results.summary.json` |
-| Pytest | 1753 passed, 2 skipped, 33 deselected (`slow`) | `pytest --cov=src`, 2026-11-22 |
+| Pytest | 1770 passed, 3 skipped, 33 deselected (`slow`) | `pytest --cov=src`, 2026-11-22 |
 | Cobertura de `src/` | 98.24% (umbral 80%) | `pytest --cov=src` |
 | Repetitivo (5 subcategorías) | 39.92% de los tickets | [`docs/business-case.md`](docs/business-case.md) |
 | Automatizable (RN-06, techo) | 51.24% | business-case |
