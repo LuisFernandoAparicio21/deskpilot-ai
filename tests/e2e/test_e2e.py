@@ -4,7 +4,7 @@ Everything lives in a temporary directory (the repo's database and index are nev
 The default tests use the fake embedder for speed, so they only assert what does not depend
 on embedding quality: RN-03 escalation by policy, RN-01 classification and RN-05 handling of
 secrets. The ``slow`` tests run the 30 cases with the real fastembed model and check the
-requirements section 12 thresholds; the failures found are strict xfails (see ``KNOWN_BUGS``).
+requirements section 12 thresholds; the one known limitation is a strict xfail (see ``KNOWN_BUGS``).
 """
 
 from __future__ import annotations
@@ -43,11 +43,10 @@ RESULT_HEADER = "id,pregunta,intencion,esperado,obtenido,resultado,notas,latenci
 
 # Cases that fail against the real index because the code contradicts a requirement.
 KNOWN_BUGS: dict[str, str] = {
-    "EV-05": "KB-011 in the evidence escalates a printer question (RN-03: cash only)",
-    "EV-07": "KB-011 in the evidence escalates a core-banking access question (RN-03/RN-04)",
-    "EV-09": "KB-011 in the evidence escalates a slow-computer question (RN-03/RN-04)",
-    "EV-16": "KB-011 in the evidence escalates an out-of-KB question, not no_evidence (RF-05)",
-    "EV-20": "RN-03/CT-06: unrecognized logins are not escalated as unauthorized access",
+    "EV-16": (
+        "responde answered con KB-003 (score 0.525 > umbral 0.33) en vez de no_evidence "
+        "(LIMITACIÓN conocida: umbral global sin rerank)"
+    ),
 }
 
 
@@ -189,15 +188,7 @@ def test_no_secret_reaches_results_summary_or_logs(
 
 @pytest.mark.parametrize(
     "case_id",
-    [
-        "EV-19",
-        "EV-21",
-        "EV-22",
-        pytest.param(
-            "EV-20",
-            marks=pytest.mark.xfail(strict=True, reason=KNOWN_BUGS["EV-20"]),
-        ),
-    ],
+    ["EV-19", "EV-20", "EV-21", "EV-22"],
 )
 def test_mandatory_escalation_cases_pass_by_policy(
     case_id: str,

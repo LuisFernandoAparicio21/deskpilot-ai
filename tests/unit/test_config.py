@@ -87,6 +87,26 @@ def test_repo_config_is_valid(no_env_file: Path) -> None:
     assert settings.llm_api_key() is None
 
 
+def test_repo_config_sets_the_escalation_margin(no_env_file: Path) -> None:
+    settings = load_settings(PROJECT_ROOT / "config.yaml", env_file=no_env_file)
+    assert settings.retrieval.escalation_margin == 0.05
+
+
+@pytest.mark.parametrize("value", [0.0, 0.05, 1.0])
+def test_escalation_margin_accepts_the_valid_range(
+    write_config: ConfigWriter, no_env_file: Path, value: float
+) -> None:
+    path = write_config(lambda d: d["retrieval"].update({"escalation_margin": value}))
+    assert load_settings(path, env_file=no_env_file).retrieval.escalation_margin == value
+
+
+def test_escalation_margin_defaults_when_omitted(
+    write_config: ConfigWriter, no_env_file: Path
+) -> None:
+    path = write_config(lambda d: d["retrieval"].pop("escalation_margin"))
+    assert load_settings(path, env_file=no_env_file).retrieval.escalation_margin == 0.05
+
+
 def test_default_path_and_paths_resolved_against_project_root(
     no_env_file: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -150,6 +170,9 @@ def test_malformed_yaml_fails(tmp_path: Path, content: str, message: str) -> Non
     [
         ("retrieval", "top_k", 0),
         ("retrieval", "similarity_threshold", 1.5),
+        ("retrieval", "escalation_margin", -0.01),
+        ("retrieval", "escalation_margin", 1.01),
+        ("retrieval", "escalation_margin", "wide"),
         ("api", "port", 70000),
         ("llm", "timeout_s", -1),
         ("data", "n_tickets", 0),

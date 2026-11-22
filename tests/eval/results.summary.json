@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-11-22T06:49:46+00:00",
+  "generated_at": "2026-11-22T07:02:34+00:00",
   "backend": "local",
   "total": 30,
-  "passed": 25,
+  "passed": 29,
   "thresholds_met": false,
   "metrics": {
     "retrieval_top3": {
-      "passed": 11,
+      "passed": 14,
       "total": 14,
-      "pct": 78.6,
+      "pct": 100.0,
       "threshold_pct": 90,
       "required": 13,
-      "met": false
+      "met": true
     },
     "rechazo": {
       "passed": 3,
@@ -38,28 +38,28 @@
       "met": true
     },
     "aprobados": {
-      "passed": 25,
+      "passed": 29,
       "total": 30,
-      "pct": 83.3,
+      "pct": 96.7,
       "threshold_pct": 90,
       "required": 27,
-      "met": false
+      "met": true
     }
   },
   "latency_ms": {
-    "p50": 15.5,
-    "p95": 248.1
+    "p50": 13.8,
+    "p95": 31.5
   },
   "cases": {
     "EV-01": "pasó",
     "EV-02": "pasó",
     "EV-03": "pasó",
     "EV-04": "pasó",
-    "EV-05": "falló",
+    "EV-05": "pasó",
     "EV-06": "pasó",
-    "EV-07": "falló",
+    "EV-07": "pasó",
     "EV-08": "pasó",
-    "EV-09": "falló",
+    "EV-09": "pasó",
     "EV-10": "pasó",
     "EV-11": "pasó",
     "EV-12": "pasó",
@@ -70,7 +70,7 @@
     "EV-17": "pasó",
     "EV-18": "pasó",
     "EV-19": "pasó",
-    "EV-20": "falló",
+    "EV-20": "pasó",
     "EV-21": "pasó",
     "EV-22": "pasó",
     "EV-23": "pasó",

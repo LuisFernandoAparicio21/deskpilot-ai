@@ -13,13 +13,15 @@ from src.llm import LLMError, LLMTimeoutError, NoLLM
 from src.prompts import ANSWER_WITH_CITATION, NO_EVIDENCE_TOKEN
 from src.retrieval import (
     AnswerService,
+    ArticleHit,
+    RetrievalResult,
     Retriever,
     detect_language,
     escalation_reason,
     format_steps,
 )
 from src.utils.config import Settings, load_settings
-from src.vectordb import InMemoryVectorStore
+from src.vectordb import InMemoryVectorStore, ScoredChunk
 
 PASSWORD = "Sol2024!xyz"
 SOURCE_ES = "Fuente: KB-002 — Desbloquear un usuario de red"
@@ -256,25 +258,93 @@ def test_rn03_by_retrieved_article_cites_it(retriever: Retriever, settings: Sett
     assert "Detén" not in answer.text
 
 
-def test_rn03_article_in_a_lower_evidence_position_still_escalates(
-    settings: Settings, embedder: SpyEmbedder
-) -> None:
-    # Both articles match; KB-002 ranks first, KB-011 second but above the threshold.
-    store = InMemoryVectorStore()
-    chunks = [c for c in _chunks() if c.metadata.article_id in {"KB-002", "KB-011"}]
-    store.upsert(chunks, embedder.embed_documents([c.text for c in chunks]))
-    retriever = Retriever(embedder, store, top_k=3, threshold=0.0)
-    query = "usuario bloqueado de Windows con la terminal congelada"
-    result = retriever.search(query)
-    ids = [a.article_id for a in result.evidence]
-    assert "KB-011" in ids and ids[0] != "KB-011"
+class _ScoredRetriever:
+    """Returns hand-picked article scores, so the escalation margin is tested exactly."""
 
+    def __init__(self, scores: dict[str, float], threshold: float = 0.3) -> None:
+        self._scores = scores
+        self._threshold = threshold
+
+    def search(self, query: str, categoria: str | None = None) -> RetrievalResult:
+        chunks = _chunks()
+        hits = []
+        for article_id, score in sorted(self._scores.items(), key=lambda kv: -kv[1]):
+            own = [c for c in chunks if c.metadata.article_id == article_id]
+            hits.append(
+                ArticleHit(
+                    article_id=article_id,
+                    titulo=own[0].metadata.titulo,
+                    categoria=own[0].metadata.categoria,
+                    score=score,
+                    chunks=[ScoredChunk(chunk=c, similarity=score) for c in own],
+                )
+            )
+        return RetrievalResult(articles=hits, threshold=self._threshold)
+
+    def section_text(self, article_id: str, seccion: str, query_vector: list[float]) -> str | None:
+        return None  # the answer falls back to the best retrieved chunk
+
+
+def _scored_service(scores: dict[str, float], settings: Settings, llm: FakeLLM) -> AnswerService:
+    return AnswerService(_ScoredRetriever(scores), llm, settings)  # type: ignore[arg-type]
+
+
+def test_rn03_article_within_the_margin_of_the_top_still_escalates(settings: Settings) -> None:
+    assert settings.retrieval.escalation_margin == 0.05
     llm = FakeLLM("1. Reinicia la terminal.")
-    answer = _service(retriever, settings, llm).answer(query)
+    answer = _scored_service({"KB-002": 0.60, "KB-011": 0.57}, settings, llm).answer("consulta")
 
     assert answer.status == "mandatory_escalation"
     assert [c.article_id for c in answer.citations] == ["KB-011"]
     assert "Reinicia" not in answer.text
+    assert llm.calls == []
+
+
+def test_rn03_article_exactly_at_the_margin_escalates(settings: Settings) -> None:
+    margin = settings.retrieval.escalation_margin
+    # Powers of two keep the float arithmetic exact: top - margin is representable.
+    settings = settings.model_copy(
+        update={"retrieval": settings.retrieval.model_copy(update={"escalation_margin": 0.25})}
+    )
+    assert margin != 0.25
+    at_edge = _scored_service({"KB-002": 0.75, "KB-011": 0.5}, settings, FakeLLM("x"))
+    assert at_edge.answer("consulta").status == "mandatory_escalation"
+    just_out = _scored_service({"KB-002": 0.75, "KB-011": 0.4999}, settings, FakeLLM("x"))
+    assert just_out.answer("consulta").status != "mandatory_escalation"
+
+
+def test_rn03_article_outside_the_margin_is_dropped_from_the_evidence(
+    settings: Settings,
+) -> None:
+    reply = f"1. Espera 15 minutos.\n\n{SOURCE_ES}"
+    llm = FakeLLM(reply)
+    answer = _scored_service({"KB-002": 0.60, "KB-011": 0.50}, settings, llm).answer("consulta")
+
+    assert answer.status == "answered"
+    assert answer.mode == "llm"
+    assert [c.article_id for c in answer.citations] == ["KB-002"]
+    assert len(llm.calls) == 1
+    _, user, _ = llm.calls[0]
+    assert 'id="KB-002"' in user
+    assert "KB-011" not in user and "terminal" not in user.lower()
+
+
+def test_rn03_article_outside_the_margin_is_not_cited_in_the_extractive_answer(
+    settings: Settings,
+) -> None:
+    scores = {"KB-002": 0.60, "KB-011": 0.50}
+    answer = AnswerService(_ScoredRetriever(scores), NoLLM(), settings).answer("q")  # type: ignore[arg-type]
+
+    assert answer.status == "answered"
+    assert answer.mode == "extractive"
+    assert [c.article_id for c in answer.citations] == ["KB-002"]
+    assert "KB-011" not in answer.text
+
+
+def test_rn03_top_article_kb011_always_escalates(settings: Settings) -> None:
+    llm = FakeLLM("x")
+    answer = _scored_service({"KB-011": 0.60, "KB-002": 0.58}, settings, llm).answer("q")
+    assert answer.status == "mandatory_escalation"
     assert llm.calls == []
 
 
@@ -477,6 +547,24 @@ def test_detect_language(text: str, expected: str) -> None:
         ("hay una operación no autorizada", "fraud"),
         ("veo accesos que no reconozco en el core", "unauthorized_access"),
         ("hackearon mi correo", "unauthorized_access"),
+        ("veo inicios de sesión que no hice", "unauthorized_access"),
+        ("hay inicios de sesion desde otro pais que yo no hice", "unauthorized_access"),
+        ("detecté accesos extraños a mi usuario que no reconozco", "unauthorized_access"),
+        ("hay sesiones abiertas que no inicié", "unauthorized_access"),
+        ("alguien entró a mi cuenta", "unauthorized_access"),
+        ("alguien inició sesión en mi equipo", "unauthorized_access"),
+        ("alguien más se conectó a mi usuario", "unauthorized_access"),
+        ("someone logged into my account", "unauthorized_access"),
+        ("I see logins that I did not make", "unauthorized_access"),
+        ("there are sign-ins to my account that I didn't recognize", "unauthorized_access"),
+        ("no puedo iniciar sesión", None),
+        ("mi sesión expiró", None),
+        ("no puedo iniciar sesión en el portal desde ayer", None),
+        ("se cerró mi sesión y tengo que entrar otra vez", None),
+        ("I can't log in", None),
+        ("my session expired", None),
+        ("I did not receive the login email", None),
+        ("el inicio de sesión es lento", None),
         ("my account was compromised", "unauthorized_access"),
         ("el sistema de caja marca error", "cash_system"),
         ("la caja no abre el turno", "cash_system"),
