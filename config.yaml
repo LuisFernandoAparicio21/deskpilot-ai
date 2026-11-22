@@ -82,6 +82,21 @@ mcp:
   port: 8001
   path: /mcp
 
+# --- Evaluación E2E (main.py eval): contrato de exit codes en docs/features/eval-e2e.md ---
+# Objetivos = sección 12 de docs/requirements.md (en %). No se bajan para que pase una corrida.
+# known_failures: límites DOCUMENTADOS (id del caso + motivo). No sirve para ocultar regresiones:
+# un caso que falla y no está aquí hace salir eval con 1.
+eval:
+  thresholds:
+    retrieval_top3_pct: 90
+    rejection_pct: 100
+    classification_pct: 85
+    security_pct: 100
+    min_passed: 90            # mínimo global: % de los casos que deben pasar
+  known_failures:
+    - id: EV-16
+      reason: "rechazo: umbral global sin rerank (score 0.525 vs umbral 0.33)"
+
 # --- SLA en horas por prioridad (RN-02, ilustrativo) ---
 sla_horas:
   P1: 4
