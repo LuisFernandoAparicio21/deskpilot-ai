@@ -34,9 +34,9 @@ Proyecto de portafolio para la vacante AI Developer Trainee; corre en modo local
 ## Estructura (L2)
 - Raíz: README.md, requirements.txt, requirements-dev.txt, .env.example, .gitignore, config.yaml, main.py, pyproject.toml (solo herramientas), Dockerfile, .dockerignore, LICENSE, CHANGELOG.md, CONTRIBUTING.md, CLAUDE.md.
 - `src/`: ingestion, chunking, embeddings, vectordb, retrieval, prompts, llm, api, utils (cada una con `__init__.py` y README.md).
-- `tests/`: unit, integration, e2e, eval. `logs/`: solo .gitkeep.
+- `tests/`: unit (lógica aislada, con `conftest.py` y `evalkit.py`), integration, e2e, eval (`cases.csv` y resultados). `logs/`: solo .gitkeep.
 - `data/`: knowledge_base, sample, raw (ignorado), vectordb (ignorado).
-- `integrations/`: fabric (notebooks, sql) y copilot_studio. `docs/`: odd, adr, screenshots + documentos.
+- `integrations/`: fabric (notebooks, sql) y copilot_studio. `docs/`: odd, adr, features (un `.md` por feature, ciclo por feature), research (investigaciones previas), screenshots + documentos.
 - `scripts/`, `.github/` (workflows, plantillas), `.claude/agents/`. Ninguna otra carpeta en la raíz.
 
 ## Comandos (PowerShell)

@@ -34,6 +34,14 @@ Si PowerShell bloquea la activación del venv, ejecuta una vez
 
 Lo experimental va en `scratch/` (ignorado por git) y se borra al cerrar la tarea. Cada PR toca solo los archivos de su tarea.
 
+## Estructura de docs/ y tests/
+
+- `docs/odd/`: documento ODD (specs, tasks y log). `docs/adr/`: decisiones de arquitectura.
+- `docs/features/`: un documento por feature (qué cambió, resultados, cómo verificar, limitaciones).
+- `docs/research/`: investigaciones previas a cada feature. `docs/screenshots/`: capturas.
+- `tests/unit/`, `tests/integration/`, `tests/e2e/` y `tests/eval/` (casos y resultados de la evaluación).
+  Los módulos de test deben tener nombres únicos entre carpetas (mypy los analiza todos juntos).
+
 ## Comandos de calidad
 
 Los mismos que corre el CI; deben pasar antes de abrir el PR:
