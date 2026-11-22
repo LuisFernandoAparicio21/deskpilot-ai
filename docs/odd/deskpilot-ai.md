@@ -241,7 +241,7 @@ Criterios de aceptación:
 - T15 [CÓDIGO] [ALTO RIESGO] src/retrieval (umbral) + src/prompts + src/llm (none/Claude/OpenAI/Gemini) + servicio de respuesta con cita + integración RAG — subagente: rag-engineer — cubre S7, S16 — commit: 309ee8e
 
 **API, MCP y despliegue (por PR)**
-- T16 [CÓDIGO] [ALTO RIESGO] FastAPI: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repositorio local/fabric, `main.py serve` — subagente: api-engineer — cubre S8, S17 — commit:
+- T16 [CÓDIGO] [ALTO RIESGO] FastAPI: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repositorio local/fabric, `main.py serve` — subagente: api-engineer — cubre S8, S17 — commit: 846d541 (PR #20)
 - T17 [CÓDIGO] [ALTO RIESGO] crear_ticket con clasificación de categoría/prioridad y persistencia — subagente: api-engineer — cubre S9 — commit:
 - T18 [CÓDIGO] Servidor MCP con las 4 herramientas — subagente: api-engineer — cubre S10 — commit:
 - T19 [CÓDIGO] `main.py export-openapi` → openapi.yaml compatible con Copilot Studio + Dockerfile + .dockerignore verificados — subagente: api-engineer — cubre S8, S17 — commit:
@@ -984,3 +984,11 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - security-verifier: CHANGES REQUESTED (0 altos, 3 medios, 4 bajos) ⇒ todos corregidos: RN-03 ampliado con tests ±, KB-011 en cualquier posición escala, ids KB de la salida del LLM validados contra la evidencia, salida del LLM filtrada con `contains_sensitive`, `categoria` en lista blanca (ValueError), test de logs con centinela, timeouts de SDK verificados (son por fase, no totales; documentado).
 - 602 tests, 99% cobertura, ruff/mypy limpios.
 - Nueva directiva del usuario (L15): a partir de T16 el ciclo por feature separa desarrollo (sin tocar tests/) y qa-tester independiente; roadmap en docs/roadmap.md; researcher antes de cualquier duda.
+
+### L15 — T16 API REST (api-engineer + qa-tester + security-verifier) · PR #20 · merge 846d541
+- Ciclo separado por directiva: api-engineer implementó sin tocar `tests/`, qa-tester escribió y ejecutó los tests de forma independiente y security-verifier revisó (ALTO RIESGO). FastAPI con `/health`, `buscar_solucion`, `consultar_estado_ticket`, `metricas_area`, X-API-Key, errores uniformes con `request_id`, límites de cuerpo y timeout, repo local/Fabric y `serve`. 828 tests, 98.80% de cobertura.
+- Hallazgos del security-verifier M1, M2, B1 y B2 corregidos en ciclos de corrección (commits `fix(api)`, `feat(config)`); detalle en `docs/features/api-rest.md`. Fabric no probado contra tenant real (T30).
+
+### L16 — T17 crear_ticket (api-engineer + qa-tester + security-verifier) · PR por definir
+- Mismo ciclo: api-engineer implementó `POST /tickets` (redacción de datos sensibles, clasificación por reglas con LLM opcional validado, SLA, persistencia en `tickets_nuevos`), qa-tester escribió 206 tests en 5 archivos y security-verifier dio **APROBADO** tras los ciclos de corrección. 1034 tests, 98.79% de cobertura.
+- Hallazgos: M1 el LLM podía degradar un P1 de reglas (corregido: un P1 de reglas nunca cambia); M2 riesgo residual de unicidad de `ticket_id` en el Warehouse (PK NOT ENFORCED, ~1/900k por par concurrente), aceptado como riesgo conocido; baja: una contraseña sin separador no se redacta. Detalle en `docs/features/crear-ticket.md`.

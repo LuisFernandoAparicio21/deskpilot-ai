@@ -18,3 +18,4 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Subagentes de Claude Code en `.claude/agents/` y documento de feature ODD en `docs/odd/`.
 - LICENSE (MIT), CONTRIBUTING.md y este CHANGELOG.
 - API REST (T16): `/health`, `POST /buscar_solucion`, `GET /tickets/{id}`, `GET /metricas`, autenticación `X-API-Key`, errores uniformes con `request_id`, límites de cuerpo y timeout, comando `serve` y `api.max_body_bytes`. Ver `docs/features/api-rest.md`.
+- `POST /tickets` (T17, `crear_ticket`): valida la entrada, redacta datos sensibles (RN-05), clasifica categoría y prioridad con reglas (LLM opcional validado que no puede degradar un P1), aplica escalamiento obligatorio (RN-03), calcula el SLA (RN-01) y guarda en `tickets_nuevos` (SQLite o Warehouse). Ver `docs/features/crear-ticket.md`.

@@ -1,4 +1,4 @@
-# API REST (T16)
+# API REST (T16, T17)
 
 > Datos sintéticos generados para este proyecto; las cifras son ilustrativas. "Banco Altiplano" es ficticio.
 
@@ -10,6 +10,7 @@ Servicio FastAPI (`src/api`, arranque con `python main.py serve`) que expone las
 |---|---|---|
 | `GET /health` | anónimo | Solo devuelve `status` (`ok` / `degraded`); sondeo cacheado. |
 | `POST /buscar_solucion` | `X-API-Key` | Búsqueda RAG en la base de conocimiento (`query`, `categoria` opcional). |
+| `POST /tickets` | `X-API-Key` | Crea un ticket (`crear_ticket`, T17); ver [crear-ticket.md](crear-ticket.md). |
 | `GET /tickets/{ticket_id}` | `X-API-Key` | Estado de un ticket (`consultar_estado_ticket`). |
 | `GET /metricas?area=` o `?sucursal=` | `X-API-Key` | Métricas de un área o sucursal (`metricas_area`). |
 

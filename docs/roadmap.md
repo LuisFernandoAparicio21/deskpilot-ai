@@ -32,8 +32,8 @@ Orden por dependencias; un subagente a la vez.
 
 | # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
 |---|---|---|---|---|---|---|---|---|
-| T16 | api-rest [ALTO RIESGO] | feat/t16-api-rest | FastAPI completo: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repo local/fabric, `serve` | S8, S17, RF-17/19/26, RNF-02-06 | api-engineer | documentada | - | - |
-| T17 | crear-ticket [ALTO RIESGO] | feat/t17-crear-ticket | crear_ticket con clasificación categoría/prioridad, redacción de datos sensibles y persistencia (depende de T16) | S9, RF-10/16/18, RN-01-03/05 | api-engineer | pendiente | - | - |
+| T16 | api-rest [ALTO RIESGO] | feat/t16-api-rest | FastAPI completo: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repo local/fabric, `serve` | S8, S17, RF-17/19/26, RNF-02-06 | api-engineer | mergeada | #20 | 2026-11-21 |
+| T17 | crear-ticket [ALTO RIESGO] | feat/t17-crear-ticket | crear_ticket con clasificación categoría/prioridad, redacción de datos sensibles y persistencia (depende de T16) | S9, RF-10/16/18, RN-01-03/05 | api-engineer | documentada | - | - |
 | T18 | mcp-server | feat/t18-mcp-server | Servidor MCP con las 4 herramientas (depende de T16-T17) | S10 | api-engineer | pendiente | - | - |
 | T19 | openapi-docker | feat/t19-openapi-docker | `export-openapi` (OpenAPI v2 JSON compatible con Copilot Studio) + Dockerfile/.dockerignore verificados | S8, S17, RF-25, RNF-10 | api-engineer | pendiente | - | - |
 | T20 | copilot-studio-design | feat/t20-copilot-studio | Instrucciones, temas, frases ES/EN y escalamiento del agente | S11, RF-01-09, RNF-12 | copilot-studio-designer | pendiente | - | - |
