@@ -164,3 +164,11 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | Herramienta | URL | Qué se confirmó |
 | --- | --- | --- |
 | openapi-spec-validator 0.9.0 | https://pypi.org/project/openapi-spec-validator/ | Instalado en un venv de `scratch/` (no es dependencia de runtime): valida `integrations/copilot_studio/openapi.json` como Swagger 2.0 y rechaza un `host` inválido (control negativo). |
+
+## Ubicación del disco de Docker Desktop (WSL2)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-21) |
+| --- | --- | --- |
+| Docker Desktop WSL 2 backend on Windows | https://docs.docker.com/desktop/features/wsl/ | Ruta por defecto `%LOCALAPPDATA%\Docker\wsl`; se cambia en Settings > Resources > Advanced. Sin mención de `wsl --export/--import` ni `settings-store.json`. Ver `docs/research/docker-desktop-disk-location.md`. |
+| Change your Docker Desktop settings | https://docs.docker.com/desktop/settings-and-maintenance/settings/ | "Disk image location": se puede mover la imagen; si el destino ya tiene una, pregunta usar o reemplazar. Citada para Mac/Linux/Windows Hyper-V; clave de settings-store.json no documentada (⚠ verificar en pantalla). |
+| How to back up and restore your Docker Desktop data | https://docs.docker.com/desktop/settings-and-maintenance/backup-and-restore/ | Backup vía `container commit`/`image save`, volúmenes aparte; en WSL2 respaldar/restaurar `docker_data.vhdx`. |
