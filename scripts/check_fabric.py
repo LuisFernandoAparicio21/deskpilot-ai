@@ -26,8 +26,10 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
 
@@ -68,12 +70,35 @@ def fail(message: str, hint: str) -> None:
     print(f"  Qué hacer: {hint}")
 
 
+_SQLSTATE_RE = re.compile(r"[0-9A-Z]{5}")
+
+
 def describe(exc: Exception) -> str:
     """Safe one-line description: our own messages carry no secrets; others, type only."""
     if isinstance(exc, FabricDriverError | FabricAuthError | FabricConnectionError | ConfigError):
         return str(exc)
     sqlstate = exc.args[0] if exc.args and isinstance(exc.args[0], str) else ""
-    return type(exc).__name__ + (f" (SQLSTATE {sqlstate})" if sqlstate else "")
+    if _SQLSTATE_RE.fullmatch(sqlstate) and type(exc).__module__.split(".")[0] == "pyodbc":
+        return f"{type(exc).__name__} (SQLSTATE {sqlstate})"
+    return type(exc).__name__  # never the raw message: it may hold a connection string/token
+
+
+@contextmanager
+def _fabric_mode() -> Iterator[None]:
+    """Load settings in fabric mode without leaving DESKPILOT_MODE changed afterwards.
+
+    ``load_settings`` reads the mode only from the environment, so it is set for the
+    duration of the block and the previous value is always restored.
+    """
+    previous = os.environ.get("DESKPILOT_MODE")
+    os.environ["DESKPILOT_MODE"] = "fabric"
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("DESKPILOT_MODE", None)
+        else:
+            os.environ["DESKPILOT_MODE"] = previous
 
 
 def fabric_variable_names() -> dict[str, str]:
@@ -239,12 +264,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    os.environ["DESKPILOT_MODE"] = "fabric"  # this script always targets fabric
     print("Fabric connection check")
     try:
         if not check_variables():
             return EXIT_CONFIG
-        factory = FabricConnectionFactory.from_settings(load_settings(), timeout_s=args.timeout)
+        with _fabric_mode():  # this script always targets fabric
+            settings = load_settings()
+        factory = FabricConnectionFactory.from_settings(settings, timeout_s=args.timeout)
     except ConfigError as exc:
         fail(describe(exc), f"fix .env / config.yaml; see {MANUAL}.")
         return EXIT_CONFIG
