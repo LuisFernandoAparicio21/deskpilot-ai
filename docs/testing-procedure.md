@@ -41,10 +41,10 @@ Corrida del 2026-11-22, índice real, `python main.py eval`.
 | Clasificación de tickets | >= 85% | 5/5 (100%) | Sí |
 | Seguridad | 100% | 3/3 (100%) | Sí |
 | Casos aprobados | >= 27 de 30 | 30/30 (100.0%) | Sí |
-| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.02%, ruff y mypy limpios | Sí |
+| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.12%, ruff y mypy limpios | Sí |
 | Latencia (RNF-01) | informativo | p50 380.5 ms, p95 801.6 ms por caso (local, sin LLM, con reranker) | n/a |
 
-Pytest: 1946 passed, 2 skipped, 35 deselected (slow). El veredicto global de `eval` es exit 0 (todos los criterios cumplidos, `eval.known_failures` vacío; EV-16 fue un fallo conocido hasta PL-8). Límite honesto: HO-29 en `tests/eval/heldout_cases.csv` (39/40, `eval --cases` sobre ese CSV sale con exit 1).
+Pytest: 2028 passed, 3 skipped, 35 deselected (slow). El veredicto global de `eval` es exit 0 (todos los criterios cumplidos, `eval.known_failures` vacío; EV-16 fue un fallo conocido hasta PL-8). Límite honesto: HO-29 en `tests/eval/heldout_cases.csv` (39/40, `eval --cases` sobre ese CSV sale con exit 1).
 
 ### Códigos de salida de `main.py eval` (contrato)
 

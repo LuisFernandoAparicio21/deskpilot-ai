@@ -14,7 +14,7 @@ from scripts import update_readme_results as urr
 
 ROOT = Path(__file__).resolve().parents[2]
 IDS = ("fabric", "copilot_studio", "power_bi", "video")
-PENDING_TEXT = "⏳ Pendiente de validar en tenant real"
+PENDING_TEXT = "⏳ Pending validation on a real tenant"  # script wording (English since bda3acf)
 GREEN = "2EA043"
 SUMMARY: dict[str, Any] = {
     "generated_at": "2026-05-01T10:00:00+00:00",
@@ -166,7 +166,7 @@ def test_all_pending_renders_pending_table_and_grey_badges(env: Env) -> None:
     assert env.run() == 0
     text = env.text()
     assert text.count(PENDING_TEXT) == 4
-    assert "✅ Validado" not in text
+    assert "✅ Validated" not in text
     assert GREEN not in text and "brightgreen" not in text
     assert text.count("6B7280") == 2
     for key in IDS:
@@ -182,9 +182,9 @@ def test_one_validated_turns_only_its_badge_green(env: Env) -> None:
     lines = [ln for ln in badges.group(1).splitlines() if ln]
     fabric = next(ln for ln in lines if "![Fabric" in ln)
     copilot = next(ln for ln in lines if "![Copilot" in ln)
-    assert "Fabric" in fabric and GREEN in fabric and "validado el 2026-12-01" in fabric
+    assert "Fabric" in fabric and GREEN in fabric and "validated on 2026-12-01" in fabric
     assert "Copilot%20Studio" in copilot and GREEN not in copilot and "6B7280" in copilot
-    assert "✅ Validado (2026-12-01)" in text
+    assert "✅ Validated (2026-12-01)" in text
     assert "docs/evidence/x.md" in text
     assert text.count(PENDING_TEXT) == 3
 
@@ -193,7 +193,7 @@ def test_validated_power_bi_or_video_never_greens_a_badge(env: Env) -> None:
     env.write_status(_validated("video", _validated("power_bi", _all_pending())))
     assert env.run() == 0
     assert GREEN not in env.text()
-    assert env.text().count("✅ Validado (") == 2
+    assert env.text().count("✅ Validated (") == 2
 
 
 def test_validated_without_evidence_cannot_be_forced_green(env: Env) -> None:
@@ -254,7 +254,7 @@ def test_without_status_markers_blocks_are_skipped_and_json_not_required(env: En
     env.write_readme("a\n<!-- RESULTS:START -->\nx\n<!-- RESULTS:END -->\nb")
     env.status.unlink()
     assert env.run() == 0
-    assert "Pendiente de validar" not in env.text()
+    assert "Pending validation" not in env.text()
     assert env.run("--check") == 0
 
 
@@ -307,7 +307,7 @@ def test_real_readme_status_matches_json() -> None:
     for key, item in _status().items():
         row = next(ln for ln in table.group(1).splitlines() if item["nombre"] in ln)
         if item["estado"] == "validado":
-            assert "✅ Validado" in row and item["fecha"] in row, key
+            assert "✅ Validated" in row and item["fecha"] in row, key
         else:
             assert PENDING_TEXT in row and "✅" not in row, key
 
@@ -334,18 +334,37 @@ def test_no_green_microsoft_badge_anywhere_in_readme_while_pending() -> None:
                 assert not re.search(r"2EA043|brightgreen|success|green", line, re.I), line
 
 
-def test_skills_table_has_both_groups_and_ms_stack_is_not_in_validated() -> None:
-    readme = _read("README.md")
-    assert "### ✅ Validado" in readme and "### ⏳ Diseñado y probado con dobles" in readme
-    validated = _group(readme, "### ✅ Validado", "### ⏳")
-    pending = _group(readme, "### ⏳", "La tabla completa")
-    rows = [ln for ln in validated.splitlines() if ln.startswith("|")][2:]
-    assert rows
-    for ln in rows:
-        first_cell = ln.split("|")[1]
-        assert not re.search(r"Fabric|Copilot|Power BI", first_cell), ln
-    for name in ("Fabric", "Copilot Studio", "Power BI"):
-        assert re.search(rf"^\| (Microsoft )?{name} ", pending, re.M), name
+def _skills_rows(readme: str) -> list[list[str]]:
+    """Rows of the single 'Skills demonstrated' table (Skill | Evidence | Status)."""
+    match = re.search(r"^## [^\n]*Skills demonstrated\s*$(.*?)(?=^## )", readme, re.S | re.M)
+    assert match, "section 'Skills demonstrated' missing"
+    lines = [ln for ln in match.group(1).splitlines() if ln.startswith("|")]
+    rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in lines]
+    assert rows[0] == ["Skill", "Evidence", "Status"], rows[0]
+    return rows[2:]  # skip header and separator
+
+
+def test_skills_table_has_status_column_and_ms_stack_is_not_done() -> None:
+    """README v2 replaced the two skill groups by one table with a Status column.
+
+    The honesty contract is unchanged: Fabric, Copilot Studio and Power BI rows must say
+    'pending' and never 'Done' while status.json has them pending; other rows do say Done.
+    """
+    rows = _skills_rows(_read("README.md"))
+    assert any(r[2].startswith("Done") for r in rows), "no row is marked Done"
+    status = _status()
+    for name, key in (
+        ("Microsoft Fabric", "fabric"),
+        ("Copilot Studio", "copilot_studio"),
+        ("Power BI", "power_bi"),
+    ):
+        row = next((r for r in rows if r[0] == name), None)
+        assert row, f"skills table has no '{name}' row"
+        if status[key]["estado"] == "pendiente":
+            assert "pending" in row[2].lower() and not row[2].startswith("Done"), row
+    for r in rows:
+        if re.search(r"Fabric|Copilot|Power BI", r[0]):
+            assert not r[2].startswith("Done"), f"MS stack row marked Done: {r}"
 
 
 CLAIM = re.compile(
@@ -355,26 +374,32 @@ CLAIM = re.compile(
     re.I,
 )
 NEGATION = re.compile(r"\b(no|ni|sin|pendiente|aún|todavía|hasta entonces|se validar)\b", re.I)
+CLAIM_EN = re.compile(
+    r"\b(validated|tested|verified|deployed|working|runs?)\b"
+    r"[^.|\n]{0,25}(on (a |the )?(real )?tenant|against (a |the )?(real )?tenant"
+    r"|in (microsoft )?fabric|in copilot studio)",
+    re.I,
+)
+NEGATION_EN = re.compile(
+    r"\b(not|no|never|pending|yet|without|designed|until|doubles|to be|isn't|aren't)\b", re.I
+)
 
 
 def _unnegated_claims(text: str) -> list[str]:
     hits = []
     for sentence in re.split(r"(?<=[.!?])\s+|\n", text):
-        if CLAIM.search(sentence) and not NEGATION.search(sentence):
+        es = CLAIM.search(sentence) and not NEGATION.search(sentence)
+        en = CLAIM_EN.search(sentence) and not NEGATION_EN.search(sentence)
+        if es or en:
             hits.append(sentence.strip())
     return hits
 
 
-def test_readme_never_claims_tenant_validation_outside_validated_group() -> None:
+def test_readme_never_claims_tenant_validation_outside_validated_status() -> None:
     readme = _read("README.md")
-    validated = _group(readme, "### ✅ Validado", "### ⏳")
-    outside = readme.replace(validated, "")
-    outside = re.sub(
-        r"<!-- VALIDATION:START -->.*?<!-- VALIDATION:END -->", "", outside, flags=re.S
-    )
+    outside = re.sub(r"<!-- VALIDATION:START -->.*?<!-- VALIDATION:END -->", "", readme, flags=re.S)
     if all(i["estado"] == "pendiente" for i in _status().values()):
         assert _unnegated_claims(outside) == []
-        assert not re.search(r"validado en (un |el )?tenant", validated, re.I)
 
 
 PRESENT = [
@@ -401,6 +426,9 @@ def test_docs_do_not_assert_unvalidated_things_in_present_tense(doc: str) -> Non
 def test_overselling_detector_flags_claims() -> None:
     assert _unnegated_claims("El agente está validado en tenant real.")
     assert _unnegated_claims("Fabric: probado en Microsoft Fabric.")
+    assert _unnegated_claims("The agent is validated on a real tenant.")
+    assert _unnegated_claims("Fabric: tested in Microsoft Fabric.")
+    assert not _unnegated_claims("Fabric is designed but not yet validated on a real tenant.")
     assert not _unnegated_claims("Fabric no está validado en tenant real.")
     assert re.search(PRESENT[0], "El API se conecta a Fabric", re.I)
 

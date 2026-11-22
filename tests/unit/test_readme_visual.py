@@ -23,8 +23,15 @@ from src.utils.config import PROJECT_ROOT
 README = PROJECT_ROOT / "README.md"
 PROCEDURE = PROJECT_ROOT / "docs" / "testing-procedure.md"
 SUMMARY = PROJECT_ROOT / "tests" / "eval" / "results.summary.json"
-NOTE = "Datos sintéticos generados para este proyecto; las cifras son ilustrativas"
-ALLOWED_HOSTS = {"img.shields.io", "readme-typing-svg.demolab.com"}
+NOTE = "Synthetic data generated for this project; figures are illustrative"
+# README v2 (docs/features/readme-redesign.md, research criterion 19): the typing-svg and the
+# stack badges were removed, so only shields.io may serve remote images.
+ALLOWED_HOSTS = {"img.shields.io"}
+# Remote images in README v2: CI, release, license, coverage + Copilot Studio and Fabric.
+EXPECTED_REMOTE_BADGES = 6
+# Of those, the /badge/ (static) ones: coverage + the two generated Microsoft platform badges.
+EXPECTED_STATIC_BADGES = 3
+NOTE_ES = "Datos sintéticos generados para este proyecto; las cifras son ilustrativas."
 H2_PREFIX = r"^##\s+(?:\W+\s+)?"
 
 IMG_SRC_RE = re.compile(r"<img\b[^>]*?\bsrc=\"([^\"]+)\"", re.I)
@@ -108,7 +115,10 @@ def test_picture_has_dark_and_light_sources_and_alt() -> None:
 
 def test_all_remote_images_are_https_from_allowed_hosts() -> None:
     remote = _remote_images()
-    assert len(remote) >= 12, f"expected badges and typing-svg, found {len(remote)}"
+    # Exact, not a floor: the redesign cut 13 badges + typing-svg to 6 meaningful ones
+    # (docs/research/readme-for-recruiters.md criterion 19; Wei: badges only if meaningful).
+    # A new decorative badge must be a conscious change here, not a silent addition.
+    assert len(remote) == EXPECTED_REMOTE_BADGES, f"expected 6 badges, found {len(remote)}"
     for url in remote:
         parts = urlsplit(url)
         assert parts.scheme == "https", f"not https: {url}"
@@ -142,7 +152,7 @@ def _badge_fields(url: str) -> list[str]:
 
 def test_static_shields_badges_have_label_message_color() -> None:
     static = [u for u in _remote_images() if "/badge/" in u]
-    assert len(static) >= 8
+    assert len(static) == EXPECTED_STATIC_BADGES, f"static badges: {len(static)}"
     for url in static:
         fields = _badge_fields(url)
         assert len(fields) == 3 and all(f.strip() for f in fields), f"label-message-color: {url}"
@@ -173,12 +183,15 @@ def test_unvalidated_platform_badges_say_pending_and_are_not_green(platform: str
     assert len(badges) == 1, f"{platform}: expected 1 badge, real {len(badges)}"
     label, message, color = _badge_fields(badges[0])
     assert platform.lower() in label.lower()
-    assert "pendiente" in message.lower(), f"{platform} badge must say pendiente: {message}"
-    assert "validado" not in message.lower(), f"{platform} badge claims validado: {message}"
+    assert "pending" in message.lower(), f"{platform} badge must say pending: {message}"
+    assert "validated" not in message.lower().replace("pending validation", ""), (
+        f"{platform} badge claims validated: {message}"
+    )
     assert not _is_greenish(color.split("?")[0]), f"{platform} badge is green: {color}"
     alt = re.search(r"!\[([^\]]*)\]\(" + re.escape(badges[0]), _text())
     assert alt, f"{platform} badge has no markdown alt"
-    assert "pendiente" in alt.group(1).lower() and "validado" not in alt.group(1).lower()
+    alt_text = alt.group(1).lower()
+    assert "pending" in alt_text and "validated" not in alt_text.replace("pending validation", "")
 
 
 # (4) coverage badge --------------------------------------------------------------------
@@ -195,7 +208,7 @@ def test_coverage_badge_matches_last_declared_measurement() -> None:
     declared = re.search(r"Calidad de código[^\n]*?\|\s*(\d+(?:\.\d+)?)%,", procedure)
     assert declared, "docs/testing-procedure.md declares no coverage figure"
     assert _badge_coverage() == float(declared.group(1)), "badge vs testing-procedure"
-    row = re.search(r"Cobertura de `src/`\s*\|\s*(\d+(?:\.\d+)?)%", _text())
+    row = re.search(r"`src/` coverage\s*\|\s*(\d+(?:\.\d+)?)%", _text())
     assert row and float(row.group(1)) == _badge_coverage(), "badge vs README table"
 
 
@@ -221,47 +234,47 @@ def test_results_table_matches_eval_summary() -> None:
     s = json.loads(SUMMARY.read_text(encoding="utf-8"))
     m = s["metrics"]
     after = _text().split("<!-- RESULTS:END -->", 1)[1].splitlines()
-    row = next(r for r in after if r.startswith("| Casos de evaluación"))
-    assert f"**{s['passed']} de {s['total']}** ({m['aprobados']['pct']}%)" in row
-    for key, label in (("retrieval_top3", "top-3"), ("rechazo", "rechazo")):
+    row = next(r for r in after if r.startswith("| Evaluation cases"))
+    assert f"**{s['passed']} of {s['total']}** ({m['aprobados']['pct']}%)" in row
+    for key, label in (("retrieval_top3", "top-3"), ("rechazo", "refusal")):
         assert f"{label} {m[key]['passed']}/{m[key]['total']}" in row, f"{label}: {row}"
-    lat = next(r for r in after if r.startswith("| Latencia por caso"))
+    lat = next(r for r in after if r.startswith("| Latency per case"))
     assert f"p50 {s['latency_ms']['p50']} ms, p95 {s['latency_ms']['p95']} ms" in lat
 
 
-def _pytest_totals(text: str) -> tuple[int, int, int]:
-    m = re.search(r"(\d+) passed, (\d+) skipped, (\d+) deselected", text)
-    assert m, "no 'N passed, N skipped, N deselected' line"
+def _pytest_totals(text: str, verb: str) -> tuple[int, int, int]:
+    m = re.search(rf"(\d+) {verb}, (\d+) skipped, (\d+) deselected", text)
+    assert m, f"no 'N {verb}, N skipped, N deselected' line"
     return int(m.group(1)), int(m.group(2)), int(m.group(3))
 
 
 def test_pytest_totals_match_testing_procedure() -> None:
+    """README row says '<N> run' (all passing); the procedure says '<N> passed'."""
     readme = _text()
-    declared = _pytest_totals(PROCEDURE.read_text(encoding="utf-8"))
-    row = next(r for r in readme.splitlines() if r.startswith("| Pytest"))
-    assert _pytest_totals(row) == declared, f"README {row!r} vs testing-procedure {declared}"
-    assert f"pytest-{declared[0]}%20tests" in readme, "pytest badge vs testing-procedure"
+    declared = _pytest_totals(PROCEDURE.read_text(encoding="utf-8"), "passed")
+    row = next(r for r in readme.splitlines() if r.startswith("| Tests (default run"))
+    assert _pytest_totals(row, "run") == declared, f"README {row!r} vs procedure {declared}"
 
 
 # (6) English summary and synthetic note ------------------------------------------------
 
 
-def test_english_summary_is_three_lines_before_why_section() -> None:
+def test_intro_paragraph_comes_before_why_section_without_language_label() -> None:
+    """README v2 has no '**English:**' block: the whole file is English, so the intro
+    paragraph right after the H1 is the summary and must precede the 'Why' section."""
     lines = _text().splitlines()
-    start = next(i for i, ln in enumerate(lines) if ln.startswith("**English:**"))
-    why = next(i for i, ln in enumerate(lines) if re.match(H2_PREFIX + r"Por qué\b", ln))
-    block: list[str] = []
-    for ln in lines[start:]:
-        if not ln.strip():
-            break
-        block.append(ln)
-    assert len(block) == 3, f"English summary has {len(block)} lines"
-    assert start + len(block) <= why, "English summary must come before 'Por qué'"
+    h1 = next(i for i, ln in enumerate(lines) if ln.startswith("# "))
+    why = next(i for i, ln in enumerate(lines) if re.match(H2_PREFIX + r"Why this project", ln))
+    intro = next(i for i in range(h1 + 1, len(lines)) if lines[i].strip())
+    assert intro < why, "intro must come before 'Why this project'"
+    assert lines[intro].startswith("DeskPilot AI is"), lines[intro]
+    assert "**English:**" not in _text(), "language label must be gone"
 
 
 def test_synthetic_data_note_is_in_first_25_lines() -> None:
     head = "\n".join(_text().splitlines()[:25])
     assert f"**{NOTE}.**" in head
+    assert f"<sub>{NOTE_ES}</sub>" in head
 
 
 # (7) RESULTS block ---------------------------------------------------------------------

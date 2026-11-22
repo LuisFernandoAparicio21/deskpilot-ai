@@ -138,8 +138,8 @@ veredicto: exit 0 (all target criteria met)
 
 ### Pruebas y calidad
 
-`pytest --cov=src --cov-report=term`: **1946 passed, 2 skipped, 35 deselected (slow)** (corrida completa del 2026-11-22), cobertura total
-**98.02%** (meta >= 80%). Los 2 omitidos: un test sin parámetros y el validador opcional `openapi-spec-validator`. En esa corrida 3 tests de contrato fallan (fijan EV-16 y exactamente 8 ADR; no se editaron).
+`pytest --cov=src --cov-report=term`: **2028 passed, 3 skipped, 35 deselected (slow)** (re-medido tras PL-10, 2026-11-22), cobertura total
+**98.12%** (meta >= 80%). Los 3 omitidos son tests opcionales o sin parámetros.
 `pytest -m slow tests/e2e` (histórico, antes de PL-8): 30 passed, 2 xfailed (EV-16 y el umbral global); no se reejecutó con el reranker en esta corrida (no verificado). `ruff check .` y `mypy src main.py` no se reejecutaron en la actualización de docs.
 
 ## Cómo verificarlo paso a paso
