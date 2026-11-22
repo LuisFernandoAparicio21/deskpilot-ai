@@ -67,7 +67,12 @@ class FastEmbedReranker:
     def score(self, query: str, passages: list[str]) -> list[float]:
         if not passages:
             return []
-        return [sigmoid(float(raw)) for raw in self._get_model().rerank(query, passages)]
+        # One passage per forward pass on purpose: with the int8 model the score of a passage
+        # depends on the other passages in the batch (padding to the longest one), e.g. 0.019
+        # in a batch of 3 vs 0.048 alone for the same pair. Scoring alone makes it
+        # deterministic, and it is not slower (shorter sequences, no padding).
+        model = self._get_model()
+        return [sigmoid(float(next(iter(model.rerank(query, [p]))))) for p in passages]
 
 
 def build_reranker(settings: Settings) -> Reranker | None:

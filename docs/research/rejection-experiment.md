@@ -70,3 +70,30 @@ Impacto en Docker y CI:
 - **El held-out se uso para elegir este valor, por lo que ya no es un conjunto ciego**: sus cifras (rechazo 19/20, 0 falsos rechazos) son en muestra para 0.02.
 - Limitacion conocida, no ocultada en config: **HO-29** ("wifi de casa") recupera KB-001 con score 0.052, por encima de 0.02, y se responde en vez de rechazar. Subir el corte a >0.052 se acercaria al minimo en dominio; no se hizo. `eval.known_failures` es global y no se toco, por eso `eval --cases tests/eval/heldout_cases.csv` sale con exit 1 por HO-29.
 - Medido con 0.02: `eval` 30/30 (exit 0, p50 420 ms, p95 1000 ms); `rejection_cases.csv` 8/8; `heldout_cases.csv` 39/40 (HO-29).
+
+## Robustez a variantes de la consulta y causa del falso rechazo (2026-11-22)
+
+Hallazgo: "no puedo entrar a mi cuenta, se me bloqueo la contrasena" (sin acentos) daba `no_evidence` con `min_score` 0.02 aunque el top-3 tenia KB-002; con acentos respondia. Se midio con variantes generadas automaticamente (sin escoger a mano) de las 35 consultas en dominio (cases + held-out + ese caso) y de los 32 rechazos (EV, RJ, HO): (a) sin acentos y n por n, (b) minusculas sin puntuacion, (c) un swap determinista de dos letras adyacentes de la palabra mas larga (semilla 7). Reranker real, lotes de 12 consultas.
+
+**Causa.** No eran los acentos. El modelo int8 puntua un pasaje distinto segun los otros pasajes del batch (relleno hasta el mas largo): el mismo par (consulta, KB-002) da 0.0192 en un batch de 3 y 0.0481 solo, y el retriever los puntuaba en batch de 3. 0.0192 < 0.02 => veto. Los acentos si bajan el score (con acentos 0.159, sin ellos 0.048 solo), pero no lo llevan bajo el corte. Normalizar la consulta o el chunk no ayuda: la consulta normalizada sigue en 0.0192 en batch; el chunk normalizado (minusculas y sin acentos) hunde al cross-encoder (HO-02 0.0019, falso rechazo) y deja pasar OOD (HO-21 0.64).
+
+Falsos rechazos atribuibles al reranker (de 35 en dominio, con coseno >= 0.33) y rechazos aceptados (de 32; HO-29 es el conocido):
+
+| Variante | Batch (antes) FR / min score | Pasaje a pasaje FR / min score | Aceptados OOD (ambos) |
+|---|---|---|---|
+| original | 1 (Q1) / 0.0192 | 0 / 0.0481 | 1 (HO-29) |
+| sin acentos | 1 (Q1) / 0.0192 | 0 / 0.0481 | 0 |
+| minusculas sin puntuacion | 0 / 0.0611 | 0 / 0.0351 | 1 (HO-29) |
+| errata | 0 / 0.0276 | 0 / 0.0205 | 0 |
+
+La errata hace que HO-13 y HO-16 caigan bajo el umbral coseno (0.308, 0.222): es limite del embedder, igual sin reranker, y no un falso rechazo del veto. Mediana de score en dominio: 0.95 original, 0.92 sin acentos, 0.93 sin puntuacion, 0.77 errata. Maximo OOD (sin HO-29): 0.0035 en todas las variantes. Con otras configuraciones (consulta normalizada al buscar con el embedder: sin efecto relevante).
+
+Candidatos evaluados:
+- (i) normalizar la consulta para el reranker: Q1 sigue en 0.0192 (1 FR) y la errata añade HO-03 (0.0186). Descartado.
+- (ii) normalizar tambien el chunk: HO-02 falso rechazo en todas las variantes y OOD aceptados (HO-21). Descartado.
+- (iii) doble evidencia (vetar solo si score < min y coseno < C): para salvar Q1 (coseno 0.511) hace falta C <= 0.51, y entonces se aceptan 6 OOD (EV-16, HO-28, HO-33, HO-36, RJ-07 ...), con C=0.6 solo HO-29/HO-33 pero Q1 vuelve a vetarse. Descartado.
+- Elegido: puntuar pasaje a pasaje (sin dependencia del batch; mas rapido: 0.48 s vs 0.71 s para 3 pasajes) y `min_score` 0.01, punto medio geometrico entre el maximo OOD (0.0035) y el minimo en dominio con variantes (0.0205). Con 0.02 el margen de la errata era 1.03x.
+
+Resultado con el servicio real y `min_score` 0.01: `eval` 30/30 (rechazo 4/4, exit 0, p50 368 ms), `rejection_cases.csv` 8/8, `heldout_cases.csv` 39/40 (OOD 19/20, solo HO-29), top-3 sin cambios (el reranker no reordena). Q1 y su version con acentos ya se responden (0.048 y 0.130). `eval.known_failures` queda `[]`.
+
+Limites: variantes automaticas y sencillas (una errata por consulta); el held-out ya no es ciego; HO-29 sigue aceptado (0.052, por encima del corte); n de 35 en dominio. Si se cambia de modelo o de version de fastembed, repetir esta medicion.

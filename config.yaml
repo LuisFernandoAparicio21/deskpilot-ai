@@ -61,13 +61,14 @@ retrieval:
   # chunks queda debajo de `min_score`. Va despues de RN-03 (nunca calla una escalacion).
   # Costo: modelo ~0.57 GB (se descarga en `main.py index`, no en una peticion) y ~0.7 s p50
   # por busqueda en CPU. Apagar con enabled: false (solo umbral).
-  # min_score 0.02: >=5x por debajo del minimo en dominio observado (0.104, held-out de 40
-  # casos + dev) y por encima del ruido de los OOD cercanos (~0.003). El held-out se uso para
-  # elegir este valor, asi que ya no es un conjunto ciego (ver docs/research/rejection-experiment.md).
+  # min_score 0.01: punto medio geometrico entre el maximo de los OOD (0.0035, sin HO-29) y el
+  # minimo en dominio con variantes (sin acentos, sin puntuacion, errata; 0.0205). Los scores se
+  # calculan pasaje por pasaje (el batch cambia el score del modelo int8). El held-out ya no es
+  # ciego (ver docs/research/rejection-experiment.md, "Robustez").
   rerank:
     enabled: true
     model: BAAI/bge-reranker-v2-m3-int8   # fastembed TextCrossEncoder; Apache-2.0
-    min_score: 0.02
+    min_score: 0.01
     candidates: 3
 
 # --- LLM ---
