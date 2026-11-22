@@ -1092,3 +1092,8 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 ### L38 — PL-11 release-v0.1.1 (docs-writer) · rama chore/release-v0.1.1
 - `.github/SECURITY.md` en inglés (reporte privado de GitHub; fuente en `docs/sources.md`), CHANGELOG `[0.1.1] - 2026-11-22` con PRs #44 a #62 y enlaces de comparación, roadmap (PL-10 mergeada #62, PL-11 documentada). Notas del release en `scratch/` (no se commitean).
 - No verificado: que el reporte privado esté habilitado en el repositorio (lo activa el propietario en Settings); el número #64 del PR es provisional.
+
+### L39 — PL-12 feature-loop-skill (docs-writer) · rama feat/feature-loop-skill
+- Skill de proyecto `.claude/skills/feature-loop/SKILL.md` (frontmatter: name, description, argument-hint, `disable-model-invocation: true`; sin `context: fork`) con plantillas y referencias; `.claude/skills/` anotada en CLAUDE.md y CONTRIBUTING. Investigación en `docs/research/project-skills.md`.
+- Roadmap: PL-11 mergeada (#64, 2026-11-22), PL-12 documentada.
+- No verificado (⚠): delegación a subagentes desde el cuerpo de la skill y detección de `.claude/skills/` nueva a mitad de sesión; no se ejecutó un ciclo real.

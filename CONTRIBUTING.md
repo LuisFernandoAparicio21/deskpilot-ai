@@ -39,6 +39,7 @@ Lo experimental va en `scratch/` (ignorado por git) y se borra al cerrar la tare
 - `docs/odd/`: documento ODD (specs, tasks y log). `docs/adr/`: decisiones de arquitectura.
 - `docs/features/`: un documento por feature (qué cambió, resultados, cómo verificar, limitaciones).
 - `docs/research/`: investigaciones previas a cada feature. `docs/screenshots/`: capturas.
+- `.claude/skills/`: skills de proyecto (`feature-loop`, ciclo a–f; se usa con `/feature-loop <feature>`).
 - `tests/unit/`, `tests/integration/`, `tests/e2e/` y `tests/eval/` (casos y resultados de la evaluación).
   Los módulos de test deben tener nombres únicos entre carpetas (mypy los analiza todos juntos).
 

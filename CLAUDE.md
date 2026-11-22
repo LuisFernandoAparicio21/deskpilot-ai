@@ -24,6 +24,7 @@ Proyecto de portafolio para la vacante AI Developer Trainee; corre en modo local
 - Tareas [ALTO RIESGO] terminan con revisión de `security-verifier` (solo lectura) antes del commit.
 
 ## Reglas del proyecto
+- Para cualquier feature, usa la skill feature-loop (`/feature-loop <feature>`).
 - Git: desde T8 todo entra por PR (issue → rama `feat/tNN-nombre` → conventional commits en inglés → PR con plantilla → `gh pr merge --merge`). Nunca push directo a main.
 - Cero desorden: nada fuera de la estructura; lo experimental va en `scratch/` (ignorado) y se borra al cerrar la tarea.
 - Cero secretos: `.env` solo local; en el repo únicamente `.env.example` con placeholders.
@@ -37,7 +38,7 @@ Proyecto de portafolio para la vacante AI Developer Trainee; corre en modo local
 - `tests/`: unit (lógica aislada, con `conftest.py` y `evalkit.py`), integration, e2e, eval (`cases.csv` y resultados). `logs/`: solo .gitkeep.
 - `data/`: knowledge_base, sample, raw (ignorado), vectordb (ignorado).
 - `integrations/`: fabric (notebooks, sql) y copilot_studio. `docs/`: odd, adr, features (un `.md` por feature, ciclo por feature), research (investigaciones previas), screenshots + documentos.
-- `scripts/`, `.github/` (workflows, plantillas), `.claude/agents/`. Ninguna otra carpeta en la raíz.
+- `scripts/`, `.github/` (workflows, plantillas), `.claude/agents/`, `.claude/skills/` (skills de proyecto). Ninguna otra carpeta en la raíz.
 
 ## Comandos (PowerShell)
 ```powershell

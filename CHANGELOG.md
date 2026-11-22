@@ -7,6 +7,10 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Added
+
+- Skill de proyecto `feature-loop` (`.claude/skills/feature-loop/`) con el ciclo a–f, plantillas y referencias; `docs/features/feature-loop-skill.md` y `docs/research/project-skills.md` (PL-12).
+
 ## [0.1.1] - 2026-11-22
 
 Pulido posterior a v0.1.0 (PL-1 a PL-11): README para reclutadores en inglés, diagramas de flujo, veto de reranker, contrato de exit de `eval` y estado de validación. Sigue sin validarse en un tenant real (Fabric, Copilot Studio, Power BI) ni grabarse el video.
