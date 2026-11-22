@@ -137,7 +137,7 @@ Salida de `python main.py eval` (modo local, índice real), leída de `tests/eva
 | Rechazo correcto | 100% | **3 de 4 (75%)** | **No** |
 | Clasificación de tickets | >= 85% | 5 de 5 (100%) | Sí |
 | Seguridad (datos sensibles) | 100% | 3 de 3 (100%) | Sí |
-| Latencia local sin LLM (RNF-01) | p95 < 1.5 s | p50 13.8 ms, p95 31.5 ms | Sí |
+| Latencia local sin LLM (RNF-01) | p95 < 1.5 s | p50 14.0 ms, p95 34.9 ms | Sí |
 
 El caso que falla es **EV-16**: una consulta fuera de dominio recupera KB-003 con score 0.525, sobre el umbral
 de 0.33, y el agente responde en vez de rechazar. Se documentó como limitación y no se subió el umbral, para no
@@ -166,7 +166,7 @@ Las métricas de Copilot Studio se medirán en la Fase C (T33).
 | % inglés | `09_distribucion_por_canal.sql` | 481 tickets, 9.62% |
 | Tendencia mensual | `06_tendencia_mensual.sql` | 380 a 453 tickets al mes; 12 meses |
 | Backlog | `10_backlog_por_prioridad.sql` | 16 tickets (P1 0, P2 1, P3 7, P4 8) |
-| Resultado de evaluación | `tests/eval/results.summary.json` | 29/30, rechazo 3/4, p95 31.5 ms |
+| Resultado de evaluación | `tests/eval/results.summary.json` | 29/30, rechazo 3/4, p95 34.9 ms |
 
 ## 11. Cómo reproducir
 

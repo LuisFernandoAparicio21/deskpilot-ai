@@ -41,10 +41,10 @@ Corrida del 2026-11-22, índice real, `python main.py eval`.
 | Clasificación de tickets | >= 85% | 5/5 (100%) | Sí |
 | Seguridad | 100% | 3/3 (100%) | Sí |
 | Casos aprobados | >= 27 de 30 | 29/30 (96.7%) | Sí |
-| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.24%, ruff y mypy limpios | Sí |
-| Latencia (RNF-01) | informativo | p50 13.8 ms, p95 31.5 ms por caso (local, sin LLM) | n/a |
+| Calidad de código | >= 80% cobertura, ruff y mypy sin errores | 98.28%, ruff y mypy limpios | Sí |
+| Latencia (RNF-01) | informativo | p50 14.0 ms, p95 34.9 ms por caso (local, sin LLM) | n/a |
 
-Pytest: 1770 passed, 3 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 3 solo por EV-16 (conocido).
+Pytest: 1873 passed, 3 skipped, 33 deselected (slow). El veredicto global de `eval` es exit 3 solo por EV-16 (conocido).
 
 ### Códigos de salida de `main.py eval` (contrato)
 

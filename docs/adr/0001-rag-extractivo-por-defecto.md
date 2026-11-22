@@ -23,7 +23,7 @@ calibrado con el modelo real) la respuesta es "sin evidencia".
 
 ## Consecuencias
 
-- Evaluación reproducible y p95 local de 31.5 ms (`tests/eval/results.summary.json`).
+- Evaluación reproducible y p95 local de 34.9 ms (`tests/eval/results.summary.json`).
 - Menos fluidez en el texto; con un LLM se gana a costa de validaciones extra.
 - El umbral es global: EV-16 responde con score 0.525 y es una limitación documentada (L22).
 

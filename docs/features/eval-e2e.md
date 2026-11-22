@@ -136,7 +136,7 @@ veredicto: exit 3 (criteria not met: rechazo; known failures: EV-16)
 
 El sha256 de `data/deskpilot.db` fue idéntico antes y después
 (`5ba63078969746c734194ed876ee05299be3818b10bec6678313e1ec5e0d10cd`). La corrida versionada en
-`tests/eval/results.summary.json` da las mismas métricas con p50 13.8 ms y p95 31.5 ms (la latencia varía por corrida).
+`tests/eval/results.summary.json` da las mismas métricas con p50 14.0 ms y p95 34.9 ms (la latencia varía por corrida).
 
 **Caso que falla: solo EV-16** ("My badge reader at the vault door shows error 77."). El esperado es `rechazo`,
 pero el sistema responde `answered` citando KB-003 con score 0.525, por encima del umbral global 0.33. Es una
