@@ -24,6 +24,7 @@ soportado porque falta el ODBC Driver 18, cuya licencia debe aceptar quien const
 
 - Verificado: corre sin root, responde con `--network none`, sin `.env` ni llave en la imagen; ocupa 1.47 GB en
   disco (L20, `docs/features/docker.md`).
+- Verificado así antes del reranker. Con el modelo del reranker ([ADR-0009](0009-veto-con-reranker-cross-encoder.md)) el tamaño real está pendiente de medir y el run con `--network none` no se reverificó.
 - Datos e índice quedan fijos hasta reconstruir la imagen.
 - La imagen no sirve para Fabric sin añadir el driver.
 

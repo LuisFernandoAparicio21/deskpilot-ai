@@ -14,3 +14,4 @@ Las cifras de negocio están en [`docs/business-case.md`](../business-case.md).
 | [0006](0006-seguridad-api-key-redaccion-escalamiento.md) | Seguridad: X-API-Key, redacción RN-05 y escalamiento RN-03 |
 | [0007](0007-swagger-2-json-copilot-studio.md) | Swagger 2.0 en JSON para Copilot Studio |
 | [0008](0008-docker-una-etapa-modelo-en-build.md) | Docker de una etapa con el modelo en el build |
+| [0009](0009-veto-con-reranker-cross-encoder.md) | Veto con reranker cross-encoder |
