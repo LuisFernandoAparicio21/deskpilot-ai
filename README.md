@@ -35,9 +35,11 @@ Local mode needs no paid keys; Fabric and Copilot Studio are designed but not ye
 ![pytest](https://img.shields.io/badge/pytest-1770%20tests-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
 ![Ruff](https://img.shields.io/badge/Ruff-lint-D7FF64?style=for-the-badge&logo=ruff&logoColor=white)
 <br>
-<!-- Plataforma Microsoft: solo probada con dobles; nunca verde -->
+<!-- Plataforma Microsoft: generado desde docs/validation-status.json; verde solo si validado con evidencia -->
+<!-- MSBADGES:START -->
 ![Copilot Studio: pendiente de validar en tenant real](https://img.shields.io/badge/Copilot%20Studio-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
-![Microsoft Fabric: pendiente de validar en tenant real](https://img.shields.io/badge/Fabric-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
+![Fabric: pendiente de validar en tenant real](https://img.shields.io/badge/Fabric-pendiente%20de%20validar%20en%20tenant%20real-6B7280?style=for-the-badge)
+<!-- MSBADGES:END -->
 
 </div>
 
@@ -239,6 +241,17 @@ La tabla completa contra la vacante está en [`docs/job-fit.md`](docs/job-fit.md
 | Datos sintéticos y 10 consultas SQL; 15 artículos de conocimiento; RAG con umbral, citas y escalamiento | Fabric real: workspace, lakehouse, warehouse y consultas en el SQL endpoint |
 | API REST y servidor MCP; `crear_ticket` con redacción de datos sensibles; export Swagger 2.0 | Agente en Copilot Studio y sus 30 casos en el chat |
 | Imagen Docker; evaluación de 30 casos; CI; caso de negocio y ADR | Reporte de Power BI, video y learning log |
+
+Estado por integración, generado desde [`docs/validation-status.json`](docs/validation-status.json):
+
+<!-- VALIDATION:START -->
+| Integración | Estado | Evidencia | Qué falta |
+| --- | --- | --- | --- |
+| Microsoft Fabric (lakehouse, Warehouse y consultas SQL) | ⏳ Pendiente de validar en tenant real | - | Ejecutar notebook, DDL, 10 consultas y check_fabric en un tenant real (hoy solo dobles de prueba) |
+| Agente en Copilot Studio | ⏳ Pendiente de validar en tenant real | - | Importar el OpenAPI, crear el agente y correr los 30 casos en el chat (hoy solo diseño y dobles) |
+| Reporte de Power BI | ⏳ Pendiente de validar en tenant real | - | Construir el reporte sobre Fabric y capturarlo |
+| Video de la demo | ⏳ Pendiente de validar en tenant real | - | Grabar el video y enlazarlo en el README |
+<!-- VALIDATION:END -->
 
 Nada de lo pendiente se afirma como medido: ver [`docs/roadmap.md`](docs/roadmap.md). La separación completa Validado / Pendiente llega con la feature PL-6.
 
