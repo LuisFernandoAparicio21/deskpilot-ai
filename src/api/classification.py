@@ -53,7 +53,7 @@ _SUBCATEGORY_RULES: tuple[tuple[str, str, re.Pattern[str]], ...] = tuple(
         (
             "Equipo lento",
             "Hardware",
-            r"(?:equipo|computadora|laptop|pc)\s+(?:muy\s+)?lent|(?:slow|sluggish)\s+"
+            r"(?:equipo|computadora|laptop|pc)\s+(?:(?:esta|anda|va|sigue|es)\s+)?(?:muy\s+)?lent|(?:slow|sluggish)\s+"
             r"(?:computer|pc|laptop)|(?:computer|pc|laptop)\s+is\s+(?:very\s+)?slow",
         ),
         ("Escaner de cheques", "Hardware", r"escaner|scanner"),
