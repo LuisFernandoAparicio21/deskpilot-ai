@@ -17,7 +17,7 @@ Feature PL-12 (rama `feat/feature-loop-skill`). Skill de proyecto que automatiza
 
 ## Archivos
 - `.claude/skills/feature-loop/SKILL.md`: reglas y pasos (< 500 líneas).
-- `templates/feature-doc.md`, `templates/pr-checklist.md`: plantillas de apoyo.
+- `templates/feature-doc.md` (incluye "Pruebas realizadas"), `templates/pr-checklist.md` (seis secciones de la plantilla del PR + ítems a-f): plantillas de apoyo.
 - `reference/agents.md`, `reference/branch-naming.md`: tabla de roles y resumen del estándar de ramas.
 
 Frontmatter usado (todo documentado): `name`, `description`, `argument-hint`, `disable-model-invocation: true` (solo manual, para que un ciclo con merges no se dispare solo).

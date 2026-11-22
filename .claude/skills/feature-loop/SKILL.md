@@ -52,7 +52,7 @@ resultado en `docs/research/<tema>.md` y fuente en `docs/sources.md`. Si la conf
 - Deja el cuerpo del PR en `scratch/pr-body.md` (plantilla de `.github/pull_request_template.md`).
 
 ### f) Merge
-1. PR con la plantilla completa y el checklist de [templates/pr-checklist.md](templates/pr-checklist.md); `Closes #n` lo pones tú.
+1. PR con la plantilla completa y las seis secciones y el checklist de [templates/pr-checklist.md](templates/pr-checklist.md); `Closes #n` lo pones tú.
 2. Espera CI verde (`gh pr checks`). Si falla, vuelve a d.
 3. `gh pr merge --merge --delete-branch`; luego `git checkout main && git pull`.
 4. Roadmap `mergeada` con # de PR y fecha; entrada nueva en el Log del ODD (L#).
