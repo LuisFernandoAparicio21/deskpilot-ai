@@ -214,3 +214,12 @@ def test_sucursal_scope_is_forwarded(client: TestClient, env: Env) -> None:
     assert response.status_code == 200
     assert response.json()["scope"] == "sucursal"
     assert env.repo.metric_calls == [("sucursal", "Caja")]
+
+
+def test_extra_field_name_is_never_reflected_in_the_422(client: TestClient, env: Env) -> None:
+    name = "ATTACKER_CHOSEN_NAME_4711"
+    response = client.post("/buscar_solucion", json={"query": "x", name: 1}, headers=KEY_HEADER)
+    assert response.status_code == 422
+    assert response.json()["details"] == [{"field": "body", "issue": "extra_forbidden"}]
+    assert name not in response.text
+    assert env.search.calls == []

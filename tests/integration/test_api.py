@@ -269,9 +269,7 @@ def test_both_or_none_of_area_and_sucursal_is_422(client: TestClient, db_path: P
 
 
 def test_health_ok_with_the_real_database(client: TestClient) -> None:
-    body = client.get("/health").json()
-    assert body["status"] == "ok"
-    assert body["database"] == {"status": "ok"}
+    assert client.get("/health").json() == {"status": "ok"}
 
 
 def test_missing_database_gives_503_and_degraded_health(tmp_path: Path) -> None:
@@ -282,9 +280,7 @@ def test_missing_database_gives_503_and_degraded_health(tmp_path: Path) -> None:
             assert response.status_code == 503
             assert response.json()["code"] == "database_unavailable"
             assert "absent.db" not in response.text
-        health = client.get("/health").json()
-        assert health["status"] == "degraded"
-        assert health["database"] == {"status": "unavailable"}
+        assert client.get("/health").json() == {"status": "degraded"}
     assert not (tmp_path / "absent.db").exists()
 
 
@@ -294,7 +290,7 @@ def test_database_without_the_tables_is_503(tmp_path: Path) -> None:
     settings = _settings(empty)
     with TestClient(create_app(settings, _services(settings))) as client:
         assert client.get("/tickets/TCK-000001", headers=KEY_HEADER).status_code == 503
-        assert client.get("/health").json()["database"] == {"status": "unavailable"}
+        assert client.get("/health").json() == {"status": "degraded"}
 
 
 def test_the_api_connection_is_read_only(db_path: Path) -> None:

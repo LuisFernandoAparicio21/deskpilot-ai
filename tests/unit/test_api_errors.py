@@ -7,6 +7,7 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 
+import anyio
 import pytest
 from fastapi.testclient import TestClient
 
@@ -331,3 +332,53 @@ def test_ticket_response_exposes_only_the_documented_fields(client: TestClient) 
         "sla_horas", "fecha_limite_sla", "sla_cumplido",
     }  # fmt: skip
     assert body["fecha_cierre"] is None and body["sla_cumplido"] is None
+
+
+def test_request_id_with_a_trailing_newline_is_discarded_and_regenerated(
+    client: TestClient,
+) -> None:
+    """A newline-terminated id must not pass; sent as raw ASGI (HTTP clients refuse the newline)."""
+    bad = b"valid-id-0001\n"
+    sent: list[dict[str, object]] = []
+
+    async def drive() -> None:
+        async def receive() -> dict[str, object]:
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        async def send(message: dict[str, object]) -> None:
+            sent.append(message)
+
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0"},
+            "http_version": "1.1",
+            "method": "GET",
+            "scheme": "http",
+            "path": "/health",
+            "raw_path": b"/health",
+            "query_string": b"",
+            "headers": [(b"x-request-id", bad)],
+            "client": ("testclient", 1),
+            "server": ("testserver", 80),
+        }
+        await client.app(scope, receive, send)  # type: ignore[arg-type]
+
+    anyio.run(drive)
+    start = next(m for m in sent if m["type"] == "http.response.start")
+    headers = dict(start["headers"])  # type: ignore[call-overload]
+    returned = headers[b"x-request-id"].decode()
+    assert "\n" not in returned
+    assert returned != bad.decode().strip()
+    assert GENERATED_ID.match(returned)
+
+
+def test_body_over_the_limit_is_413_even_without_an_api_key(client: TestClient, env: Env) -> None:
+    limit = env.settings.api.max_body_bytes
+    response = client.post(
+        "/buscar_solucion",
+        content=b"a" * (limit + 1),
+        headers={"Content-Type": "application/json"},
+    )
+    assert int(response.request.headers["content-length"]) == limit + 1
+    _assert_uniform(response, 413, "payload_too_large")
+    assert env.search.calls == []

@@ -63,19 +63,14 @@ def test_without_an_index_search_is_503_and_health_is_degraded(settings: Setting
         )
         assert response.status_code == 503
         assert response.json()["code"] == "index_unavailable"
-        health = client.get("/health").json()
-        assert health["status"] == "degraded"
-        assert health["index"] == {"status": "unavailable"}
-        assert health["index_version"] is None
-        assert health["database"] == {"status": "ok"}
+        assert client.get("/health").json() == {"status": "degraded"}
 
 
 def test_with_an_index_search_answers_with_citations_and_health_is_ok(settings: Settings) -> None:
     result = build_index(settings)
     with TestClient(create_app(settings), raise_server_exceptions=False) as client:
-        health = client.get("/health").json()
-        assert health["status"] == "ok"
-        assert health["index_version"] == result.version
+        assert client.get("/health").json() == {"status": "ok"}
+        assert result.version  # an index was really built for the probe to find
         response = client.post(
             "/buscar_solucion",
             json={"query": "no puedo conectarme a la VPN", "categoria": "Conectividad"},
