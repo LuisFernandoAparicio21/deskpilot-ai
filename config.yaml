@@ -60,12 +60,14 @@ retrieval:
   # "hay evidencia" en "no lo sé" si el mejor score sigmoide de los `candidates` mejores
   # chunks queda debajo de `min_score`. Va despues de RN-03 (nunca calla una escalacion).
   # Costo: modelo ~0.57 GB (se descarga en `main.py index`, no en una peticion) y ~0.7 s p50
-  # por busqueda en CPU. min_score = punto medio (en logit) de la brecha medida: máximo en los
-  # rechazos 0.0012, mínimo en las respuestas 0.0104. Apagar con enabled: false (solo umbral).
+  # por busqueda en CPU. Apagar con enabled: false (solo umbral).
+  # min_score 0.02: >=5x por debajo del minimo en dominio observado (0.104, held-out de 40
+  # casos + dev) y por encima del ruido de los OOD cercanos (~0.003). El held-out se uso para
+  # elegir este valor, asi que ya no es un conjunto ciego (ver docs/research/rejection-experiment.md).
   rerank:
     enabled: true
     model: BAAI/bge-reranker-v2-m3-int8   # fastembed TextCrossEncoder; Apache-2.0
-    min_score: 0.004
+    min_score: 0.02
     candidates: 3
 
 # --- LLM ---

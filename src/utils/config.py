@@ -119,7 +119,7 @@ class RerankConfig(_Section):
 
     enabled: bool = False
     model: str = "BAAI/bge-reranker-v2-m3-int8"  # fastembed TextCrossEncoder, ~0.57 GB
-    min_score: float = Field(default=0.004, ge=0.0, le=1.0)  # sigmoid score; below => no evidence
+    min_score: float = Field(default=0.02, ge=0.0, le=1.0)  # sigmoid score; below => no evidence
     candidates: int = Field(default=3, ge=1, le=10)  # top articles whose best chunk is scored
 
     @model_validator(mode="after")

@@ -62,3 +62,11 @@ Impacto en Docker y CI:
 - Un cross-encoder entrenado en otro dominio puede rechazar paráfrasis legítimas muy alejadas del texto (CT-08 queda a 0.0104 del corte). Recalibrar si cambia el modelo, la KB o se amplía el control.
 - Los casos neutros EV-19/21/22/27/30 tendrían veto del reranker (scores 0.0001-0.001); no cambian el resultado porque la escalación por palabras clave, el ticket o la advertencia de dato sensible ocurren antes o aparte.
 - No verificado: comportamiento con otros idiomas, KB mayor de 15 artículos y tamaño real de la imagen Docker (no se construyó).
+
+## Actualizacion: min_score 0.02 tras la validacion independiente (2026-11-22)
+
+- El qa-tester valido con un held-out de 40 casos (`tests/eval/heldout_cases.csv`): con reranker 0/20 falsos rechazos y 19/20 rechazos; sin reranker 9/20. Barrido de `min_score` 0.002/0.004/0.010/0.02: 0 falsos rechazos en todos. El minimo en dominio observado es 0.104.
+- Decision: `retrieval.rerank.min_score = 0.02` (>=5x por debajo del minimo en dominio, por encima del ruido de los OOD cercanos ~0.003). HO-33 puntua 0.0032, demasiado cerca de 0.004.
+- **El held-out se uso para elegir este valor, por lo que ya no es un conjunto ciego**: sus cifras (rechazo 19/20, 0 falsos rechazos) son en muestra para 0.02.
+- Limitacion conocida, no ocultada en config: **HO-29** ("wifi de casa") recupera KB-001 con score 0.052, por encima de 0.02, y se responde en vez de rechazar. Subir el corte a >0.052 se acercaria al minimo en dominio; no se hizo. `eval.known_failures` es global y no se toco, por eso `eval --cases tests/eval/heldout_cases.csv` sale con exit 1 por HO-29.
+- Medido con 0.02: `eval` 30/30 (exit 0, p50 420 ms, p95 1000 ms); `rejection_cases.csv` 8/8; `heldout_cases.csv` 39/40 (HO-29).
