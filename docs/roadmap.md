@@ -55,11 +55,12 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 | PL-1 | user-flow | chore/user-flow-diagram | docs/user-flow.md: diagrama de decisión y de secuencia del MVP desde el usuario + ejemplo real ES/EN; versión compacta en README | S13, RF de búsqueda/ticket/escalamiento | docs-writer (qa-tester valida) | documentada | - | - |
 | PL-2 | visual-style-research | chore/visual-style-research | Investigación del estilo visual del perfil y repos del usuario (docs/research/visual-style.md) | S13 | researcher | mergeada | #48 | 2026-11-22 |
 | PL-3 | readme-visual-refresh | chore/readme-visual-refresh | Banner SVG, typing-svg, badges agrupados, resumen EN arriba, resultados en números, orden para reclutador | S13, S14 | docs-writer (qa-tester valida) | documentada | - | - |
-| PL-4 | diagnostics-review | chore/diagnostics-review | Diagnóstico de 5 problemas de la revisión externa (docs/diagnostics/2026-11-22-review.md) | S12, S14 | diagnostician | pendiente | - | - |
+| PL-4 | diagnostics-review | chore/diagnostics-review | Diagnóstico de 5 problemas de la revisión externa (docs/diagnostics/2026-11-22-review.md) | S12, S14 | diagnostician | documentada | - | 2026-11-22 |
 | PL-5 | github-release-v0.1.0 | chore/release-v0.1.0-notes | P1: GitHub Release v0.1.0 con notas generadas de los PRs | S15 | docs-writer | pendiente | - | - |
 | PL-6 | validated-vs-pending | chore/validated-vs-pending | P3: separar Validado de Pendiente de validar en tenant real en README y job-fit | S14 | docs-writer (qa-tester valida) | pendiente | - | - |
 | PL-7 | eval-exit-contract | fix/eval-exit-contract | P4: contrato explícito del exit code de eval en config.yaml y CI sin tolerar errores genéricos | S12, S17 | rag-engineer (qa-tester valida) | pendiente | - | - |
 | PL-8 | rejection-cases | feat/rejection-cases | P5: 6–8 casos nuevos de rechazo fuera de dominio y, si se justifica, mecanismo general de rechazo | S12, RN rechazo | qa-tester + rag-engineer | pendiente | - | - |
+| PL-9 | english-accessibility | chore/english-accessibility | P2: resumen en inglés ampliado con tabla de habilidades y límites; alinear conteos de pruebas entre README, resumen EN y job-fit | S13, S14 | docs-writer (qa-tester valida) | pendiente | - | - |
 
 ## Fase manual (usuario)
 Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T25.
