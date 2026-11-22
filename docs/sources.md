@@ -266,3 +266,9 @@ Todas consultadas el 2026-11-22. Tipo: oficial / guía reconocida / estudio / op
 | Towards Bridging Language Gaps in OSS with LLM-Driven Documentation Translation (Adejumo et al., arXiv, 2026-01-05) | https://arxiv.org/pdf/2508.02497v2 | estudio (preprint) | Muchos proyectos OSS carecen de README en idiomas no ingleses. Solo se leyó el resumen. |
 | English fluency among Mexico's tech professionals (CodersLink, 2026-04-14) | https://coderslink.com/employers/blog/english-fluency-among-mexicos-tech-professionals | informe interno de empresa de reclutamiento | 47.4% con inglés avanzado; inglés avanzado asociado a mayor salario. Datos no verificables. |
 | Mastering English for a career in IT (Devlane, 2025-07-16) | https://www.devlane.com/blog/mastering-english-for-a-career-in-it-a-guide-for-latam-software-developers | opinión (empresa) | La escritura técnica en inglés aumenta credibilidad. |
+
+## Política de seguridad (PL-11)
+
+| Fuente | URL | Tipo | Qué se tomó |
+| --- | --- | --- | --- |
+| GitHub Docs: Privately reporting a security vulnerability | https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability | documentación oficial | Flujo del reportante: pestaña Security ("Security and quality"), Report a vulnerability, formulario y Submit report; el propietario debe habilitar el reporte privado. Consultada 2026-11-22; no se verificó en pantalla si el repositorio lo tiene habilitado. |
