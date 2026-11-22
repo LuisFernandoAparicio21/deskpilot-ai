@@ -393,8 +393,8 @@ def _check_llm(settings: Settings) -> None:
         )
 
 
-def require_api_key(settings: Settings) -> SecretStr:
-    """Return the API key required by ``serve``; raise ``ConfigError`` if unusable.
+def require_api_key(settings: Settings, command: str = "serve") -> SecretStr:
+    """Return the API key required by ``command``; raise ``ConfigError`` if unusable.
 
     The key must have ``MIN_API_KEY_LENGTH`` to ``MAX_API_KEY_BYTES`` (UTF-8) bytes: a
     longer key could never match, because the API rejects longer headers.
@@ -402,7 +402,7 @@ def require_api_key(settings: Settings) -> SecretStr:
     key = settings.secrets.api_key
     hint = 'Generate one with: python -c "import secrets;print(secrets.token_urlsafe(32))"'
     if key is None:
-        raise ConfigError(f"DESKPILOT_API_KEY is required to run 'serve'. {hint}")
+        raise ConfigError(f"DESKPILOT_API_KEY is required to run '{command}'. {hint}")
     if len(key.get_secret_value()) < MIN_API_KEY_LENGTH:
         raise ConfigError(
             f"DESKPILOT_API_KEY must have at least {MIN_API_KEY_LENGTH} characters. {hint}"
