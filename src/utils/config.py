@@ -136,6 +136,7 @@ class APIConfig(_Section):
     request_timeout_s: float = Field(gt=0, le=300)
     max_query_chars: int = Field(ge=1, le=10_000)
     max_description_chars: int = Field(ge=1, le=50_000)
+    max_body_bytes: int = Field(default=16_384, ge=1_024, le=1_048_576)
 
 
 class SlaConfig(_Section):
