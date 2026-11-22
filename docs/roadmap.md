@@ -48,7 +48,7 @@ Orden por dependencias; un subagente a la vez.
 
 ## Pulido posterior a v0.1.0 (pedido del usuario, 2026-11-22)
 
-Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-5..PL-8, PL-10). Cada feature con el ciclo a–f.
+Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-5..PL-8, PL-10) y release v0.1.1 (PL-11). Cada feature con el ciclo a–f.
 
 | # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
 |---|---|---|---|---|---|---|---|---|
@@ -61,7 +61,8 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 | PL-7 | eval-exit-contract | fix/eval-exit-contract | P4: contrato explícito del exit code de eval en config.yaml y CI sin tolerar errores genéricos | S12, S17 | rag-engineer (qa-tester valida) | mergeada | #58 | 2026-11-22 |
 | PL-8 | rejection-cases | feat/rejection-cases | P5: 6–8 casos nuevos de rechazo fuera de dominio y, si se justifica, mecanismo general de rechazo | S12, RN rechazo | qa-tester + rag-engineer | mergeada | #60 | 2026-11-22 |
 | PL-9 | english-accessibility | chore/english-accessibility | P2: resumen en inglés ampliado con tabla de habilidades y límites; alinear conteos de pruebas entre README, resumen EN y job-fit (absorbida por PL-10) | S13, S14 | docs-writer (qa-tester valida) | documentada | - | - |
-| PL-10 | readme-redesign | chore/readme-redesign | README único en inglés (notas bilingües, resumen en español), reordenado según la investigación de criterios para reclutadores (docs/research/readme-outline.md); absorbe PL-9 | S13, S14 | docs-writer (qa-tester valida) | documentada | - | - |
+| PL-10 | readme-redesign | chore/readme-redesign | README único en inglés (notas bilingües, resumen en español), reordenado según la investigación de criterios para reclutadores (docs/research/readme-outline.md); absorbe PL-9 | S13, S14 | docs-writer (qa-tester valida) | mergeada | #62 | 2026-11-22 |
+| PL-11 | release-v0.1.1 | chore/release-v0.1.1 | Release v0.1.1: .github/SECURITY.md, CHANGELOG 0.1.1 y notas de release | S13, S15 | docs-writer | documentada | - | - |
 
 ## Fase manual (usuario)
 Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T25.
