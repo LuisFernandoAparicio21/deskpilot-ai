@@ -342,8 +342,10 @@ def test_eval_metrics_match_summary(doc: str) -> None:
     assert f"p50 {s['latency_ms']['p50']} ms, p95 {s['latency_ms']['p95']} ms" in doc
     expected = f"29/30, rechazo 3/4, p95 {s['latency_ms']['p95']} ms"
     assert expected in _table_rows(doc)["Resultado de evaluación"]
-    assert s["thresholds_met"] is False  # doc says eval exits with code 1
-    assert "sale con código 1" in doc
+    assert s["thresholds_met"] is False
+    # Known failure EV-16 only => exit 3 per docs/features/eval-e2e.md.
+    assert s["exit_code"] == 3
+    assert f"sale con código {s['exit_code']}" in doc
 
 
 # --------------------------------------------------------------------- ADRs
