@@ -7,6 +7,7 @@ texts: they never include the request input, exception text, paths or secrets.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -100,10 +101,17 @@ async def _http_error(_request: Request, exc: Exception) -> JSONResponse:
     )
 
 
+def _safe_field(err: Any) -> str:
+    """Field path for a 422 detail; never echo client-chosen names (extra_forbidden)."""
+    if err["type"] == "extra_forbidden":
+        return "body"
+    return ".".join(str(part) for part in err["loc"])
+
+
 async def _validation_error(_request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, RequestValidationError)
     details = [
-        {"field": ".".join(str(part) for part in err["loc"]), "issue": str(err["type"])}
+        {"field": _safe_field(err), "issue": str(err["type"])}
         for err in exc.errors()
     ]
     logger.info("Request rejected by validation", extra={"errors": len(details)})

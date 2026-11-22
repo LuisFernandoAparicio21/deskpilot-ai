@@ -136,13 +136,9 @@ class ComponentHealth(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """State of the API, the database and the vector index (RF-26)."""
+    """Overall state of the API; anonymous callers get no internals (RF-26)."""
 
     status: Literal["ok", "degraded"]
-    mode: Literal["local", "fabric"]
-    database: ComponentHealth
-    index: ComponentHealth
-    index_version: str | None = None
 
 
 class ErrorResponse(BaseModel):

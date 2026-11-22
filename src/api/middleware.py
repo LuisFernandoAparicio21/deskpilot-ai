@@ -24,7 +24,7 @@ from src.utils.logging import new_request_id, request_context
 logger = logging.getLogger(__name__)
 
 REQUEST_ID_HEADER = "X-Request-ID"
-_SAFE_REQUEST_ID = re.compile(r"^[A-Za-z0-9._-]{8,64}$")
+_SAFE_REQUEST_ID = re.compile(r"[A-Za-z0-9._-]{8,64}")
 _SECURITY_HEADERS = {
     "cache-control": "no-store",
     "x-content-type-options": "nosniff",
@@ -45,7 +45,7 @@ class RequestContextMiddleware:
             await self.app(scope, receive, send)
             return
         incoming = Headers(scope=scope).get(REQUEST_ID_HEADER, "")
-        request_id = incoming if _SAFE_REQUEST_ID.match(incoming) else new_request_id()
+        request_id = incoming if _SAFE_REQUEST_ID.fullmatch(incoming) else new_request_id()
         with request_context(request_id):
             await self._handle(scope, receive, send, request_id)
 

@@ -16,6 +16,7 @@ expires the client gets 504 (the thread is abandoned, not killed, and its result
 """
 
 import logging
+import threading
 import time
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
@@ -42,7 +43,6 @@ from src.api.schemas import (
     BuscarSolucionRequest,
     BuscarSolucionResponse,
     CitationOut,
-    ComponentHealth,
     ErrorResponse,
     HealthResponse,
     TicketStatusResponse,
@@ -160,38 +160,61 @@ def _to_response(answer: Answer) -> BuscarSolucionResponse:
 
 
 class _HealthProbe:
-    """Cached health check: unauthenticated callers must not drive database traffic."""
+    """Cached, single-flight health check.
+
+    Unauthenticated callers must not drive database traffic nor pile up worker
+    threads: at most one probe runs at a time and every outcome (also a timeout)
+    is cached for ``HEALTH_CACHE_S``.
+    """
 
     def __init__(self) -> None:
         self._at = float("-inf")
         self._value: HealthResponse | None = None
+        self._lock = threading.Lock()
+        self._inflight = False
 
-    def get(self, services: ApiServices) -> HealthResponse:
+    async def get(self, runner: _Runner, services: ApiServices) -> HealthResponse:
         now = time.monotonic()
-        if self._value is None or now - self._at > HEALTH_CACHE_S:
-            self._value = self._check(services)
-            self._at = now
-        return self._value
+        if self._value is not None and now - self._at <= HEALTH_CACHE_S:
+            return self._value
+        with self._lock:
+            if self._inflight:
+                return self._value or _DEGRADED
+            self._inflight = True
+        try:
+            value = await runner.run(self._check, services)
+        except ApiError:
+            value = _DEGRADED
+        self._value = value
+        self._at = time.monotonic()
+        return value
+
+    def _check(self, services: ApiServices) -> HealthResponse:
+        try:
+            return self._probe(services)
+        finally:
+            with self._lock:
+                self._inflight = False
 
     @staticmethod
-    def _check(services: ApiServices) -> HealthResponse:
-        database_ok = services.repository.ping()
-        version: str | None = None
+    def _probe(services: ApiServices) -> HealthResponse:
         try:
-            version = services.index_probe()
+            database_ok = services.repository.ping()
+        except Exception as exc:
+            logger.error("Database ping failed", extra={"error": type(exc).__name__})
+            database_ok = False
+        try:
+            services.index_probe()
             index_ok = True
         except IndexNotFoundError:
             index_ok = False
         except Exception as exc:
             logger.error("Index probe failed", extra={"error": type(exc).__name__})
             index_ok = False
-        return HealthResponse(
-            status="ok" if database_ok and index_ok else "degraded",
-            mode="fabric" if services.mode == "fabric" else "local",
-            database=ComponentHealth(status="ok" if database_ok else "unavailable"),
-            index=ComponentHealth(status="ok" if index_ok else "unavailable"),
-            index_version=version if index_ok else None,
-        )
+        return HealthResponse(status="ok" if database_ok and index_ok else "degraded")
+
+
+_DEGRADED = HealthResponse(status="degraded")
 
 
 def _build_router(settings: Settings, api_key: str) -> APIRouter:
@@ -312,7 +335,7 @@ def create_app(settings: Settings, services: ApiServices | None = None) -> FastA
         responses={500: _ERRORS[500]},
     )
     async def health(request: Request, runner: Runner) -> HealthResponse:
-        return await runner.run(probe.get, _services(request))
+        return await probe.get(runner, _services(request))
 
     app.include_router(_build_router(settings, api_key))
     return app
