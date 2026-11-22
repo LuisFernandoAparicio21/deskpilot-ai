@@ -1088,3 +1088,7 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - Decisiones 2 (longitud: la del borrador, 298 líneas) y 3 (contacto: solo handle de GitHub e issues) sin respuesta: valores provisionales del outline.
 - Cifras: `pytest --cov=src` sin slow: 1982 passed, 17 failed, 3 skipped, 35 deselected; cobertura 98.12%. Las 17 fallas son contratos de test (README en español, scripts en inglés, mermaid de readme-evaluation.md); los resuelve el qa-tester. No verificado: quickstart en clon limpio y render de mermaid en GitHub (revisión de la vista previa del PR por el orquestador).
 - Roadmap: PL-8 mergeada (#60, 2026-11-22), PL-10 documentada.
+
+### L38 — PL-11 release-v0.1.1 (docs-writer) · rama chore/release-v0.1.1
+- `.github/SECURITY.md` en inglés (reporte privado de GitHub; fuente en `docs/sources.md`), CHANGELOG `[0.1.1] - 2026-11-22` con PRs #44 a #62 y enlaces de comparación, roadmap (PL-10 mergeada #62, PL-11 documentada). Notas del release en `scratch/` (no se commitean).
+- No verificado: que el reporte privado esté habilitado en el repositorio (lo activa el propietario en Settings); el número #64 del PR es provisional.
