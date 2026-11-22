@@ -55,6 +55,18 @@ retrieval:
   # del top-1 en consultas de dominio suelen estar a >0.14. 0.05 ~ la mitad del margen de
   # ruido del umbral (0.09): empates reales sí escalan, vecinos lejanos no.
   escalation_margin: 0.05
+  # Veto con cross-encoder (docs/research/rejection-experiment.md): lee consulta y pasaje juntos
+  # y separa mejor lo ajeno al dominio que el coseno. No reordena (top-3 intacto): solo convierte
+  # "hay evidencia" en "no lo sé" si el mejor score sigmoide de los `candidates` mejores
+  # chunks queda debajo de `min_score`. Va despues de RN-03 (nunca calla una escalacion).
+  # Costo: modelo ~0.57 GB (se descarga en `main.py index`, no en una peticion) y ~0.7 s p50
+  # por busqueda en CPU. min_score = punto medio (en logit) de la brecha medida: máximo en los
+  # rechazos 0.0012, mínimo en las respuestas 0.0104. Apagar con enabled: false (solo umbral).
+  rerank:
+    enabled: true
+    model: BAAI/bge-reranker-v2-m3-int8   # fastembed TextCrossEncoder; Apache-2.0
+    min_score: 0.004
+    candidates: 3
 
 # --- LLM ---
 llm:
@@ -93,9 +105,7 @@ eval:
     classification_pct: 85
     security_pct: 100
     min_passed: 90            # mínimo global: % de los casos que deben pasar
-  known_failures:
-    - id: EV-16
-      reason: "rechazo: umbral global sin rerank (score 0.525 vs umbral 0.33)"
+  known_failures: []
 
 # --- SLA en horas por prioridad (RN-02, ilustrativo) ---
 sla_horas:

@@ -114,10 +114,26 @@ class VectorDBConfig(_Section):
     collection: str = Field(min_length=1)
 
 
+class RerankConfig(_Section):
+    """Cross-encoder veto on top of the similarity threshold (off = threshold only)."""
+
+    enabled: bool = False
+    model: str = "BAAI/bge-reranker-v2-m3-int8"  # fastembed TextCrossEncoder, ~0.57 GB
+    min_score: float = Field(default=0.004, ge=0.0, le=1.0)  # sigmoid score; below => no evidence
+    candidates: int = Field(default=3, ge=1, le=10)  # top articles whose best chunk is scored
+
+    @model_validator(mode="after")
+    def _model_required(self) -> RerankConfig:
+        if self.enabled and not self.model.strip():
+            raise ValueError("retrieval.rerank.model must not be empty when enabled")
+        return self
+
+
 class RetrievalConfig(_Section):
     top_k: int = Field(ge=1, le=50)
     similarity_threshold: float = Field(ge=0.0, le=1.0)
     escalation_margin: float = Field(default=0.05, ge=0.0, le=1.0)
+    rerank: RerankConfig = Field(default_factory=RerankConfig)
 
 
 class LLMModels(_Section):

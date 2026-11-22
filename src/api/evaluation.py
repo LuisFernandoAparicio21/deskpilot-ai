@@ -249,6 +249,7 @@ class LocalBackend:
         from src.embeddings.factory import build_embedder
         from src.llm.factory import build_llm
         from src.retrieval.answer_service import AnswerService
+        from src.retrieval.reranker import build_reranker
         from src.retrieval.retriever import RetrievalResult, Retriever
         from src.vectordb.chroma_store import IndexNotFoundError
         from src.vectordb.versions import CurrentStore
@@ -278,7 +279,12 @@ class LocalBackend:
                 return result
 
         self._last = last
-        retriever = _Recording.from_settings(settings, build_embedder(settings), self._store.get)
+        reranker = build_reranker(settings)
+        if reranker is not None:
+            reranker.warm()
+        retriever = _Recording.from_settings(
+            settings, build_embedder(settings), self._store.get, reranker
+        )
         llm = build_llm(settings)
         self._answers = AnswerService(retriever, llm, settings)
         self._repository: SqlTicketRepository = build_sqlite_repository(self._db)

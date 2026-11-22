@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.embeddings import Embedder
+from src.retrieval.reranker import Reranker
 from src.vectordb import ScoredChunk, VectorStore
 
 if TYPE_CHECKING:
@@ -55,6 +56,11 @@ class RetrievalResult(BaseModel):
 
     articles: list[ArticleHit]
     threshold: float
+    rerank_score: float | None = None
+    vetoed: bool = False
+    low_rerank: frozenset[str] = frozenset()
+    """Scored articles whose own cross-encoder score is below the minimum."""
+    """True when the cross-encoder found no relevant passage: the answer is no evidence."""
     query_vector: list[float] = Field(default_factory=list, exclude=True, repr=False)
 
     @property
@@ -104,7 +110,15 @@ class Retriever:
     """Embeds a query, searches the store and aggregates chunks by article."""
 
     def __init__(
-        self, embedder: Embedder, store: StoreSource, *, top_k: int, threshold: float
+        self,
+        embedder: Embedder,
+        store: StoreSource,
+        *,
+        top_k: int,
+        threshold: float,
+        reranker: Reranker | None = None,
+        rerank_min_score: float = 0.0,
+        rerank_candidates: int = 3,
     ) -> None:
         if top_k < 1:
             raise ValueError(f"top_k must be at least 1, got {top_k}")
@@ -114,15 +128,40 @@ class Retriever:
         self._store = store
         self.top_k = top_k
         self.threshold = threshold
+        self._reranker = reranker
+        self._rerank_min = rerank_min_score
+        self._rerank_candidates = rerank_candidates
 
     @classmethod
-    def from_settings(cls, settings: Settings, embedder: Embedder, store: StoreSource) -> Retriever:
+    def from_settings(
+        cls,
+        settings: Settings,
+        embedder: Embedder,
+        store: StoreSource,
+        reranker: Reranker | None = None,
+    ) -> Retriever:
+        rerank = settings.retrieval.rerank
         return cls(
             embedder,
             store,
             top_k=settings.retrieval.top_k,
             threshold=settings.retrieval.similarity_threshold,
+            reranker=reranker,
+            rerank_min_score=rerank.min_score,
+            rerank_candidates=rerank.candidates,
         )
+
+    def _rerank(self, query: str, articles: list[ArticleHit]) -> dict[str, float]:
+        """Cross-encoder score of the best chunk of each candidate article, by article id.
+
+        Only runs when a reranker is set and the embedding score already passes the
+        threshold (below it the answer is "no evidence" anyway).
+        """
+        if self._reranker is None or not articles or articles[0].score < self.threshold:
+            return {}
+        candidates = articles[: self._rerank_candidates]
+        scores = self._reranker.score(query, [a.chunks[0].chunk.text for a in candidates])
+        return {a.article_id: s for a, s in zip(candidates, scores, strict=True)}
 
     def _current_store(self) -> VectorStore:
         if isinstance(self._store, VectorStore):
@@ -148,8 +187,15 @@ class Retriever:
             for article_id, items in grouped.items()
         ]
         articles.sort(key=lambda a: (-a.score, a.article_id))
+        scores = self._rerank(query, articles)
+        rerank_score = max(scores.values()) if scores else None
         return RetrievalResult(
-            articles=articles[: self.top_k], threshold=self.threshold, query_vector=vector
+            articles=articles[: self.top_k],
+            threshold=self.threshold,
+            rerank_score=rerank_score,
+            vetoed=rerank_score is not None and rerank_score < self._rerank_min,
+            low_rerank=frozenset(a for a, s in scores.items() if s < self._rerank_min),
+            query_vector=vector,
         )
 
     def section_text(self, article_id: str, seccion: str, query_vector: list[float]) -> str | None:
