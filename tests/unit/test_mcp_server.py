@@ -216,22 +216,11 @@ def test_query_at_the_limit_is_accepted(env: Env) -> None:
     assert not call(env, "buscar_solucion", {"query": query}).is_error
 
 
-LITERAL_ECHO_BUG = pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "BUG src/api/mcp_server.py:125 (categoria) and :186 (canal): Literal parameters are "
-        "validated by the SDK, whose ToolError carries pydantic's input_value, so the rejected "
-        "input is echoed (expected: fixed 'Invalid arguments: <field>.' message)."
-    ),
-)
-
-
 def test_invalid_categoria_is_rejected_and_never_reaches_the_service(env: Env) -> None:
     assert call(env, "buscar_solucion", {"query": "hola", "categoria": ECHO}).is_error
     assert env.search.calls == []
 
 
-@LITERAL_ECHO_BUG
 def test_invalid_categoria_is_rejected_without_echo(env: Env) -> None:
     text = error_text(call(env, "buscar_solucion", {"query": "hola", "categoria": ECHO}))
     assert ECHO not in text
@@ -288,7 +277,6 @@ def test_invalid_canal_is_rejected_and_nothing_is_stored(env: Env) -> None:
     assert env.repo.created == []
 
 
-@LITERAL_ECHO_BUG
 def test_invalid_canal_is_rejected_without_echo(env: Env) -> None:
     text = error_text(call(env, "crear_ticket", {**GOOD_CREATE, "canal": ECHO}))
     assert ECHO not in text
@@ -307,13 +295,6 @@ def test_missing_required_argument_is_a_tool_error(env: Env) -> None:
     assert env.repo.created == []
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "BUG src/api/mcp_server.py:116-195: unknown arguments are ignored by the SDK-built "
-        "argument model instead of being rejected like the REST models (extra=forbid)."
-    ),
-)
 @pytest.mark.parametrize(
     ("tool", "args"),
     [

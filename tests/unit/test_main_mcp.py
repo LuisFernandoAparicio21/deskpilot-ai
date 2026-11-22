@@ -102,6 +102,18 @@ def test_mcp_http_exits_1_without_a_valid_key_and_never_prints_it(
     assert spy.events == []
 
 
+def test_mcp_http_missing_key_message_names_mcp_not_serve(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], spy: Spy
+) -> None:
+    _patch(monkeypatch, tmp_path, key=None)
+    assert main.main(["mcp", "--transport", "http"]) == 1
+    err = capsys.readouterr().err
+    assert "DESKPILOT_API_KEY is required" in err
+    assert "'mcp'" in err
+    assert "serve" not in err
+    assert spy.events == []
+
+
 def test_mcp_http_by_config_transport_also_needs_the_key(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, spy: Spy
 ) -> None:
