@@ -74,6 +74,9 @@ _ERRORS: dict[int | str, dict[str, Any]] = {
     503: {"model": ErrorResponse, "description": "Database or vector index unavailable."},
     504: {"model": ErrorResponse, "description": "The request took too long."},
 }
+_TOO_LARGE: dict[int | str, dict[str, Any]] = {
+    413: {"model": ErrorResponse, "description": "The request body is too large."},
+}
 
 
 class SearchService(Protocol):
@@ -235,6 +238,7 @@ def _build_router(settings: Settings, api_key: str) -> APIRouter:
     @router.post(
         "/buscar_solucion",
         operation_id="buscar_solucion",
+        responses=_TOO_LARGE,
         summary="Search a cited solution in the knowledge base",
         response_model=BuscarSolucionResponse,
     )
@@ -256,6 +260,7 @@ def _build_router(settings: Settings, api_key: str) -> APIRouter:
     @router.post(
         "/tickets",
         operation_id="crear_ticket",
+        responses=_TOO_LARGE,
         summary="Create a ticket, classified by category and priority",
         response_model=CrearTicketResponse,
         status_code=201,

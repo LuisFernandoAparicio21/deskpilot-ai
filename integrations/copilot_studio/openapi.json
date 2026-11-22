@@ -52,6 +52,12 @@
               "$ref": "#/definitions/ErrorResponse"
             }
           },
+          "413": {
+            "description": "El cuerpo de la petición es demasiado grande.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
           "422": {
             "description": "Datos de entrada inválidos (longitud, formato o parámetros).",
             "schema": {
@@ -110,6 +116,12 @@
           },
           "401": {
             "description": "No autorizado: falta la llave X-API-Key o es inválida.",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "413": {
+            "description": "El cuerpo de la petición es demasiado grande.",
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
             }
