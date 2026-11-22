@@ -49,7 +49,7 @@ Los mismos que corre el CI; deben pasar antes de abrir el PR:
 ```powershell
 ruff check .
 ruff format --check .
-mypy src main.py tests
+mypy
 pytest --cov=src --cov-report=term-missing
 ```
 

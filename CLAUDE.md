@@ -44,7 +44,7 @@ Proyecto de portafolio para la vacante AI Developer Trainee; corre en modo local
 python -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
 ruff check .; ruff format --check .
-mypy src main.py tests
+mypy
 pytest --cov=src --cov-report=term-missing
 python main.py generate-data | load-db | index | serve | eval | export-openapi
 ```
