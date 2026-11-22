@@ -141,7 +141,7 @@ Salida de `python main.py eval` (modo local, índice real), leída de `tests/eva
 
 El caso que falla es **EV-16**: una consulta fuera de dominio recupera KB-003 con score 0.525, sobre el umbral
 de 0.33, y el agente responde en vez de rechazar. Se documentó como limitación y no se subió el umbral, para no
-rechazar consultas legítimas (L22 del ODD). Por eso `eval` sale con código 1.
+rechazar consultas legítimas (L22 del ODD). Por eso `eval` sale con código 3 (criterios no cumplidos por un fallo conocido, ver docs/features/eval-e2e.md).
 Las métricas de Copilot Studio se medirán en la Fase C (T33).
 
 ## 10. Trazabilidad cifra, consulta y valor
