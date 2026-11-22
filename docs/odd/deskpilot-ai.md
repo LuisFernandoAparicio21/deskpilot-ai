@@ -1053,3 +1053,7 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 
 ### L30 — PL-1 user-flow (docs-writer) · rama chore/user-flow-diagram
 - Creado `docs/user-flow.md` (2 diagramas Mermaid, tablas paso/herramienta/RF/EV con ids existentes, ejemplos reales ES/EN de una corrida local con `main.py serve`; tickets de prueba borrados, `tickets_nuevos` = 0 filas). README: sección "Cómo funciona" con versión compacta. Fuente Mermaid de GitHub en `docs/sources.md`. Estado PL-1: documentada. Pendiente: validación de qa-tester.
+
+### L31 — PL-3 readme-visual-refresh (docs-writer) · rama chore/readme-visual-refresh
+- README renovado con el estilo de `docs/research/visual-style.md`: banners SVG propios (terminal, sin terceros, XML validado), typing-svg, resumen EN y nota de datos sintéticos arriba, badges agrupados (estado/stack/Microsoft; Fabric y Copilot Studio en gris como pendientes de validar; cobertura 98.24% estática, se refresca a mano), secciones en orden de reclutador, bloque RESULTS intacto (`--check` ok). Cifras de ejecuciones del 2026-11-22: 1753 passed, 98.24%, eval 29/30 (latencia de esa corrida p50 14.7 / p95 31.0 ms; el README conserva el resumen versionado).
+- Los H2 que los tests comparan por regex completa (Por qué este proyecto, Cómo funciona, Habilidades demostradas, Video, Límites conocidos, Licencia, English summary) quedan sin emoji; con emoji romperían `test_docs` y `test_user_flow`. Pendiente para qa-tester si se quiere emoji en todos. Estado PL-3: documentada.
