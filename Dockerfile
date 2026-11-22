@@ -16,10 +16,19 @@
 
 FROM python:3.13-slim
 
-ENV PIP_NO_CACHE_DIR=1     PIP_DISABLE_PIP_VERSION_CHECK=1     PYTHONUNBUFFERED=1     PYTHONDONTWRITEBYTECODE=1
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 # unixODBC runtime: pyodbc imports libodbc even though local mode never opens a connection.
-RUN apt-get update     && apt-get install -y --no-install-recommends libodbc2     && rm -rf /var/lib/apt/lists/*     && groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app     && mkdir -p /app/data /app/logs     && chown app:app /app /app/data /app/logs
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libodbc2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 10001 app \
+    && useradd --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app \
+    && mkdir -p /app/data /app/logs \
+    && chown app:app /app /app/data /app/logs
 
 WORKDIR /app
 COPY requirements.txt ./
@@ -33,12 +42,15 @@ COPY integrations/fabric/sql ./integrations/fabric/sql
 USER app
 
 # Seeded synthetic data, SQLite file and vector index (downloads the embedding model once).
-RUN python main.py generate-data     && python main.py load-db     && python main.py index
+RUN python main.py generate-data \
+    && python main.py load-db \
+    && python main.py index
 
 ENV HF_HUB_OFFLINE=1
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3     CMD ["python", "-c", "import json,sys,urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4); sys.exit(0 if json.load(r).get('status')=='ok' else 1)"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD ["python", "-c", "import json,sys,urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4); sys.exit(0 if json.load(r).get('status')=='ok' else 1)"]
 
 # DESKPILOT_API_KEY is required (>= 16 characters) and is not part of the image.
 CMD ["python", "main.py", "serve", "--host", "0.0.0.0"]
