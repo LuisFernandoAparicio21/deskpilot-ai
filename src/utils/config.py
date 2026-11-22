@@ -140,6 +140,15 @@ class APIConfig(_Section):
     max_body_bytes: int = Field(default=16_384, ge=1_024, le=1_048_576)
 
 
+class McpConfig(_Section):
+    """MCP server (T18): stdio by default (no network); HTTP only when asked for."""
+
+    transport: Literal["stdio", "http"] = "stdio"
+    host: str = Field(default="127.0.0.1", min_length=1)
+    port: int = Field(default=8001, ge=1, le=65535)
+    path: str = Field(default="/mcp", pattern=r"^/[A-Za-z0-9._~/-]*$")
+
+
 class SlaConfig(_Section):
     """SLA in hours per priority (RN-02)."""
 
@@ -176,6 +185,7 @@ class FileConfig(_Section):
     retrieval: RetrievalConfig
     llm: LLMConfig
     api: APIConfig
+    mcp: McpConfig = McpConfig()
     sla_horas: SlaConfig
     fabric: FabricConfig
 

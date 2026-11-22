@@ -68,6 +68,13 @@ api:
   max_description_chars: 2000   # longitud máxima de la descripción en crear_ticket
   max_body_bytes: 16384         # tamaño máximo del cuerpo de una petición (413 si lo supera)
 
+# --- Servidor MCP (T18): stdio por defecto (sin red); http exige DESKPILOT_API_KEY ---
+mcp:
+  transport: stdio
+  host: 127.0.0.1
+  port: 8001
+  path: /mcp
+
 # --- SLA en horas por prioridad (RN-02, ilustrativo) ---
 sla_horas:
   P1: 4
