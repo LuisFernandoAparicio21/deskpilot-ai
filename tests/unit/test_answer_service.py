@@ -36,7 +36,7 @@ ARTICLES: dict[str, tuple[str, str, dict[str, str]]] = {
     ),
     "KB-004": (
         "VPN que no conecta",
-        "Red",
+        "Conectividad",
         {
             "sintoma": "La VPN no conecta desde casa (VPN does not connect).",
             "pasos": "1. Revisa tu internet.\n2. Reinicia el cliente VPN.",
@@ -205,6 +205,21 @@ def test_category_filter_can_remove_all_evidence(retriever: Retriever, settings:
     service = _service(retriever, settings)
     assert service.answer("la VPN no conecta").status == "answered"
     assert service.answer("la VPN no conecta", categoria="Accesos").status == "no_evidence"
+
+
+@pytest.mark.parametrize("categoria", ["Red", "accesos", "Accesos'} OR {'x", "", "../etc"])
+def test_unknown_categoria_is_rejected_before_searching(
+    retriever: Retriever, settings: Settings, embedder: SpyEmbedder, categoria: str
+) -> None:
+    with pytest.raises(ValueError, match="categoria"):
+        _service(retriever, settings).answer("la VPN no conecta", categoria=categoria)
+    assert embedder.queries == []
+
+
+def test_known_categoria_filters_the_search(retriever: Retriever, settings: Settings) -> None:
+    answer = _service(retriever, settings).answer("la VPN no conecta", categoria="Conectividad")
+    assert answer.status == "answered"
+    assert [c.article_id for c in answer.citations] == ["KB-004"]
 
 
 # --- RN-03 mandatory escalation ------------------------------------------------------

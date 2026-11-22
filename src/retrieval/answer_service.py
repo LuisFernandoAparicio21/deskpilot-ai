@@ -1,5 +1,8 @@
 """Cited answer for a user query: the core of ``buscar_solucion`` (S7, RF-04, RF-05, RF-14).
 
+``categoria`` (optional filter) must be one of ``KNOWN_CATEGORIES``; anything else is a
+``ValueError`` (invalid input, not an empty result), so the API layer answers 4xx.
+
 Order of decisions, each one final:
 
 1. Redact sensitive data (RF-10, RN-05). From here on only the redacted query is used
@@ -53,6 +56,11 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 STEPS_SECTION = "pasos"
+# Categories present in the knowledge base (``data/knowledge_base``, plus the PDF default).
+# ``categoria`` goes straight into a vector-store metadata filter, so only these are accepted.
+KNOWN_CATEGORIES = frozenset(
+    {"Accesos", "Comunicaciones", "Conectividad", "Hardware", "Software", "General"}
+)
 AnswerStatus = Literal["answered", "no_evidence", "mandatory_escalation"]
 AnswerMode = Literal["extractive", "llm", "policy"]
 
@@ -121,6 +129,8 @@ class AnswerService:
     def answer(self, query: str, categoria: str | None = None) -> Answer:
         if not query.strip():
             raise ValueError("query must not be empty")
+        if categoria is not None and categoria not in KNOWN_CATEGORIES:
+            raise ValueError(f"unknown categoria; expected one of {sorted(KNOWN_CATEGORIES)}")
         sensitive = bool(contains_sensitive(query))
         safe_query = redact(query) if sensitive else query
         language = detect_language(safe_query)

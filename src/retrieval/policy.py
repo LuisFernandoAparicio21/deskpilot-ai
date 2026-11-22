@@ -42,7 +42,8 @@ _PATTERNS: dict[EscalationReason, re.Pattern[str]] = {
         r"\b(?:sistema|terminal|equipo|modulo|software|pantalla) de (?:la )?caja\b"
         r"|\bla caja (?:no|se)\b|\bno abre (?:la )?caja\b|\bcash (?:register|system)"
         r"|\bteller (?:system|terminal)|\bcash drawer (?:won.?t|does not|doesn.?t|not) open"
-        r"|\bcajeros?\s+(?:\w+\s+){0,3}(?:falla|fallo|no (?:funciona|responde|dispensa|enciende|abre))"
+        r"|\bcajeros?\s+(?:\w+\s+){0,3}"
+        r"(?:falla|fallo|no (?:funciona|responde|dispensa|enciende|abre))"
         r"|\b(?:falla|fallo|fallas) (?:en |del |de )?(?:el |los |un )?cajeros?\b"
         r"|\batm (?:failure|malfunction|is down|is not working|not working|won.?t)"
     ),
