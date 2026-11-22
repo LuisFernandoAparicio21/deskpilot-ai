@@ -23,7 +23,9 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - `export-openapi` (T19): exporta `integrations/copilot_studio/openapi.json` en Swagger 2.0 JSON para Copilot Studio (`--host` configurable, `apiKey` `X-API-Key`, sin `/health`), con comprobaciones `check_swagger` y 46 pruebas. Ver `docs/features/openapi-export.md`. El Dockerfile se separó como T19b.
 - `Dockerfile` y `.dockerignore` (T19b): imagen de una etapa en modo local, usuario no root, índice y modelo de embeddings preparados al construir, `HEALTHCHECK`, sin secretos; verificada con `docker build`/`run` (incluido `--network none`). Modo Fabric sin driver ODBC 18. Ver `docs/features/docker.md`.
 - Diseño del agente de Copilot Studio (T20): `integrations/copilot_studio/` con instrucciones, 8 temas ES/EN, `tools.md`, `escalation.md` y 18 conversaciones de prueba; pruebas de estructura y consistencia (`tests/unit/test_copilot_studio.py`). Ver `docs/features/copilot-studio-agent.md`.
+- Evaluación end-to-end (T21): `python main.py eval` corre los 30 casos de `tests/eval/cases.csv` en modo local o HTTP (`--api-url`, con aviso de tickets reales), calcula las métricas de la sección 12 y escribe `results.csv` y `results.summary.json`; códigos de salida 0/1/2. Pruebas unitarias, de integración y e2e (incluye p95). Resultado real: 29/30 aprobados, EV-16 como limitación documentada. Ver `docs/features/eval-e2e.md` y `docs/testing-procedure.md`.
 
 ### Changed
 
+- Escalamiento por artículo (KB-011) solo dentro de `retrieval.escalation_margin` (0.05) del top-1, para no sobre-escalar (T21); patrones RN-03 de caja y acceso no autorizado ampliados, incluida actividad de inicio de sesión no reconocida (EV-20).
 - Policy de escalamiento obligatorio (RN-03) ampliada con frases de fraude, cargos no reconocidos, phishing, robo de identidad, cajero/ATM, caja fuerte y POS (ES/EN), con pruebas.

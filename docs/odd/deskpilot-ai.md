@@ -247,7 +247,7 @@ Criterios de aceptación:
 - T19 [CÓDIGO] `main.py export-openapi` → openapi.json (Swagger 2.0) compatible con Copilot Studio; Dockerfile + .dockerignore pasaron a T19b (rama feat/t19b-dockerfile, mergeada en el PR #28) — subagente: api-engineer — cubre S8, S17 — commit: merge del PR #26; T19b (Dockerfile) = merge del PR #28
 
 **Agente, pruebas y documentación (por PR)**
-- T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit:
+- T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit: merge del PR #30
 - T21 [CÓDIGO] 30 casos de evaluación + `main.py eval` + resultados + test e2e + docs/testing-procedure.md — subagente: qa-tester — cubre S12 — commit:
 - T22 [CÓDIGO] Cobertura ≥80%, ruff/mypy limpios, huecos de tests, CI verde — subagente: qa-tester — cubre S12, S17 — commit:
 - T23 [CÓDIGO] docs/business-case.md con cifras del SQL + docs/adr/ — subagente: docs-writer — cubre S13 — commit:
@@ -1009,7 +1009,13 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 ### L20 — T19b Dockerfile (api-engineer + qa-tester) · PR #28 mergeada
 - Docker verificado: `docker build` y `docker run` correctos, el contenedor corre sin root, funciona con `--network none` (modelo e índice ya en la imagen) y la imagen ocupa 1.47 GB en disco. Cierra la verificación que L19 dejó pendiente. Detalle en `docs/features/docker.md`.
 
-### L21 — T20 diseño del agente Copilot Studio (copilot-studio-designer + qa-tester + docs-writer) · documentada
+### L21 — T20 diseño del agente Copilot Studio (copilot-studio-designer + qa-tester + docs-writer) · PR #30 mergeada
 - `integrations/copilot_studio/`: instrucciones, 8 temas ES/EN, `tools.md`, `escalation.md` y 18 conversaciones de prueba (CT-01 a CT-18). El uso real en Copilot Studio es manual (T32); los pasos irán en `docs/MANUAL_STEPS.md` (T25, pendiente).
 - QA encontró 6 frases de escalamiento no cubiertas por RN-03; se amplió la policy (`src/retrieval/policy.py`) y se añadieron pruebas. También se agregó el marcador "⚠ verificar en pantalla" para idiomas soportados.
 - Límite conocido: en inglés "POS is not working" sin "terminal" no se detecta. Detalle en `docs/features/copilot-studio-agent.md`.
+
+### L22 — T21 evaluación end-to-end (qa-tester + security-verifier + docs-writer) · documentada
+- `main.py eval` con 30 casos (`tests/eval/cases.csv`), modo local y HTTP (aviso de tickets reales), métricas de la sección 12 y exit 0/1/2. Pruebas en `tests/unit/test_evaluation*.py`, `test_escalation_policy.py`, `tests/integration/test_escalation_by_article.py` y `tests/e2e/test_e2e.py`.
+- **Ciclos de corrección**: (1) QA encontró sobre-escalamiento por KB-011 en cualquier posición (EV-05, EV-07, EV-09); se añadió `retrieval.escalation_margin` = 0.05. (2) EV-20 no escalaba; se detecta actividad de acceso no reconocida. (3) Patrones RN-03 de caja y acceso no autorizado ampliados (ES/EN). (4) security pidió avisar por stderr que `--api-url` crea tickets reales.
+- **Métricas reales (local, índice real)**: 29/30 aprobados (96.7%), top-3 14/14, rechazo 3/4 (75%), clasificación 5/5, seguridad 3/3, p50 12.9 ms y p95 27.3 ms; `data/deskpilot.db` intacta (sha256 igual). Pytest: 1479 passed, 2 skipped, cobertura 98.24%; ruff y mypy limpios.
+- **Decisión**: EV-16 (responde KB-003 con score 0.525 > umbral 0.33) se deja como limitación documentada (umbral global sin rerank) y xfail estricto, en lugar de subir el umbral y arriesgar casos legítimos. Por eso `eval` sale con 1. Detalle en `docs/features/eval-e2e.md` y `docs/testing-procedure.md`; los resultados en Copilot Studio son T32 (manual, pendiente).
