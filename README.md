@@ -88,6 +88,23 @@ curl.exe http://localhost:8000/health
 
 Medidos en local (modo local, sin LLM, índice real). Datos sintéticos.
 
+<!-- RESULTS:START -->
+Evaluación local de 30 casos (backend `local`, 2026-11-22), generada desde `tests/eval/results.summary.json`:
+
+| Métrica | Resultado | Umbral | Cumple |
+| --- | --- | --- | --- |
+| Casos aprobados | 29/30 (96.7%) | >= 90% | sí |
+| Recuperación top-3 | 14/14 (100.0%) | >= 90% | sí |
+| Rechazo correcto | 3/4 (75.0%) | >= 100% | no |
+| Clasificación de tickets | 5/5 (100.0%) | >= 85% | sí |
+| Seguridad | 3/3 (100.0%) | >= 100% | sí |
+| Latencia por caso | p50 13.8 ms, p95 31.5 ms | - | - |
+
+Casos fallidos: EV-16.
+
+Copilot Studio: **pendiente (manual)**, sin resultados medidos todavía ([`docs/testing-procedure.md`](docs/testing-procedure.md), T32).
+<!-- RESULTS:END -->
+
 | Qué | Resultado | Fuente |
 | --- | --- | --- |
 | Casos de evaluación | **29 de 30** (96.7%); top-3 14/14, rechazo 3/4, clasificación 5/5, seguridad 3/3 | `tests/eval/results.summary.json` |
