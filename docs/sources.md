@@ -58,6 +58,8 @@ Lo que agregó el usuario (L2) como estándar de producción, únicas adiciones 
 | Título | URL | Para qué se usó |
 | --- | --- | --- |
 | Model Context Protocol specification | https://modelcontextprotocol.io/specification/latest | Servidor MCP con herramientas. Verificada: responde; hoy "latest" apunta a la revisión 2026-07-28. |
+| MCP Python SDK | https://github.com/modelcontextprotocol/python-sdk | T18: SDK oficial `mcp==2.3.0`. |
+| Migración del SDK a v2 (FastMCP renombrado a MCPServer) | https://py.sdk.modelcontextprotocol.io/v2/migration/#fastmcp-renamed-to-mcpserver | T18: en 2.x `mcp.server.fastmcp` ya no existe (lanza `ModuleNotFoundError` con este enlace). Se usa `from mcp.server.mcpserver import MCPServer`; verificado leyendo el paquete instalado (`server.py`): `@server.tool(name=, structured_output=)`, `run("stdio")`, `streamable_http_app(streamable_http_path=, host=, max_request_body_size=)` que devuelve una app Starlette (la servimos con uvicorn detrás de un middleware de API key), `ToolError` para errores esperados. Verificado además ejecutando un cliente real (`stdio_client` y `streamable_http_client`). La página de migración respondió HTTP 200 el 2026-11-21; su contenido no se leyó completo (no verificado). |
 
 ## Base del repo (T2/T3)
 
@@ -129,8 +131,6 @@ Las URLs de abajo respondieron con WebFetch el 2026-11-21. Todavía no se usaron
 
 | Tecnología | URL | Tarea | Nota |
 | --- | --- | --- | --- |
-| MCP Python SDK | https://github.com/modelcontextprotocol/python-sdk | T18 | SDK oficial ("Python SDK for Model Context Protocol servers and clients"). |
-| FastMCP | (por verificar en T18) | T18 | La página del repo del SDK no menciona FastMCP. Hay que confirmar con `mcp==2.3.0` instalado cuál es la API para declarar herramientas y montar el servidor por HTTP. |
 | OpenAPI para Copilot Studio (REST API tools) | https://learn.microsoft.com/microsoft-copilot-studio/agent-extend-action-rest-api | T19 | Función en preview. La página dice que la especificación debe ser OpenAPI v2 en JSON y que una v3 se traduce automáticamente a v2. Hay que confirmarlo al generar `openapi.yaml`. |
 | Microsoft dev tunnels | https://learn.microsoft.com/azure/developer/dev-tunnels/overview | T25 | Exponer la API con una URL pública (Fase B/C). Está en public preview; los comandos de la CLI no están verificados. |
 
