@@ -133,7 +133,7 @@ def test_mermaid_blocks_open_and_close(name: str) -> None:
     assert blocks, f"{name}: no mermaid block"
     for body in blocks:
         # README v2 adds a left-to-right architecture overview next to the decision flow.
-        allowed = ("flowchart TD", "sequenceDiagram")
+        allowed: tuple[str, ...] = ("flowchart TD", "sequenceDiagram")
         if name.startswith("README"):
             allowed += ("flowchart LR",)
         assert body.startswith(allowed), body[:30]
