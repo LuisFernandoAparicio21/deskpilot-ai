@@ -51,6 +51,12 @@ _PATTERNS: dict[EscalationReason, re.Pattern[str]] = {
         r"|\bentraron (?:a|en) mi|\bhackea|\bhackeo\b|\bhacked\b"
         r"|\bsomeone (?:else )?(?:logged|accessed|used|is using)"
         r"|\bcuenta comprometida|\bcompromised account|\baccount (?:was |is )?compromised"
+        r"|\b(?:alguien|alguna persona|terceros?) (?:mas )?(?:robo|hackeo|vulnero|violo|clono) "
+        r"(?:mi|el|la|de mi) (?:cuenta|usuario|sesion|perfil)"
+        r"|\b(?:robaron|hackearon) mi (?:cuenta|usuario)"
+        r"|\bacceso indebido|\baccesos indebidos|\bsospecho (?:de )?(?:un )?acceso"
+        r"|\bsomeone (?:stole|took over|broke into) my (?:account|profile|login)"
+        r"|\bunauthori[sz]ed (?:login|sign.?in)"
         r"|\bcambio de contrasena que no solicite|\bpassword change i didn.?t request"
     ),
     "cash_system": re.compile(
@@ -69,6 +75,14 @@ _PATTERNS: dict[EscalationReason, re.Pattern[str]] = {
         r"(?:payments?|cards?)? ?(?:at|on) the (?:counter|teller|cash (?:desk|register)|register)"
         r"|\b(?:cash|payment|pos|teller) (?:terminal|register|desk) "
         r"(?:is |are )?(?:not working|down|broken|offline)"
+        r"|\bcajas? registradoras? (?:\w+ ){0,2}(?:no |fall|esta caid|esta fuera|sin )"
+        r"|\bla caja (?:\w+ )?(?:esta |sigue |quedo )?(?:caida|fuera de (?:linea|servicio))"
+        r"|\b(?:el |los )?(?:pos|terminal(?:es)? de cobro) (?:\w+ )?(?:esta |estan |sigue )?"
+        r"(?:caid[oa]s?|fuera de (?:linea|servicio)|sin conexion)"
+        r"|\bnadie (?:puede|pueden) (?:cobrar|procesar (?:los )?pagos?|recibir pagos?)"
+        r" (?:\w+ ){0,2}(?:en|por|de) (?:la |el )?(?:caja|ventanilla|mostrador)"
+        r"|\b(?:teller|pos|cash register) (?:is |are )?(?:down|offline|not working|broken)"
+        r"|\bnobody can (?:take|process|accept) (?:payments?|cards?)"
         r"|\batm (?:failure|malfunction|is down|is not working|not working|won.?t)"
     ),
 }
