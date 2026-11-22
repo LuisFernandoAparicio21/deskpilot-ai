@@ -71,7 +71,7 @@ class RetrievalResult(BaseModel):
         return bool(self.evidence)
 
 
-def _header_free(text: str) -> str:
+def chunk_body(text: str) -> str:
     """Drop the ``"<titulo> — <sección>"`` line that the chunker puts first."""
     _, newline, body = text.partition("\n")
     return body.strip() if newline else text.strip()
@@ -162,4 +162,4 @@ class Retriever:
         if not pieces:
             return None
         ordered = sorted(pieces, key=_piece_index)
-        return merge_pieces([_header_free(p.chunk.text) for p in ordered])
+        return merge_pieces([chunk_body(p.chunk.text) for p in ordered])
