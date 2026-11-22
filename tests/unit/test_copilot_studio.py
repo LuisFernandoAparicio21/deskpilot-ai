@@ -12,7 +12,9 @@ from pathlib import Path
 
 import pytest
 
+from src.api.classification import classify
 from src.api.mcp_server import TOOL_NAMES
+from src.llm import NoLLM
 from src.retrieval.policy import EscalationReason, escalation_reason
 
 ROOT = Path(__file__).resolve().parents[2] / "integrations" / "copilot_studio"
@@ -215,10 +217,6 @@ def test_verify_markers_where_research_requires() -> None:
     assert VERIFY in topics_text  # trigger phrases under generative orchestration
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Design gap: research (e) requires a verify marker for ES/EN language support",
-)
 def test_language_support_verify_marker() -> None:
     docs = " ".join(p.read_text(encoding="utf-8") for p in _all_files() if p.suffix == ".md")
     assert re.search(r"idiomas? soportados|language support", docs, re.IGNORECASE), (
@@ -238,3 +236,19 @@ def _reasons(key: str) -> set[EscalationReason]:
 @pytest.mark.parametrize("key", ["trigger_phrases_es", "trigger_phrases_en"])
 def test_escalation_phrases_trigger_each_rn03_type(key: str) -> None:
     assert _reasons(key) >= {"fraud", "unauthorized_access", "cash_system"}
+
+
+@pytest.mark.parametrize("key", ["trigger_phrases_es", "trigger_phrases_en"])
+def test_every_escalation_phrase_escalates(key: str) -> None:
+    phrases = _list("escalamiento-obligatorio.md", key)
+    assert phrases
+    for phrase in phrases:
+        assert escalation_reason(phrase) is not None, phrase
+
+
+@pytest.mark.parametrize("key", ["trigger_phrases_es", "trigger_phrases_en"])
+def test_every_escalation_phrase_creates_p1_escalated_ticket(key: str) -> None:
+    for phrase in _list("escalamiento-obligatorio.md", key):
+        result = classify(phrase, NoLLM(), 5.0)
+        assert result.prioridad == "P1", phrase
+        assert result.escalated, phrase
