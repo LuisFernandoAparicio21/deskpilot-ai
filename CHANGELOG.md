@@ -9,6 +9,7 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Added
 
+- Plan de automatización de la Fase C (PL-13, rama `chore/phase-c-plan`): `docs/phase-c-plan.md` con el reparto de los pasos manuales, las features PC-1 a PC-13, la checklist reducida y los puntos de control; sección "Phase C automation (planned)" en el roadmap.
 - Skill de proyecto `feature-loop` (`.claude/skills/feature-loop/`) con el ciclo a–f, plantillas y referencias; `docs/features/feature-loop-skill.md` y `docs/research/project-skills.md` (PL-12).
 
 ## [0.1.1] - 2026-11-22

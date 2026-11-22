@@ -64,6 +64,7 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 | PL-10 | readme-redesign | chore/readme-redesign | README único en inglés (notas bilingües, resumen en español), reordenado según la investigación de criterios para reclutadores (docs/research/readme-outline.md); absorbe PL-9 | S13, S14 | docs-writer (qa-tester valida) | mergeada | #62 | 2026-11-22 |
 | PL-11 | release-v0.1.1 | chore/release-v0.1.1 | Release v0.1.1: .github/SECURITY.md, CHANGELOG 0.1.1 y notas de release | S13, S15 | docs-writer | mergeada | #64 | 2026-11-22 |
 | PL-12 | feature-loop-skill | feat/feature-loop-skill | Skill de proyecto `feature-loop` (.claude/skills/) con el ciclo a–f, plantillas y referencias; investigación del formato de skills | S13 | docs-writer | mergeada | #66 | 2026-11-22 |
+| PL-13 | phase-c-plan | chore/phase-c-plan | Plan de automatización de la Fase C (docs/phase-c-plan.md): reparto de los 46 pasos, features PC-n, checklist reducida (~2 h) y puntos de control; investigación R1-R7 | S18, S22 | planner (researcher: R1-R7) | documentada | - | - |
 
 ## Fase manual (usuario)
 Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T25.
@@ -79,3 +80,23 @@ Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T
 | T34 | powerbi | - | Reporte Power BI con KPIs (45 min) | S22, RF-21 | usuario | pendiente | - | - |
 | T35 | video-learning-log | - | Video 2-3 min y learning-log (40 min) | S14, S22 | usuario | pendiente | - | - |
 | T36 | evidencia-final | feat/t36-evidencia-real | Con resultados del usuario: actualizar README, business-case y testing-procedure; push final por PR | S22 | docs-writer + security-verifier | pendiente | - | - |
+
+
+## Phase C automation (planned)
+Plan completo en [docs/phase-c-plan.md](phase-c-plan.md). Reduce la fase manual de unas 6 h a unas 2 h. Orden por valor: PC-1, PC-5 a PC-8 (Copilot Studio y los 30 casos), PC-10 y PC-11 (video), PC-2 a PC-4 y PC-12 (Fabric), PC-9 (Power BI), PC-13 (T36). Dependencias en la columna Descripción de cada fila del plan; un subagente a la vez.
+
+| # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
+|---|---|---|---|---|---|---|---|---|
+| PC-1 | preflight-check | feat/pc-1-preflight-check | Chequeo de solo lectura de la Fase C: venv, drivers ODBC, herramientas en PATH, espacio en C: y D:, RAM, `.env` ignorado | S18, S22 | repo-architect | pendiente | - | - |
+| PC-2 | fabric-provision [ALTO RIESGO] | feat/pc-2-fabric-provision | Script con `fab`: workspace, lakehouse, Warehouse, subida de CSV y hosts a `.env`; idempotente y `--dry-run` (depende de PC-1) | S6, S22, RF-18 | data-engineer | pendiente | - | - |
+| PC-3 | fabric-notebook-run [ALTO RIESGO] | feat/pc-3-fabric-notebook-run | Ejecutar el notebook con `fab job run` y guardar el estado como evidencia; incluye investigación de los puntos no confirmados (depende de PC-2) | S6, S22 | data-engineer | pendiente | - | - |
+| PC-4 | fabric-sql-run [ALTO RIESGO] | feat/pc-4-fabric-sql-run | Ejecutar el DDL y las 10 consultas con resultados en CSV, comparación con business-case y salida de check_fabric (depende de PC-3) | S5, S6, RF-18 | data-engineer | pendiente | - | - |
+| PC-5 | public-tunnel [ALTO RIESGO] | feat/pc-5-public-tunnel | Dev Tunnel persistente (up/down/rotate), verificación, `export-openapi --host` y rotación de la key sin imprimirla (depende de PC-1) | S8, S16, RF-25 | api-engineer | pendiente | - | - |
+| PC-6 | copilot-paste-package [ALTO RIESGO] | feat/pc-6-copilot-paste-package | Paquete para copiar y pegar en Copilot Studio: validador offline del OpenAPI, guía con valores exactos, temas mínimos; sin `pac` (depende de PC-5) | S11, RF-25 | copilot-studio-designer | pendiente | - | - |
+| PC-7 | copilot-eval-csv | feat/pc-7-copilot-eval-csv | CSV de los 30 casos en formato de evaluación nativa (Question, Expected response) y plantilla de resultados | S11, S12 | rag-engineer | pendiente | - | - |
+| PC-8 | copilot-eval-import | feat/pc-8-copilot-eval-import | Importador de resultados exportados hacia la tabla T32 y `update_readme_results`; se desarrolla con la primera exportación real (depende de PC-7) | S11, S12 | rag-engineer | pendiente | - | - |
+| PC-9 | powerbi-dax-design | chore/pc-9-powerbi-dax-design | Medidas DAX y diseño de páginas del reporte de Power BI con las cifras de business-case; sin generar el reporte (depende de PC-4) | S22, RF-21 | docs-writer | pendiente | - | - |
+| PC-10 | video-script | chore/pc-10-video-script | Guion del video de 3 minutos con tiempos, casos y lista de grabación (depende de PC-6) | S14, S22 | docs-writer | pendiente | - | - |
+| PC-11 | demo-runner [ALTO RIESGO] | feat/pc-11-demo-runner | Comando de demo local: arranca `serve` y recorre salud, búsqueda ES/EN, ticket y escalamiento con pausas y `--dry-run` (depende de PC-5) | S8, S14, S16 | api-engineer | pendiente | - | - |
+| PC-12 | local-captures [ALTO RIESGO] | feat/pc-12-local-captures | Capturas automáticas de lo local (salida de comandos renderizada con Playwright y Edge); opcional (depende de PC-4, PC-11) | S14, S22 | api-engineer | pendiente | - | - |
+| PC-13 | evidence-final (T36) [ALTO RIESGO] | feat/t36-evidencia-real | Evidencia real en README, business-case, testing-procedure y validation-status.json; ejecuta T36 (depende de PC-4, PC-8, PC-9, PC-10) | S22 | docs-writer + security-verifier | pendiente | - | - |
