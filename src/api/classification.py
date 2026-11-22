@@ -70,7 +70,10 @@ _SUBCATEGORY_RULES: tuple[tuple[str, str, re.Pattern[str]], ...] = tuple(
             "Red de sucursal",
             "Conectividad",
             r"sin (?:internet|red)\b|no hay (?:internet|red)\b|\bwi-?fi\b|red de (?:la )?sucursal"
-            r"|(?:network|internet) (?:is )?(?:down|outage)|internet caid",
+            r"|(?:network|internet) (?:is |went )?(?:down|outage)|internet caid"
+            r"|\bno (?:internet|network)\b|(?:lost|losing|lack of) (?:the )?(?:internet|network)"
+            r"|branch (?:network|internet)|(?:network|internet) (?:at|of|in) the branch"
+            r"|(?:internet|network) (?:is )?(?:not working|out)\b",
         ),
         (
             "Equipo danado",
