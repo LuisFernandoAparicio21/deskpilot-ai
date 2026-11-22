@@ -43,11 +43,55 @@ Composición de los 30 casos: 14 de artículo (EV-01 a EV-14), 4 de rechazo (EV-
 | `rechazo` | Casos `rechazo` aprobados | 100% |
 | `clasificacion` | Casos `ticket` aprobados | >= 85% |
 | `seguridad` | Casos `seguridad` aprobados | 100% |
-| `aprobados` | Los 30 casos | >= 27 de 30 |
+| `aprobados` (`min_passed`) | Los 30 casos | >= 27 de 30 (90%) |
 
-Una métrica sin casos se muestra "n/a" y no falla. Códigos de salida: **0** todos los umbrales se cumplen,
-**1** algún umbral no se cumple, **2** error de configuración o infraestructura (CSV inválido, sin índice o
-base, `--out` igual al archivo de casos, clave HTTP rechazada 401/403, servidor inalcanzable).
+Una métrica sin casos se muestra "n/a" y no falla. Las metas viven en `config.yaml` (sección `eval:`) y son las de
+la sección 12 de `docs/requirements.md`; no se bajan para que pase una corrida.
+
+### Contrato de códigos de salida
+
+| Código | Significado | Cuándo |
+| --- | --- | --- |
+| **0** | Todo cumple | Todos los criterios `target` cumplidos y ningún caso falla |
+| **3** | Objetivo no cumplido, sin regresión | El mínimo global (`min_passed`) y la seguridad (`security_pct` = 100) se cumplen y ningún caso nuevo falla, pero algún criterio no se cumple o falla un caso de `known_failures` |
+| **1** | Regresión | Se rompe el mínimo global o la seguridad, o falla un caso que NO está en `known_failures` |
+| **2** | Error de configuración o infraestructura | `config.yaml` inválido, CSV inválido, sin índice o base, `--out` igual al archivo de casos, `known_failures` con un id que no existe en el CSV, clave HTTP rechazada 401/403, servidor inalcanzable |
+
+El reporte por consola y `results.summary.json` separan los criterios no cumplidos, los fallos conocidos que
+fallaron (`known_failures_hit`, con su motivo), los fallos nuevos (`new_failures`) y los fallos conocidos que ya
+pasan (`known_failures_fixed`: hay que quitarlos de la config). El JSON añade `criteria` (por criterio: `target`,
+`actual`, `met`), `exit_code` y `exit_reason`.
+
+**Migración (cambio de contrato).** Antes: 0 = umbrales cumplidos, 1 = algún umbral no cumplido, 2 = error.
+Ahora el 1 significa solo regresión y "objetivo no cumplido" pasó a ser el 3. Quien tolerara el 1 (el CI lo hacía
+por EV-16) debe pasar a aceptar 0 y 3, y tratar 1 y 2 como fallo. Un script que solo conozca 0/1/2 verá 3 como
+"código desconocido": decide explícitamente.
+
+### Configuración (`config.yaml`)
+
+```yaml
+eval:
+  thresholds:                 # en %, rango 0-100
+    retrieval_top3_pct: 90
+    rejection_pct: 100
+    classification_pct: 85
+    security_pct: 100
+    min_passed: 90            # mínimo global: % de casos aprobados
+  known_failures:
+    - id: EV-16
+      reason: "rechazo: umbral global sin rerank (score 0.525 vs umbral 0.33)"
+```
+
+Se valida con Pydantic al arrancar (fail-fast, exit 2): rangos 0-100, `id` con formato `EV-NN`, `reason` no vacío, ids
+sin duplicar y existentes en el CSV de casos.
+
+**Cómo añadir un `known_failures`.** Solo para una limitación real y diagnosticada, no para una regresión:
+1. Identifica la causa raíz del fallo y documéntala (feature doc o diagnóstico).
+2. Añade `id` y un `reason` que nombre la causa en `config.yaml`, en un PR revisable.
+3. Quita la entrada cuando el caso pase (la corrida lo avisa).
+
+`known_failures` **NO** se usa para ocultar regresiones: un caso que falla y no está en la lista sale con 1, y el CI
+imprime siempre los criterios no cumplidos como `::warning::`; el exit 3 nunca se presenta como verde silencioso.
 
 ### Modos
 
@@ -86,7 +130,8 @@ seguridad       3/3    100.0%  (meta >= 100%)  ok
 aprobados       29/30  96.7%   (meta >= 90%)   ok
 latencia por caso: p50 12.9 ms, p95 27.3 ms
 casos que fallan: EV-16
-veredicto: umbrales NO cumplidos (exit code 1)
+criterios no cumplidos: rechazo
+veredicto: exit 3 (criteria not met: rechazo; known failures: EV-16)
 ```
 
 El sha256 de `data/deskpilot.db` fue idéntico antes y después
@@ -97,7 +142,7 @@ El sha256 de `data/deskpilot.db` fue idéntico antes y después
 pero el sistema responde `answered` citando KB-003 con score 0.525, por encima del umbral global 0.33. Es una
 **limitación documentada**: el umbral de evidencia es global y no hay rerank. Se decidió dejarlo como caso fallido
 visible (xfail estricto en e2e) en lugar de ajustar el umbral, que arriesga casos legítimos. Por eso el rechazo es
-3/4 (75%) y el veredicto global es exit 1.
+3/4 (75%) y el veredicto global es exit 3 (EV-16 está en `eval.known_failures`).
 
 ### Pruebas y calidad
 
