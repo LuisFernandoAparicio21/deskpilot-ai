@@ -172,3 +172,11 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | Docker Desktop WSL 2 backend on Windows | https://docs.docker.com/desktop/features/wsl/ | Ruta por defecto `%LOCALAPPDATA%\Docker\wsl`; se cambia en Settings > Resources > Advanced. Sin mención de `wsl --export/--import` ni `settings-store.json`. Ver `docs/research/docker-desktop-disk-location.md`. |
 | Change your Docker Desktop settings | https://docs.docker.com/desktop/settings-and-maintenance/settings/ | "Disk image location": se puede mover la imagen; si el destino ya tiene una, pregunta usar o reemplazar. Citada para Mac/Linux/Windows Hyper-V; clave de settings-store.json no documentada (⚠ verificar en pantalla). |
 | How to back up and restore your Docker Desktop data | https://docs.docker.com/desktop/settings-and-maintenance/backup-and-restore/ | Backup vía `container commit`/`image save`, volúmenes aparte; en WSL2 respaldar/restaurar `docker_data.vhdx`. |
+
+## Diseño del agente de Copilot Studio (T20)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-22) |
+| --- | --- | --- |
+| Quotas and limits - Microsoft Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-quotas | 200 trigger phrases por tema; 1,000 temas (250 en Dataverse for Teams) y 100 skills por agente. No publica máximo de caracteres de instrucciones ni de nombres/descripciones (⚠ verificar en pantalla). Ver `docs/research/copilot-studio-agent-limits.md`. |
+| Use system topics - Microsoft Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/authoring-system-topics | Tema de sistema Escalate: se dispara con "talk to agent" o con el evento Escalate; no se borra, se puede apagar; handoff real requiere Omnichannel. |
+| Configure and create multilingual agents - Microsoft Copilot Studio | https://learn.microsoft.com/en-us/microsoft-copilot-studio/multilingual | Idioma principal fijo, secundarios en Settings > Languages, localización JSON/ResX, cambio dinámico con `User.Language` (solo orquestación generativa). La lista de idiomas soportados está en otra página (⚠ no consultada). |

@@ -22,3 +22,8 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Servidor MCP (T18): `python main.py mcp` expone `buscar_solucion`, `consultar_estado_ticket`, `metricas_area` y `crear_ticket` sobre la misma capa de servicio que la API; transporte stdio (por defecto) o HTTP streamable con `X-API-Key` o Bearer; errores con mensajes fijos; sección `mcp:` en `config.yaml`. Ver `docs/features/mcp-server.md`.
 - `export-openapi` (T19): exporta `integrations/copilot_studio/openapi.json` en Swagger 2.0 JSON para Copilot Studio (`--host` configurable, `apiKey` `X-API-Key`, sin `/health`), con comprobaciones `check_swagger` y 46 pruebas. Ver `docs/features/openapi-export.md`. El Dockerfile se separó como T19b.
 - `Dockerfile` y `.dockerignore` (T19b): imagen de una etapa en modo local, usuario no root, índice y modelo de embeddings preparados al construir, `HEALTHCHECK`, sin secretos; verificada con `docker build`/`run` (incluido `--network none`). Modo Fabric sin driver ODBC 18. Ver `docs/features/docker.md`.
+- Diseño del agente de Copilot Studio (T20): `integrations/copilot_studio/` con instrucciones, 8 temas ES/EN, `tools.md`, `escalation.md` y 18 conversaciones de prueba; pruebas de estructura y consistencia (`tests/unit/test_copilot_studio.py`). Ver `docs/features/copilot-studio-agent.md`.
+
+### Changed
+
+- Policy de escalamiento obligatorio (RN-03) ampliada con frases de fraude, cargos no reconocidos, phishing, robo de identidad, cajero/ATM, caja fuerte y POS (ES/EN), con pruebas.

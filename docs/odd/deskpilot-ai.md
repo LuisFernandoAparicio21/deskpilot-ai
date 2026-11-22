@@ -244,7 +244,7 @@ Criterios de aceptación:
 - T16 [CÓDIGO] [ALTO RIESGO] FastAPI: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repositorio local/fabric, `main.py serve` — subagente: api-engineer — cubre S8, S17 — commit: 846d541 (PR #20)
 - T17 [CÓDIGO] [ALTO RIESGO] crear_ticket con clasificación de categoría/prioridad y persistencia — subagente: api-engineer — cubre S9 — commit: merge del PR #22
 - T18 [CÓDIGO] Servidor MCP con las 4 herramientas — subagente: api-engineer — cubre S10 — commit: merge del PR #24
-- T19 [CÓDIGO] `main.py export-openapi` → openapi.json (Swagger 2.0) compatible con Copilot Studio; Dockerfile + .dockerignore pasaron a T19b (rama feat/t19b-dockerfile, pendiente de verificar) — subagente: api-engineer — cubre S8, S17 — commit:
+- T19 [CÓDIGO] `main.py export-openapi` → openapi.json (Swagger 2.0) compatible con Copilot Studio; Dockerfile + .dockerignore pasaron a T19b (rama feat/t19b-dockerfile, mergeada en el PR #28) — subagente: api-engineer — cubre S8, S17 — commit: merge del PR #26; T19b (Dockerfile) = merge del PR #28
 
 **Agente, pruebas y documentación (por PR)**
 - T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit:
@@ -1005,3 +1005,11 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - `main.py export-openapi` genera Swagger 2.0 JSON para Copilot Studio; 1200 pruebas pasan, 1 omitida (validador externo opcional), cobertura 98.33%. Validado con `openapi-spec-validator` 0.9.0 en un venv temporal. Detalle en `docs/features/openapi-export.md`.
 - **Incidencia de disco**: el disco C: se llenó al construir la imagen Docker. Se purgó el pip cache (6 GB) y Docker se moverá a D:, pendiente. El Dockerfile y `.dockerignore` se separaron como T19b (rama `feat/t19b-dockerfile`), sin verificar en Docker.
 - **Limitación**: D: es lento y rompe 2 tests de concurrencia SQLite por el timeout de 5 s; no es un fallo de lógica.
+
+### L20 — T19b Dockerfile (api-engineer + qa-tester) · PR #28 mergeada
+- Docker verificado: `docker build` y `docker run` correctos, el contenedor corre sin root, funciona con `--network none` (modelo e índice ya en la imagen) y la imagen ocupa 1.47 GB en disco. Cierra la verificación que L19 dejó pendiente. Detalle en `docs/features/docker.md`.
+
+### L21 — T20 diseño del agente Copilot Studio (copilot-studio-designer + qa-tester + docs-writer) · documentada
+- `integrations/copilot_studio/`: instrucciones, 8 temas ES/EN, `tools.md`, `escalation.md` y 18 conversaciones de prueba (CT-01 a CT-18). El uso real en Copilot Studio es manual (T32); los pasos irán en `docs/MANUAL_STEPS.md` (T25, pendiente).
+- QA encontró 6 frases de escalamiento no cubiertas por RN-03; se amplió la policy (`src/retrieval/policy.py`) y se añadieron pruebas. También se agregó el marcador "⚠ verificar en pantalla" para idiomas soportados.
+- Límite conocido: en inglés "POS is not working" sin "terminal" no se detecta. Detalle en `docs/features/copilot-studio-agent.md`.
