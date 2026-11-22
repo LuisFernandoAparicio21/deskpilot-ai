@@ -78,7 +78,7 @@ def describe(exc: Exception) -> str:
     if isinstance(exc, FabricDriverError | FabricAuthError | FabricConnectionError | ConfigError):
         return str(exc)
     sqlstate = exc.args[0] if exc.args and isinstance(exc.args[0], str) else ""
-    if _SQLSTATE_RE.fullmatch(sqlstate) and type(exc).__module__.split(".")[0] == "pyodbc":
+    if _SQLSTATE_RE.fullmatch(sqlstate):
         return f"{type(exc).__name__} (SQLSTATE {sqlstate})"
     return type(exc).__name__  # never the raw message: it may hold a connection string/token
 
