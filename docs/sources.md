@@ -158,3 +158,9 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | --- | --- | --- |
 | Extend your agent with tools from a REST API (preview) | https://learn.microsoft.com/microsoft-copilot-studio/agent-extend-action-rest-api | Debe ser JSON en v2; una v3 se traduce a v2. Autenticación None / API key (Header o Query) / OAuth 2.0. Descripciones vacías de parámetros bloquean el asistente. Preview. Ver `docs/research/copilot-studio-openapi-requirements.md`. |
 | Create a custom connector from an OpenAPI definition | https://learn.microsoft.com/connectors/custom-connectors/define-openapi-definition | Menos de 1 MB; solo OpenAPI 2.0 ("3.0 not supported"); ejemplo con `schemes: [https]`, `securityDefinitions` apiKey in header y `operationId`; con varias definiciones de seguridad se toma la primera. |
+
+## Validación del Swagger 2.0 exportado (T19)
+
+| Herramienta | URL | Qué se confirmó |
+| --- | --- | --- |
+| openapi-spec-validator 0.9.0 | https://pypi.org/project/openapi-spec-validator/ | Instalado en un venv de `scratch/` (no es dependencia de runtime): valida `integrations/copilot_studio/openapi.json` como Swagger 2.0 y rechaza un `host` inválido (control negativo). |
