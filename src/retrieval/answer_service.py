@@ -13,7 +13,10 @@ Order of decisions, each one final:
    ``retrieval.escalation_margin`` of its score) => ``mandatory_escalation`` with no
    steps. A mandatory article that is not that relevant is dropped from the evidence, so it
    is never cited nor given to the LLM as context.
-4. No article reaches the threshold => ``no_evidence`` with the fixed message (RF-05).
+4. No article reaches the threshold, or the optional cross-encoder veto
+   (``retrieval.rerank``) finds no relevant passage => ``no_evidence`` with the fixed
+   message (RF-05). Keyword escalation (RN-03) comes first, so the veto never silences it;
+   an article-based escalation also needs the mandatory article to pass the cross-encoder.
 5. Evidence => with ``NoLLM`` the extractive answer: the "Pasos" section of the top
    article plus "Fuente: <id> — <título>". With an LLM, ``answer_with_citation@v1`` over
    the retrieved context; if the LLM fails or times out, the extractive answer is used
@@ -129,6 +132,8 @@ class AnswerService:
         self._llm = llm
         self._timeout_s = settings.llm.timeout_s
         self._margin = settings.retrieval.escalation_margin
+        rerank = settings.retrieval.rerank
+        self._noise_cutoff = rerank.min_score * rerank.mandatory_veto_factor
 
     def answer(self, query: str, categoria: str | None = None) -> Answer:
         if not query.strip():
@@ -151,6 +156,10 @@ class AnswerService:
                 "sensitive_data": sensitive,
                 "top_article": top.article_id if top else None,
                 "top_score": round(top.score, 3) if top else None,
+                "rerank_score": (
+                    round(result.rerank_score, 4) if result.rerank_score is not None else None
+                ),
+                "vetoed": result.vetoed,
                 "threshold": result.threshold,
                 "categoria": categoria,
             },
@@ -165,7 +174,11 @@ class AnswerService:
         evidence = result.evidence
         top = evidence[0] if evidence else None
         mandatory = [a for a in evidence if a.article_id in MANDATORY_ESCALATION_ARTICLES]
-        relevant = [a for a in mandatory if top is not None and self._is_relevant(a, top)]
+        relevant = [
+            a
+            for a in mandatory
+            if top is not None and self._is_relevant(a, top) and not self._is_clear_noise(a, result)
+        ]
         if len(relevant) < len(mandatory):
             # Never let a mandatory-escalation article that is not relevant reach the LLM
             # context or a citation: it is removed from the result before anything else.
@@ -183,13 +196,22 @@ class AnswerService:
             return self._fixed(
                 MANDATORY_ESCALATION, "mandatory_escalation", language, sensitive, cited
             )
-        if top is None:
+        if top is None or result.vetoed:
             return self._fixed(NO_EVIDENCE, "no_evidence", language, sensitive, [])
         if not isinstance(self._llm, NoLLM):
             generated = self._with_llm(query, language, result, sensitive)
             if generated is not None:
                 return generated
         return self._extractive(language, result, top, sensitive)
+
+    def _is_clear_noise(self, article: ArticleHit, result: RetrievalResult) -> bool:
+        """True when the cross-encoder scores a mandatory article far below ``min_score``.
+
+        RN-03 outranks precision: only a clearly noisy score (below ``min_score`` times the
+        veto factor) removes the article; a borderline one keeps the safe side (escalate).
+        """
+        score = result.rerank_scores.get(article.article_id)
+        return score is not None and score < self._noise_cutoff
 
     def _is_relevant(self, article: ArticleHit, top: ArticleHit) -> bool:
         """Top-1, or within ``escalation_margin`` of the top-1 score ("as relevant as it")."""

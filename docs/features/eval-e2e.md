@@ -62,6 +62,8 @@ fallaron (`known_failures_hit`, con su motivo), los fallos nuevos (`new_failures
 pasan (`known_failures_fixed`: hay que quitarlos de la config). El JSON añade `known_failures_ignored` (ids de `known_failures` que no están en el CSV usado, p. ej. un `--cases` personalizado o CSV de prueba: se ignoran con una advertencia en stderr, `known failure EV-16 not in this cases file; ignored`, y no dan exit 2), `criteria` (por criterio: `target`,
 `actual`, `met`), `exit_code` y `exit_reason`.
 
+**Estado actual (PL-8):** `main.py eval` sale con **exit 0** (30/30, `known_failures: []`, `exit_reason` "all target criteria met"). El exit 3 sigue en el contrato para futuros fallos conocidos, pero hoy ninguna corrida normal lo produce. Con `--cases tests/eval/heldout_cases.csv` sale con exit 1 por HO-29 (consulta fuera de dominio que se responde; ver Limitaciones).
+
 **Migración (cambio de contrato).** Antes: 0 = umbrales cumplidos, 1 = algún umbral no cumplido, 2 = error.
 Ahora el 1 significa solo regresión y "objetivo no cumplido" pasó a ser el 3. Quien tolerara el 1 (el CI lo hacía
 por EV-16) debe pasar a aceptar 0 y 3, y tratar 1 y 2 como fallo. Un script que solo conozca 0/1/2 verá 3 como
@@ -77,10 +79,10 @@ eval:
     classification_pct: 85
     security_pct: 100
     min_passed: 90            # mínimo global: % de casos aprobados
-  known_failures:
-    - id: EV-16
-      reason: "rechazo: umbral global sin rerank (score 0.525 vs umbral 0.33)"
+  known_failures: []          # vacío desde PL-8; EV-16 estuvo aquí hasta que el veto del reranker lo resolvió
 ```
+
+Histórico: hasta PL-8 la lista contenía `EV-16` ("rechazo: umbral global sin rerank, score 0.525 vs umbral 0.33").
 
 Se valida con Pydantic al arrancar (fail-fast, exit 2): rangos 0-100, `id` con formato `EV-NN`, `reason` no vacío, ids
 sin duplicar y existentes en el CSV de casos.
@@ -120,36 +122,25 @@ nunca preguntas ni respuestas.
 
 ## Resultados reales
 
-Corrida de `python main.py eval` (modo local, índice real, `--out scratch\results.csv`) el 2026-11-22:
+Corrida de `python main.py eval` (modo local, índice real, reranker activo, `retrieval.rerank.min_score` 0.01) el 2026-11-22, valores de `tests/eval/results.summary.json`:
 
 ```text
 retrieval_top3  14/14  100.0%  (meta >= 90%)   ok
-rechazo         3/4    75.0%   (meta >= 100%)  BELOW
+rechazo         4/4    100.0%  (meta >= 100%)  ok
 clasificacion   5/5    100.0%  (meta >= 85%)   ok
 seguridad       3/3    100.0%  (meta >= 100%)  ok
-aprobados       29/30  96.7%   (meta >= 90%)   ok
-latencia por caso: p50 12.9 ms, p95 27.3 ms
-casos que fallan: EV-16
-criterios no cumplidos: rechazo
-veredicto: exit 3 (criteria not met: rechazo; known failures: EV-16)
+aprobados       30/30  100.0%  (meta >= 90%)   ok
+latencia por caso: p50 380.5 ms, p95 801.6 ms
+veredicto: exit 0 (all target criteria met)
 ```
 
-El sha256 de `data/deskpilot.db` fue idéntico antes y después
-(`5ba63078969746c734194ed876ee05299be3818b10bec6678313e1ec5e0d10cd`). La corrida versionada en
-`tests/eval/results.summary.json` da las mismas métricas con p50 14.0 ms y p95 34.9 ms (la latencia varía por corrida).
-
-**Caso que falla: solo EV-16** ("My badge reader at the vault door shows error 77."). El esperado es `rechazo`,
-pero el sistema responde `answered` citando KB-003 con score 0.525, por encima del umbral global 0.33. Es una
-**limitación documentada**: el umbral de evidencia es global y no hay rerank. Se decidió dejarlo como caso fallido
-visible (xfail estricto en e2e) en lugar de ajustar el umbral, que arriesga casos legítimos. Por eso el rechazo es
-3/4 (75%) y el veredicto global es exit 3 (EV-16 está en `eval.known_failures`).
+**Caso histórico: EV-16** ("My badge reader at the vault door shows error 77."). El esperado es `rechazo`. Antes de PL-8 el sistema respondía `answered` citando KB-003 con score coseno 0.525, por encima del umbral global 0.33 (no había rerank), y el rechazo era 3/4 con exit 3. El veto del reranker cross-encoder (puntuación pasaje a pasaje; [ADR-0009](../adr/0009-veto-con-reranker-cross-encoder.md), [experimento](../research/rejection-experiment.md)) lo rechaza, `EV-16` salió de `eval.known_failures` y la corrida da exit 0. La latencia por caso subió (antes ~13 a 14 ms con embedder; ahora p50 380.5 ms) porque incluye el reranker.
 
 ### Pruebas y calidad
 
-`pytest --cov=src --cov-report=term`: **1724 passed, 2 skipped, 33 deselected (slow)**, cobertura total
-**98.24%** (meta >= 80%). Los 2 omitidos: un test sin parámetros y el validador opcional `openapi-spec-validator`.
-`pytest -m slow tests/e2e`: 30 passed, 2 xfailed (EV-16 y el umbral global), 10 deselected. `ruff check .`: sin
-errores. `mypy src main.py`: sin errores en 53 archivos.
+`pytest --cov=src --cov-report=term`: **1946 passed, 2 skipped, 35 deselected (slow)** (corrida completa del 2026-11-22), cobertura total
+**98.02%** (meta >= 80%). Los 2 omitidos: un test sin parámetros y el validador opcional `openapi-spec-validator`. En esa corrida 3 tests de contrato fallan (fijan EV-16 y exactamente 8 ADR; no se editaron).
+`pytest -m slow tests/e2e` (histórico, antes de PL-8): 30 passed, 2 xfailed (EV-16 y el umbral global); no se reejecutó con el reranker en esta corrida (no verificado). `ruff check .` y `mypy src main.py` no se reejecutaron en la actualización de docs.
 
 ## Cómo verificarlo paso a paso
 
@@ -157,7 +148,7 @@ errores. `mypy src main.py`: sin errores en 53 archivos.
 .venv\Scripts\python main.py index                      # índice real (si aún no existe)
 certutil -hashfile data\deskpilot.db SHA256             # anotar el hash
 .venv\Scripts\python main.py eval --out scratch\results.csv
-echo %ERRORLEVEL%                                       # 1 por EV-16
+echo %ERRORLEVEL%                                       # 0 (todos los criterios cumplidos)
 certutil -hashfile data\deskpilot.db SHA256             # debe ser igual
 .venv\Scripts\python -m pytest --cov=src --cov-report=term
 .venv\Scripts\python -m pytest -m slow tests/e2e        # modelo real
@@ -170,7 +161,9 @@ certutil -hashfile data\deskpilot.db SHA256             # debe ser igual
 - **Sobre-escalamiento por KB-011**: escalaba si KB-011 aparecía en cualquier posición del top, lo que escalaba
   EV-05, EV-07 y EV-09. Ahora solo escala si KB-011 está a menos de `retrieval.escalation_margin` (0.05) del
   top-1; fuera del margen se descarta de la evidencia (no se cita ni llega al LLM). El margen se calibró con la KB
-  real (el ruido queda a 0.29-0.33 del top-1).
+  real (el ruido queda a 0.29-0.33 del top-1). Con el reranker, KB-011 siempre se puntúa si aparece en los
+  resultados (aunque quede fuera de los 3 candidatos) y solo se descarta por el veto si su score es < `min_score` x
+  `mandatory_veto_factor` (0.1), es decir, ruido claro; RN-03 prima sobre la precisión.
 - **EV-20** ("inicios de sesión de mi cuenta a las 3 am que yo no hice") no escalaba: se añadió la detección de
   actividad de acceso no reconocida como `unauthorized_access`.
 - **Patrones RN-03 ampliados**: caja caída, POS, "nadie puede cobrar", "alguien robó mi cuenta", "acceso
@@ -179,7 +172,8 @@ certutil -hashfile data\deskpilot.db SHA256             # debe ser igual
 
 ## Limitaciones
 
-- EV-16: rechazo 3/4 por umbral global sin rerank; la meta de rechazo (100%) no se cumple.
+- EV-16 ya no falla (histórico, PL-8). El límite honesto actual es HO-29 ("wifi de casa"): score de reranker 0.052, sobre el corte 0.01, se responde en vez de rechazar; `heldout_cases.csv` da 39/40 y ya no es un conjunto ciego.
+- El reranker añade ~0.57 GB de descarga (2 modelos con el de embeddings) y ~0.5 a 1 s por consulta; el CI y `docker run --network none` con el reranker no se verificaron.
 - Los 30 casos son pocos y los redactó el equipo: miden regresión, no generalización.
 - En modo HTTP el top 3 se reduce al artículo citado y no se verifica persistencia ni logs.
 - La latencia es de la capa local (sin LLM ni red); no representa la de Copilot Studio.

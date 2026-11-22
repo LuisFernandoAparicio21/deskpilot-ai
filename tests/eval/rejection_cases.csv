@@ -1,0 +1,9 @@
+id,pregunta,intencion,esperado,obtenido,resultado,notas
+RJ-01,¿Cómo actualizo el firmware del cajero automático de la sucursal?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,Hardware bancario (ATM) no cubierto por ninguno de los 15 artículos
+RJ-02,Who can authorize after-hours physical access to the vault?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,EN; cercana: comparte vocabulario de acceso pero es seguridad física; la KB no la cubre
+RJ-03,¿Qué requisitos necesito para solicitar un crédito hipotecario en el banco?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,Trámite bancario no técnico; fuera del dominio de soporte de TI
+RJ-04,Can you give me a good recipe for lasagna?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,EN; totalmente ajena (recetas)
+RJ-05,Who won the Champions League final last night?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,EN; totalmente ajena (deportes)
+RJ-06,¿Va a llover mañana en La Paz?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,Totalmente ajena (clima)
+RJ-07,¿Cómo cargo el rollo de etiquetas en la impresora Zebra de la bóveda de documentos?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,Cercana: comparte vocabulario con impresoras (KB-005) pero impresoras de etiquetas no están cubiertas
+RJ-08,What is the guest Wi-Fi password for visitors at the branch?,"No hay evidencia en la KB: debe decir que no lo sabe y ofrecer ticket (RN-04)",rechazo,,,EN; cercana: comparte vocabulario con wifi/VPN pero la KB no trae contraseñas de red de visitas

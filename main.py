@@ -152,6 +152,12 @@ def cmd_index(args: argparse.Namespace) -> int:
     configure_logging_from_settings(settings, console=False)
     try:
         result = build_index(settings)
+        # Download the cross-encoder here (build time), so serving needs no network.
+        from src.retrieval.reranker import build_reranker
+
+        reranker = build_reranker(settings)
+        if reranker is not None:
+            reranker.warm()
     except (DocumentError, IndexBuildError) as exc:
         print(f"index: {exc}", file=sys.stderr)
         return EXIT_DATA_ERROR

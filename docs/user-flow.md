@@ -11,7 +11,7 @@ flowchart TD
     A[Empleado escribe] --> B[Agente detecta idioma e intencion]
     B --> C{Que necesita?}
     C -- incidencia --> D[buscar_solucion]
-    D --> E{Evidencia sobre el umbral?}
+    D --> E{Evidencia sobre el umbral y sin veto del reranker?}
     E -- si --> F[Pasos y articulo citado]
     F --> G{Funciono?}
     G -- si --> H([Fin sin ticket])
@@ -36,7 +36,7 @@ flowchart TD
 
 Cómo leerlo:
 - Cada mensaje pasa por el mismo punto de decisión; el agente responde en el idioma del usuario (RF-01).
-- Una incidencia siempre empieza en `buscar_solucion`: solo se dan pasos si hay evidencia sobre el umbral de similitud; si no, el agente dice que no lo sabe y ofrece ticket.
+- Una incidencia siempre empieza en `buscar_solucion`: solo se dan pasos si hay evidencia sobre el umbral de similitud y el reranker cross-encoder no la veta (puntúa los 3 mejores pasajes; ADR-0009); si no, el agente dice que no lo sabe y ofrece ticket.
 - Los tres casos de escalamiento obligatorio (RN-03) saltan los pasos y van directo a un ticket P1, sin intentar resolver.
 - Un dato sensible no abre una rama final: se advierte, no se guarda ni se reenvía a ninguna herramienta y la conversación continúa.
 - Los óvalos son los finales visibles para el empleado.
@@ -88,7 +88,7 @@ sequenceDiagram
 
 Cómo leerlo:
 - Copilot Studio nunca toca los datos: llama a la API REST con el encabezado `X-API-Key`, la misma capa de servicio que usa el servidor MCP.
-- `answer_service.py` redacta los datos sensibles antes de buscar y consulta el índice vectorial (ChromaDB) con el umbral configurado.
+- `answer_service.py` redacta los datos sensibles antes de buscar y consulta el índice vectorial (ChromaDB) con el umbral configurado y, si el mejor artículo lo supera, aplica el veto del reranker (`retrieval.rerank`), que solo puede convertir la respuesta en "no lo sé".
 - El bloque `alt` solo ocurre si hace falta escalar; el ticket se clasifica por reglas en `ticket_service.py`.
 - En modo local el ticket se escribe en la tabla `tickets_nuevos` de SQLite; en modo `fabric` se escribe en `dbo.tickets_nuevos` del Warehouse (diseño, no verificado contra un tenant real).
 
@@ -116,7 +116,7 @@ curl -s -X POST localhost:8765/buscar_solucion -H "X-API-Key: <clave>" \
 {"status":"answered","language":"es","text":"Sigue estos pasos del artículo KB-002 — Desbloquear un usuario de red bloqueado por intentos fallidos:\n1. Espera 15 minutos: el bloqueo [...] se libera de forma automática.\n[...]\n5. Si sigue bloqueada, usa la opción **Desbloquear mi cuenta** del Portal de Autoservicio [...]\n\nFuente: KB-002 — Desbloquear un usuario de red bloqueado por intentos fallidos","citations":[{"article_id":"KB-002","titulo":"Desbloquear un usuario de red bloqueado por intentos fallidos","seccion":"sintoma","similarity":0.7114}],"sensitive_data_warning":false,"mode":"extractive"}
 ```
 
-Si no hay evidencia (EV-15, "robot de conciliación RPA"), la API no inventa pasos:
+Si no hay evidencia o el reranker la veta (EV-15, EV-16, "robot de conciliación RPA"), la API no inventa pasos:
 
 ```json
 {"status":"no_evidence","language":"es","text":"No lo sé, escalo a un agente humano. No encontré un artículo de la base de conocimiento con evidencia suficiente para tu caso. ¿Quieres que cree un ticket?","citations":[],"sensitive_data_warning":false,"mode":"policy"}

@@ -109,11 +109,15 @@ def build_services(settings: Settings) -> ApiServices:
     """Real services for ``settings``: Chroma ``CurrentStore`` (read only), LLM, repository."""
     from src.embeddings.factory import build_embedder
     from src.llm.factory import build_llm
+    from src.retrieval.reranker import build_reranker
     from src.retrieval.retriever import Retriever
     from src.vectordb.versions import CurrentStore
 
     store = CurrentStore.from_settings(settings)
-    retriever = Retriever.from_settings(settings, build_embedder(settings), store.get)
+    reranker = build_reranker(settings)
+    if reranker is not None:
+        reranker.warm()  # at start-up (fail fast), never inside a request
+    retriever = Retriever.from_settings(settings, build_embedder(settings), store.get, reranker)
     llm = build_llm(settings)
     answers = AnswerService(retriever, llm, settings)
     repository = build_repository(settings)

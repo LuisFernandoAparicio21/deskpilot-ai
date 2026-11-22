@@ -1,0 +1,41 @@
+id,pregunta,intencion,esperado,obtenido,resultado,notas
+HO-01,"ke hago, mi password de windows caducó y me pide cambiarla pero no puedo entrar",Resolver incidencia (KB-001),articulo:KB-001,,,ES; ortografía/jerga
+HO-02,"Forgot my Windows password, can I reset it from my phone?",Resolver incidencia (KB-001),articulo:KB-001,,,EN
+HO-03,Regresé de vacaciones y mi usuario sigue bloqueado aunque escribo bien la clave,Resolver incidencia (KB-002),articulo:KB-002,,,ES; parafraseo
+HO-04,account locked out after too many failed login attempts,Resolver incidencia (KB-002),articulo:KB-002,,,EN; corta
+HO-05,mi tokken no sincroniza y sale clave invalida,Resolver incidencia (KB-003),articulo:KB-003,,,ES; ortografía
+HO-06,"The physical token screen is blank and it will not turn on, so I cannot approve transfers",Resolver incidencia (KB-003),articulo:KB-003,,,EN; larga
+HO-07,Estoy en un hotel y la VPN me marca certificado no válido,Resolver incidencia (KB-004),articulo:KB-004,,,ES
+HO-08,my vpn drops every few minutes when I work from home,Resolver incidencia (KB-004),articulo:KB-004,,,EN
+HO-09,la impresora del área sale offline y los documentos se quedan en la cola,Resolver incidencia (KB-005),articulo:KB-005,,,ES; spanglish
+HO-10,SAP me dice que no tengo autorización para la transacción que usaba,Resolver incidencia (KB-006),articulo:KB-006,,,ES
+HO-11,Después de mi incapacidad quiero entrar al core y me sale perfil inactivo,Resolver incidencia (KB-007),articulo:KB-007,,,ES; jerga
+HO-12,la unidad Z: del área tiene una X roja y no abre la carpeta compartida,Resolver incidencia (KB-008),articulo:KB-008,,,ES
+HO-13,mi compu va lentísima y se traba cuando abro muchas pestañas,Resolver incidencia (KB-009),articulo:KB-009,,,ES; jerga
+HO-14,el scanner de cheques dice dispositivo no encontrado,Resolver incidencia (KB-010),articulo:KB-010,,,ES; spanglish
+HO-15,Outlook says Disconnected and my emails are stuck in the outbox,Resolver incidencia (KB-012),articulo:KB-012,,,EN
+HO-16,Outlook buzón lleno,Resolver incidencia (KB-012),articulo:KB-012,,,ES; muy corta
+HO-17,"En Teams nadie me escucha en la reunión, creo que mi micrófono no funciona",Resolver incidencia (KB-013),articulo:KB-013,,,ES
+HO-18,mi teléfono IP muestra Registrando y no hay tono,Resolver incidencia (KB-014),articulo:KB-014,,,ES
+HO-19,How do I request a program that is not in the Software Center?,Resolver incidencia (KB-015),articulo:KB-015,,,EN
+HO-20,Network drive says I do not have permission to open the folder since I moved to another department,Resolver incidencia (KB-008),articulo:KB-008,,,EN; larga
+HO-21,¿Cómo restablezco la contraseña de mi cuenta de Netflix?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; vocabulario de KB-001
+HO-22,How do I reset my Gmail password?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; cercana a KB-001
+HO-23,¿Cuál es la tasa de interés de un crédito hipotecario?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Banca no cubierta
+HO-24,Necesito cambiar el PIN de mi tarjeta de débito,Fuera de alcance: sin evidencia en la KB,rechazo,,,Banca no cubierta; cercana a token
+HO-25,What is the weather forecast for tomorrow in Lima?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena
+HO-26,¿Cómo configuro un clúster de Kubernetes con Helm?,Fuera de alcance: sin evidencia en la KB,rechazo,,,TI no cubierta
+HO-27,Mi iPhone no recibe notificaciones de WhatsApp,Fuera de alcance: sin evidencia en la KB,rechazo,,,TI personal no cubierta
+HO-28,Which VPN provider is best for streaming Netflix in other countries?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; vocabulario de KB-004
+HO-29,¿Cómo cambio la contraseña del wifi de mi casa?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; vocabulario de KB-001
+HO-30,Escribe una consulta SQL que sume las ventas por mes,Fuera de alcance: sin evidencia en la KB,rechazo,,,TI no cubierta
+HO-31,¿Cuántos días de vacaciones me corresponden este año?,Fuera de alcance: sin evidencia en la KB,rechazo,,,RRHH no cubierta
+HO-32,My Excel macro throws runtime error 1004,Fuera de alcance: sin evidencia en la KB,rechazo,,,TI no cubierta
+HO-33,¿Cómo conecto mi impresora 3D a Cura?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; vocabulario de KB-005
+HO-34,Quiero cambiar la foto de perfil de mi cuenta de Instagram,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena
+HO-35,Explain how a transformer neural network works,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena
+HO-36,¿Cómo se cierra el balance mensual de contabilidad en SAP FI?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Funcional SAP; no es acceso (KB-006)
+HO-37,¿Dónde queda la sucursal más cercana al aeropuerto?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena
+HO-38,Recommend a good laptop to buy for gaming,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; vocabulario de KB-009
+HO-39,¿Cómo activo la verificación en dos pasos en mi cuenta de Google?,Fuera de alcance: sin evidencia en la KB,rechazo,,,Ajena; cercana a KB-003
+HO-40,"In Teams, how do I create a new channel and invite guests from another company?",Fuera de alcance: sin evidencia en la KB,rechazo,,,TI no cubierta; vocabulario de KB-013

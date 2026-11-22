@@ -22,7 +22,8 @@ flowchart LR
     subgraph RAG["src/retrieval, llm, prompts"]
         ANS[answer_service.py]
         POL[policy.py: escalamiento RN-03]
-        RET[retriever.py: umbral]
+        RET[retriever.py: umbral + veto del reranker]
+        RRK[reranker.py: cross-encoder]
         LLM[llm: none, Claude, OpenAI, Gemini]
     end
     subgraph Datos
@@ -58,7 +59,7 @@ flowchart LR
 
 ## 2. Flujo de una consulta RAG
 
-El umbral (`retrieval.similarity_threshold`, 0.33), el margen de escalamiento (`retrieval.escalation_margin`, 0.05) y la redacción son los de `config.yaml` y `src/retrieval/answer_service.py`.
+El umbral (`retrieval.similarity_threshold`, 0.33), el veto del reranker cross-encoder (`retrieval.rerank.min_score`, 0.01; [ADR-0009](adr/0009-veto-con-reranker-cross-encoder.md)), el margen de escalamiento (`retrieval.escalation_margin`, 0.05; KB-011 se descarta solo si su score del reranker es < `min_score` x `mandatory_veto_factor` 0.1, ruido claro) y la redacción son los de `config.yaml` y `src/retrieval/answer_service.py`.
 
 ```mermaid
 sequenceDiagram
@@ -72,13 +73,13 @@ sequenceDiagram
     A->>S: answer(query)
     S->>S: contains_sensitive? redact(query)
     S->>R: search(consulta redactada)
-    R-->>S: articulos con score (evidencia: sobre el umbral)
+    R-->>S: articulos con score (evidencia: sobre el umbral) y veto del reranker (solo si el top-1 pasa el umbral; puntua 3 pasajes de a uno)
     S->>P: escalation_reason(query)
     alt frase de fraude, acceso no autorizado o caja (RN-03)
         S-->>A: mandatory_escalation, articulo citado
     else articulo KB-011 dentro del margen del top-1
         S-->>A: mandatory_escalation
-    else sin evidencia sobre el umbral
+    else sin evidencia sobre el umbral o vetado por el reranker (score < min_score)
         S-->>A: no_evidence ("no lo se, escalo a un agente")
     else hay evidencia
         opt LLM_PROVIDER distinto de none
@@ -90,7 +91,7 @@ sequenceDiagram
     A-->>U: respuesta, citations, sensitive_data_warning
 ```
 
-Si el LLM falla o devuelve citas no válidas, se usa la respuesta extractiva (ADR-0001). EV-16 es el caso conocido en que una consulta fuera de dominio supera el umbral (ver README).
+Si el LLM falla o devuelve citas no válidas, se usa la respuesta extractiva (ADR-0001). El veto del reranker no reordena ni sustituye artículos: solo convierte en `no_evidence` una respuesta cuyo mejor pasaje puntúa bajo `min_score`, y corre después de RN-03 para no callar nunca una escalación. EV-16 (fuera de dominio, coseno 0.525) fue el caso que lo motivó y hoy se rechaza; el límite honesto es HO-29 (ver README). El reranker se apaga con `retrieval.rerank.enabled: false`.
 
 ## 3. Flujo de `crear_ticket`
 

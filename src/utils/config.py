@@ -114,10 +114,37 @@ class VectorDBConfig(_Section):
     collection: str = Field(min_length=1)
 
 
+SUPPORTED_RERANK_MODELS: tuple[str, ...] = ("BAAI/bge-reranker-v2-m3-int8",)
+
+
+class RerankConfig(_Section):
+    """Cross-encoder veto on top of the similarity threshold (off = threshold only)."""
+
+    enabled: bool = False
+    # Allow-list of rerankers supported by fastembed 0.9.1 that this project has measured.
+    model: Literal["BAAI/bge-reranker-v2-m3-int8"] = "BAAI/bge-reranker-v2-m3-int8"  # ~0.57 GB
+    min_score: float = Field(default=0.01, ge=0.0, le=1.0)  # sigmoid score; below => no evidence
+    candidates: int = Field(default=3, ge=1, le=10)  # top articles whose best chunk is scored
+    # RN-03 article (KB-011) is dropped only when its score < min_score * this factor (clear noise)
+    mandatory_veto_factor: float = Field(default=0.1, ge=0.0, le=1.0)
+
+    @field_validator("model", mode="before")
+    @classmethod
+    def _model_allowed(cls, value: object) -> object:
+        if value not in SUPPORTED_RERANK_MODELS:
+            raise ValueError(
+                f"retrieval.rerank.model {value!r} is not supported; "
+                f"allowed: {', '.join(SUPPORTED_RERANK_MODELS)}. The hub revision is not pinned "
+                "to a hash, so only measured models are accepted (ADR-0009)."
+            )
+        return value
+
+
 class RetrievalConfig(_Section):
     top_k: int = Field(ge=1, le=50)
     similarity_threshold: float = Field(ge=0.0, le=1.0)
     escalation_margin: float = Field(default=0.05, ge=0.0, le=1.0)
+    rerank: RerankConfig = Field(default_factory=RerankConfig)
 
 
 class LLMModels(_Section):

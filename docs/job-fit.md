@@ -13,7 +13,7 @@ Estados: **hecho** (hecho y medido en local, verificado en este repo), **parcial
 | 1 | Programación, razonamiento lógico y manejo de datos | Código Python tipado y modular en [`src/`](../src/), generador de datos con reglas de negocio ([`ticket_generator.py`](../src/ingestion/ticket_generator.py)), pipeline RAG, 1724 pruebas con 98.24% de cobertura ([procedimiento](testing-procedure.md)) | Hecho (local) |
 | 2 | SQL básico | 10 consultas comentadas con JOIN, GROUP BY, CTE y funciones de ventana en [`integrations/fabric/sql/`](../integrations/fabric/sql/), ejecutadas en SQLite (`load-db --run-sql`) | Parcial: hecho en local; escrito para Fabric, pendiente de validar en tenant real (T29) |
 | 3 | Interés demostrado en IA y agentes | RAG con citas ([ADR-0001](adr/0001-rag-extractivo-por-defecto.md)), [API con herramientas](features/api-rest.md), [servidor MCP](features/mcp-server.md), [diseño del agente](features/copilot-studio-agent.md) | Parcial: RAG y MCP hechos en local; agente diseñado, video pendiente manual (T35) |
-| 4 | Pensamiento analítico y resolución de problemas | [Caso de negocio](business-case.md) con hipótesis y cifras por consulta; [ADR](adr/README.md) con alternativas descartadas; limitación EV-16 documentada en [eval-e2e](features/eval-e2e.md) | Hecho |
+| 4 | Pensamiento analítico y resolución de problemas | [Caso de negocio](business-case.md) con hipótesis y cifras por consulta; [ADR](adr/README.md) con alternativas descartadas; caso EV-16 resuelto con el veto del reranker ([ADR-0009](adr/0009-veto-con-reranker-cross-encoder.md), [experimento](research/rejection-experiment.md)) y límite HO-29 documentado en [eval-e2e](features/eval-e2e.md) | Hecho |
 | 5 | Disposición a aprender nuevas tecnologías | [Registro de aprendizaje](learning-log.md) (plantilla; lo llena el usuario con sus rutas reales) y fuentes verificadas en [`sources.md`](sources.md) | Parcial: registro pendiente manual (T35) |
 | 6 | Proactividad, trabajo en equipo y crecimiento | Flujo por PR con issues, ramas y commits convencionales: [CONTRIBUTING](../CONTRIBUTING.md), [plantilla de PR](../.github/pull_request_template.md), [CI](../.github/workflows/ci.yml), [roadmap](roadmap.md) con PR por tarea | Hecho |
 
@@ -30,5 +30,5 @@ Estados: **hecho** (hecho y medido en local, verificado en este repo), **parcial
 ## Lo que no se afirma
 
 - Los resultados en Copilot Studio y Fabric no están medidos; el agente y el modo `fabric` están diseñados y probados con dobles.
-- La evaluación local es 29 de 30 casos; EV-16 es una limitación conocida, no un caso resuelto.
+- La evaluación local es 30 de 30 casos (exit 0) con el veto del reranker; el límite honesto es HO-29 (39/40 en el held-out, que ya no es ciego), y el reranker cuesta ~0.57 GB de descarga y ~0.5 a 1 s por consulta.
 - Las horas ahorradas dependen de minutos por ticket supuestos.

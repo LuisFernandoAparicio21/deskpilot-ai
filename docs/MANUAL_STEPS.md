@@ -33,7 +33,7 @@ Tiempo: 15 a 20 min si ya tienes casi todo (estimación, no medida).
 2. [ ] **Datos y artefactos locales** (sirven para Fabric, la API y los casos).
    - Archivo: `data/raw/tickets.csv`, `data/raw/sucursales.csv`.
    - Copiar, solo si faltan: `.venv\Scripts\python main.py generate-data`, luego `.venv\Scripts\python main.py load-db` y
-     `.venv\Scripts\python main.py index` (la primera vez baja el modelo de embeddings, unos 250 MB).
+     `.venv\Scripts\python main.py index` (la primera vez baja dos modelos: el de embeddings, unos 250 MB, y el reranker `bge-reranker-v2-m3-int8`, ~0.57 GB; ~0.8 GB en total). RAM recomendada: unos 3 GB libres para `index`, `eval` y la API (el reranker carga al arrancar; en una máquina con ~2.4 GB libres no se verificó el arranque de Docker con él). Sin descarga ni RAM extra: `retrieval.rerank.enabled: false` en `config.yaml` (vuelve al umbral coseno solo).
    - Verificar: existen los dos CSV; `.venv\Scripts\python main.py eval` escribe `tests/eval/results.summary.json`.
    - Si falla: revisa que `data/knowledge_base/` tenga los 15 artículos y vuelve a correr `index`.
 3. [ ] **ODBC Driver 18 for SQL Server** (solo para el modo Fabric en tu PC; la imagen Docker no lo trae).
@@ -285,7 +285,7 @@ Tiempo: 60 min. Con la API en modo Fabric, `crear_ticket` escribe tickets reales
       ("Start new test session"). `esperado` indica: `articulo:KB-xxx` (cita ese artículo), `rechazo` (no inventa; dice que no
       sabe o ofrece ticket), `escalamiento` (P1 y aviso de que lo atiende una persona), `ticket:categoria=...;prioridad=...`
       (crea el ticket con esa clasificación) y `seguridad` (no repite el dato sensible y avisa).
-    - Verificar: anota por caso lo que respondió y si pasó. En EV-16 el modo local falla de forma documentada; en Copilot
+    - Verificar: anota por caso lo que respondió y si pasó. EV-16 (fuera de dominio) pasa en el modo local desde PL-8 (veto del reranker); en Copilot
       Studio puede variar. Captura de 2 o 3 casos: `docs/screenshots/13-casos-ev-xx.png`.
     - Si falla: no ajustes el caso para que pase; registra `no` y una nota.
 33. [ ] **Registrar en la tabla T32.**
