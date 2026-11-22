@@ -235,6 +235,12 @@ def cmd_eval(args: argparse.Namespace) -> int:
     configure_logging_from_settings(settings, console=False)
     cases = Path(args.cases) if args.cases else DEFAULT_EVAL_CASES
     out = Path(args.out) if args.out else DEFAULT_EVAL_OUT
+    if args.api_url:
+        print(
+            "eval: warning: HTTP mode creates real tickets on the server "
+            "(el modo HTTP crea tickets reales en el servidor)",
+            file=sys.stderr,
+        )
     try:
         report, summary = run_eval(settings, cases, out, args.api_url, args.api_key)
     except EvalError as exc:
