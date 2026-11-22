@@ -3,9 +3,9 @@
 ``OpenAI(api_key=..., max_retries=...)`` and ``client.responses.create(model=...,
 instructions=..., input=..., max_output_tokens=..., timeout=...)`` come from the
 installed SDK signature and the official text-generation guide; ``response.output_text``
-joins the text outputs. Retries are off, so one attempt is made. A float ``timeout`` is applied by the
-SDK to each httpx phase (connect, write, read, pool: verified by building a request with
-``timeout=7.5``), so it is not a total deadline. The SDK is
+joins the text outputs. Retries are off, so one attempt is made. A float ``timeout`` is
+applied by the SDK to each httpx phase (connect, write, read, pool: verified by
+building a request with ``timeout=7.5``), so it is not a total deadline. The SDK is
 imported only when the first request is made.
 """
 

@@ -7,7 +7,8 @@ concatenation of the ``text`` content blocks (other blocks, such as thinking, ar
 skipped). Retries are off, so one attempt is made. A float ``timeout`` is applied by
 the SDK to each httpx phase (connect, write, read, pool: verified by building a request
 with ``timeout=7.5``), so it is NOT a total deadline; the read phase is the wait for the
-response. The extractive fallback takes over on any timeout. The SDK is imported only when the first request is made.
+response. The extractive fallback takes over on any timeout.
+The SDK is imported only when the first request is made.
 """
 
 from __future__ import annotations
