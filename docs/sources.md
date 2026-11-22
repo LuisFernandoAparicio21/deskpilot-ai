@@ -133,3 +133,10 @@ Las URLs de abajo respondieron con WebFetch el 2026-11-21. Todavía no se usaron
 | FastMCP | (por verificar en T18) | T18 | La página del repo del SDK no menciona FastMCP. Hay que confirmar con `mcp==2.3.0` instalado cuál es la API para declarar herramientas y montar el servidor por HTTP. |
 | OpenAPI para Copilot Studio (REST API tools) | https://learn.microsoft.com/microsoft-copilot-studio/agent-extend-action-rest-api | T19 | Función en preview. La página dice que la especificación debe ser OpenAPI v2 en JSON y que una v3 se traduce automáticamente a v2. Hay que confirmarlo al generar `openapi.yaml`. |
 | Microsoft dev tunnels | https://learn.microsoft.com/azure/developer/dev-tunnels/overview | T25 | Exponer la API con una URL pública (Fase B/C). Está en public preview; los comandos de la CLI no están verificados. |
+
+## Nombres de ramas y commits
+
+| Título | URL | Para qué se usó |
+| --- | --- | --- |
+| Conventional Commits 1.0.0 | https://www.conventionalcommits.org/en/v1.0.0/ | Formato `<type>[scope]: <description>`, tipos `feat`/`fix` obligatorios, `!` y `BREAKING CHANGE`, relación con SemVer. Verificada 2026-11-21: responde. Ver `docs/research/branch-and-feature-naming.md`. |
+| Conventional Branch | https://conventional-branch.github.io/ | Formato `<type>/<description>`, prefijos `feat/`, `fix/`, `hotfix/`, `release/`, `chore/` y reglas de caracteres. Verificada 2026-11-21: redirige (301) a https://conventionalbranch.org/. |
