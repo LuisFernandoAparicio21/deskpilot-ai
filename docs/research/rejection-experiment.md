@@ -1,0 +1,64 @@
+# Experimento de rechazo ("no lo sé") con mecanismos generales
+
+Fecha: 2026-11-22. Rama `feat/rejection-cases`. Cierra la parte experimental de P5 de `docs/diagnostics/2026-11-22-review.md` y prueba las hipótesis de `docs/research/rag-abstention-mechanisms.md`. Scripts y datos crudos vivían en `scratch/` (borrado al cerrar).
+
+## Pregunta
+¿Algún mecanismo general mejora el rechazo (umbral global 0.33 sobre el score coseno del top-1) sin falsos rechazos y sin bajar el top-3?
+
+## Protocolo
+Índice real (fastembed MiniLM multilingüe, 64 chunks), `retriever.search` con `top_k=5`.
+
+| Conjunto | n | Etiqueta |
+| --- | --- | --- |
+| `cases.csv` rechazo (EV-15..18) | 4 | debe rechazar |
+| `rejection_cases.csv` (RJ-01..08) | 8 | debe rechazar |
+| Fuera de dominio adicionales (OOD-01..12, ES/EN, ajenas y cercanas: aire acondicionado, Instagram corporativo, tasa de ahorro, vacaciones, certificado web, chiste, vuelos, BGP Cisco, contadora de billetes, CEO, llanta, 2FA de Gmail) | 12 | debe rechazar |
+| `cases.csv` articulo (EV-01..14) + seguridad EV-28/29 | 16 | debe responder |
+| Control en dominio parafraseado con erratas y jerga (CT-01..12, ES/EN) | 12 | debe responder |
+| EV-19..27 y EV-30 (escalamiento por palabras clave, tickets, CURP) | 10 | neutros: el pipeline decide antes o aparte de la recuperación, no cuentan como falso rechazo (se informa si el veto los tocaría) |
+
+Total 62 consultas: 24 a rechazar, 28 a responder, 10 neutras. OOD y control se escribieron antes de ver ningún score. Validación: partición determinista dev/test por paridad dentro de cada grupo (31/31; 12 rechazos en cada mitad). El hiperparámetro de cada mecanismo se elige en dev como el que más rechaza con CERO falsos rechazos en dev y se reporta en test. No se ajustó nada por caso.
+
+## Resultados
+
+| Mecanismo | Rechazo correcto, todo (24) | Test (12), param elegido en dev | Falsos rechazos (de 28) | Top-3 artículo (14) | Latencia añadida | Dependencias / descarga |
+| --- | --- | --- | --- | --- | --- | --- |
+| Base: umbral 0.33 | 11/24 (46%) | 5/12 | 0 | 14/14 | 0 | ninguna |
+| (4) Calibración del umbral | 20/24 con el valor de dev (0.45) | 9/12 | 1 (CT-02, score 0.43) | 14/14 | 0 | ninguna |
+| (1) Cobertura léxica (prefijo de 5 letras, stopwords ES/EN) | sin valor válido | sin valor válido | ya con 0.05 rechaza EV-29 y CT-07 (cobertura 0.00); con valores mayores también EV-03/09/12 (EN contra KB en español, cobertura 0.20-0.33) | 14/14 | ~0 | ninguna |
+| (2) Margen top1-top2 entre artículos | 11/24 (sin mejora) | 5/12 | 0 con p=0 | 14/14 | ~0 | ninguna |
+| (3) Reranker `bge-reranker-v2-m3-int8`, mejor chunk de los 3 mejores artículos, sigmoide, p=0.003 | 24/24 (100%) | 12/12 | 0 | 14/14 (no reordena) | p50 0.66 s, p95 1.03 s (3 pares, CPU de esta máquina) | 0.57 GB (561 MB en disco); onnxruntime ya implícito en fastembed |
+
+Variantes del reranker: puntuar todos los chunks de los 3 artículos (~11 pares) también da 24/24 pero cuesta p50 3.7 s y p95 4.8 s; puntuar solo el top-1 también da 24/24 pero es menos robusto. Se eligió el mejor chunk de 3 artículos.
+
+Observaciones por mecanismo:
+- Calibración: el mejor valor sin falsos rechazos usando todos los datos es 0.41 (18/24), pero el valor elegido solo con dev (0.45) ya rechaza CT-02 en test. Rangos que se solapan: respuestas legítimas con errata 0.43, rechazos cercanos hasta 0.60 (RJ-07, impresora Zebra). No generaliza.
+- Léxica: la KB está en español; las consultas correctas en inglés comparten pocos términos. No separa (cobertura de respuestas 0.00-1.00, de rechazos 0.00-0.40).
+- Margen: gap de rechazos 0.00-0.10, de respuestas 0.00-0.40; con varios chunks de un mismo artículo y consultas reales el margen no mide ausencia de evidencia.
+- Reranker: separación clara. Máximo en rechazos 0.0012 (sigmoide del mejor chunk), mínimo en respuestas 0.0104 (CT-08). Banda sin falsos rechazos y 24/24: 0.002 a 0.010 (con 0.012 ya rechaza CT-08). Se fijó `min_score: 0.004` (punto medio en logit).
+
+## Decisión: se implementa el reranker (único que cumple el criterio)
+Criterio: mejora el rechazo, ningún falso rechazo nuevo (canónicos ni control), top-3 14/14. Solo el reranker lo cumple de forma validada. Es el mecanismo más caro (modelo de 0.57 GB, ~0.7 s por búsqueda); los ligeros se probaron primero y no pasan la validación, por lo que no hay alternativa ligera que cumpla el criterio.
+
+Implementación (`retrieval.rerank` en `config.yaml`, validado por Pydantic, apagable con `enabled: false`):
+- Solo veto: no reordena ni sustituye artículos. Corre solo si el top-1 ya pasa el umbral coseno.
+- Va después de RN-03 por palabras clave (nunca calla una escalación). La escalación por artículo (KB-011) exige además que el artículo obligatorio supere el `min_score` (así RJ-02, "autorizar acceso físico a la bóveda", ya no escala por ruido de KB-011).
+- El modelo se descarga en `main.py index` (build time) y se carga al arrancar API/eval (`warm()`); nunca dentro de una petición. Con `embeddings.provider: fake` el reranker se desactiva solo (tests, CI sin descarga).
+- Logs: solo `rerank_score` y `vetoed` numéricos; no hay texto de consulta.
+
+Resultado con el servicio real: `main.py eval` 30/30 (rechazo 4/4, EV-16 ahora pasa, se quita de `eval.known_failures`), `rejection_cases.csv` 8/8, OOD 12/12 rechazadas, control 12/12 respondidas.
+
+Impacto en Docker y CI:
+- Imagen: +~0.56 GB por el modelo descargado en `RUN python main.py index` (antes ~0.25 GB de embeddings): el modelo pasa a ser ~0.8 GB de la imagen. Sigue sin red en runtime (`HF_HUB_OFFLINE=1`).
+- CI: el paso `index` descarga el modelo; la caché `data/vectordb/models` usa la clave de `config.yaml`, que ahora cambia al tocar `retrieval.rerank`; la primera corrida tras el cambio descarga 0.57 GB.
+- Inferencia en CPU: ~0.7 s p50 por búsqueda; el p50 de `eval` por caso pasó de ~0.45 s a ~0.45-0.8 s según el grupo.
+- Alternativa de costo cero: `retrieval.rerank.enabled: false` vuelve al umbral solo (rechazo 11/24 en este conjunto).
+
+## Límites de la muestra
+- n pequeño: 24 rechazos y 28 respuestas; un caso mueve ~4 puntos. 24/24 es observado, no una tasa de población.
+- `min_score` final (0.004) se fijó con el punto medio de la brecha sobre las 62 consultas: el 24/24 es en muestra para ese valor. La cifra honesta de generalización es la de test (12/12) con el valor elegido solo en dev (0.003), y la banda segura 0.002-0.010 es estrecha (5x); un caso con paráfrasis más débil podría quedar por debajo.
+- El conjunto OOD y el control los escribió el mismo autor del experimento; no son una muestra independiente ni de usuarios reales. Las consultas cercanas son pocas.
+- Latencia medida en una sola máquina (CPU de escritorio), 62 consultas, sin carga concurrente ni arranque en frío del modelo (carga ~2 s tras la primera descarga).
+- Un cross-encoder entrenado en otro dominio puede rechazar paráfrasis legítimas muy alejadas del texto (CT-08 queda a 0.0104 del corte). Recalibrar si cambia el modelo, la KB o se amplía el control.
+- Los casos neutros EV-19/21/22/27/30 tendrían veto del reranker (scores 0.0001-0.001); no cambian el resultado porque la escalación por palabras clave, el ticket o la advertencia de dato sensible ocurren antes o aparte.
+- No verificado: comportamiento con otros idiomas, KB mayor de 15 artículos y tamaño real de la imagen Docker (no se construyó).
