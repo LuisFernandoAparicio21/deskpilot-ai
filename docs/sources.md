@@ -151,3 +151,10 @@ Comportamiento verificado ejecutando FastAPI 0.165.0, Starlette 1.10.0 y uvicorn
 | Manejadores de excepciones | https://fastapi.tiangolo.com/tutorial/handling-errors/ | `RequestValidationError` y `HTTPException` de Starlette se reemplazan con `add_exception_handler`. |
 | `uvicorn.run` | https://www.uvicorn.org/settings/ | Con `log_config=None` los logs de uvicorn se propagan al logging JSON del proyecto; `access_log=False` y `server_header=False` verificados con la firma instalada. |
 | SQLite `mode=ro` | https://www.sqlite.org/uri.html | URI `file:...?mode=ro` abre solo lectura y no crea el archivo si falta (verificado). |
+
+## Requisitos OpenAPI de Copilot Studio (T19)
+
+| Título | URL | Qué se confirmó (consulta 2026-11-21) |
+| --- | --- | --- |
+| Extend your agent with tools from a REST API (preview) | https://learn.microsoft.com/microsoft-copilot-studio/agent-extend-action-rest-api | Debe ser JSON en v2; una v3 se traduce a v2. Autenticación None / API key (Header o Query) / OAuth 2.0. Descripciones vacías de parámetros bloquean el asistente. Preview. Ver `docs/research/copilot-studio-openapi-requirements.md`. |
+| Create a custom connector from an OpenAPI definition | https://learn.microsoft.com/connectors/custom-connectors/define-openapi-definition | Menos de 1 MB; solo OpenAPI 2.0 ("3.0 not supported"); ejemplo con `schemes: [https]`, `securityDefinitions` apiKey in header y `operationId`; con varias definiciones de seguridad se toma la primera. |
