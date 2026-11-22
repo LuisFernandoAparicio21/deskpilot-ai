@@ -117,7 +117,7 @@ def test_dry_run_prints_block_and_writes_nothing(
     original = env.bytes()
     assert env.run("--dry-run") == 0
     out = capsys.readouterr().out
-    assert "Casos aprobados" in out and "README would change" in out
+    assert "Cases passed" in out and "README would change" in out
     assert env.bytes() == original
     env.run()
     assert env.run("--dry-run") == 0
@@ -256,7 +256,7 @@ def test_unknown_generated_at_renders_placeholder(env: Env) -> None:
     data = copy.deepcopy(SUMMARY)
     data["generated_at"] = "ayer"
     block = urr.render_block(data, None)
-    assert "fecha desconocida" in block
+    assert "unknown date" in block
 
 
 # --- T32 table -------------------------------------------------------------------------
@@ -266,7 +266,7 @@ def test_t32_table_counts_only_answered_rows_of_its_own_section(env: Env) -> Non
     assert urr.read_copilot_results(env.doc) == (2, 3)  # sí, Si pass; no fails; rest ignored
     env.write_readme(_readme())
     assert env.run() == 0
-    assert "2 de 3 casos respondidos" in env.readme.read_text(encoding="utf-8")
+    assert "2 of 3 answered cases" in env.readme.read_text(encoding="utf-8")
 
 
 def test_t32_all_pending_or_missing_means_pending(env: Env, tmp_path: Path) -> None:
@@ -278,7 +278,7 @@ def test_t32_all_pending_or_missing_means_pending(env: Env, tmp_path: Path) -> N
     assert urr.read_copilot_results(env.doc) is None
     env.write_readme(_readme())
     assert env.run() == 0
-    assert "pendiente (manual)" in env.readme.read_text(encoding="utf-8")
+    assert "pending (manual)" in env.readme.read_text(encoding="utf-8")
 
 
 def test_t32_results_change_the_block(env: Env) -> None:
@@ -289,7 +289,7 @@ def test_t32_results_change_the_block(env: Env) -> None:
     assert env.run("--check") == 1
     env.run()
     assert env.bytes() != with_results
-    assert "3 de 3 casos respondidos" in env.readme.read_text(encoding="utf-8")
+    assert "3 of 3 answered cases" in env.readme.read_text(encoding="utf-8")
 
 
 # --- Metrics written == summary ---------------------------------------------------------
@@ -301,7 +301,7 @@ def _assert_block_matches(summary: dict[str, Any], block: str) -> None:
         if metric is None:
             assert label not in block
             continue
-        met = "sí" if metric["met"] else "no"
+        met = "yes" if metric["met"] else "no"
         row = (
             f"| {label} | {metric['passed']}/{metric['total']} ({metric['pct']}%) | "
             f">= {metric['threshold_pct']}% | {met} |"
@@ -310,9 +310,9 @@ def _assert_block_matches(summary: dict[str, Any], block: str) -> None:
     latency = summary["latency_ms"]
     assert f"p50 {latency['p50']} ms, p95 {latency['p95']} ms" in block
     failed = sorted(k for k, v in summary["cases"].items() if v != "pasó")
-    expected = ", ".join(failed) if failed else "ninguno"
-    assert f"Casos fallidos: {expected}." in block
-    assert f"Evaluación local de {summary['total']} casos" in block
+    expected = ", ".join(failed) if failed else "none"
+    assert f"Failed cases: {expected}." in block
+    assert f"Local evaluation of {summary['total']} cases" in block
 
 
 def test_synthetic_summary_values_are_written(env: Env) -> None:
@@ -320,9 +320,9 @@ def test_synthetic_summary_values_are_written(env: Env) -> None:
     env.run()
     block = env.readme.read_text(encoding="utf-8")
     _assert_block_matches(SUMMARY, block)
-    assert "Casos fallidos: EV-02." in block
-    assert "Recuperación top-3 | 4/5 (80.0%) | >= 90% | no" in block
-    assert "Clasificación" not in block  # metric absent in the summary is skipped
+    assert "Failed cases: EV-02." in block
+    assert "Top-3 retrieval | 4/5 (80.0%) | >= 90% | no" in block
+    assert "Ticket classification" not in block  # metric absent in the summary is skipped
 
 
 def test_real_summary_metrics_match_the_written_block(env: Env) -> None:

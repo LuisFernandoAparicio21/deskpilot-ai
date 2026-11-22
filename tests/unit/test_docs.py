@@ -23,7 +23,8 @@ from src.utils.config import PROJECT_ROOT
 README = PROJECT_ROOT / "README.md"
 DOCS = PROJECT_ROOT / "docs"
 SUMMARY = PROJECT_ROOT / "tests" / "eval" / "results.summary.json"
-NOTE = "Datos sintéticos generados para este proyecto; las cifras son ilustrativas"
+NOTE = "Synthetic data generated for this project; figures are illustrative"
+NOTE_ES = "Datos sintéticos generados para este proyecto; las cifras son ilustrativas."
 
 FENCE = "`" * 3
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
@@ -112,7 +113,7 @@ def test_relative_links_resolve(doc: Path) -> None:
 
 def test_link_extractor_sees_links() -> None:
     assert len(_links(README)) > 20
-    assert {"setup", "licencia", "por-qué-este-proyecto"} <= _anchors(README)
+    assert {"setup", "license", "why-this-project"} <= _anchors(README)
 
 
 def test_link_checker_detects_broken_target(tmp_path: Path) -> None:
@@ -127,15 +128,17 @@ def test_link_checker_detects_broken_target(tmp_path: Path) -> None:
 
 def test_readme_required_content() -> None:
     text = README.read_text(encoding="utf-8")
+    # README is a single English file (user decision): English note, Spanish in <sub>.
     assert f"**{NOTE}.**" in text
-    for heading in ("Por qué este proyecto", "Habilidades demostradas", "English summary"):
+    assert f"<sub>{NOTE_ES}</sub>" in text
+    for heading in ("Why this project", "Skills demonstrated", "Resumen en español"):
         assert re.search(rf"^##\s+(?:\W+\s+)?{heading}\s*$", text, re.M), (
             f"missing section {heading}"
         )
     video = _section(text, "Video")
     assert "PLACEHOLDER" in video and "http" not in video, "video must stay a placeholder"
-    english = _section(text, "English summary")
-    assert len(english.split()) > 60 and "synthetic" in english
+    spanish = _section(text, "Resumen en español")
+    assert len(spanish.split()) > 60 and "sintéticos" in spanish
 
 
 # (3) CLI commands ----------------------------------------------------------------------
@@ -211,8 +214,26 @@ def _mermaid_blocks(path: Path) -> list[str]:
     return re.findall(r"^" + FENCE + r"mermaid\n(.*?)^" + FENCE, text, re.S | re.M)
 
 
+MERMAID_OPEN_RE = re.compile(r"^ {0,3}" + FENCE + r"mermaid\s*$", re.M)
+
+
+def _has_mermaid_fence(text: str) -> bool:
+    """True only for a real opening fence (own line). A prose or inline-code mention such as
+    ```` ```mermaid ```` inside a table cell is not a diagram and must not be parsed as one."""
+    return bool(MERMAID_OPEN_RE.search(text))
+
+
 def _md_with_mermaid() -> list[Path]:
-    return [p for p in _doc_files() if FENCE + "mermaid" in p.read_text("utf-8")]
+    return [p for p in _doc_files() if _has_mermaid_fence(p.read_text("utf-8"))]
+
+
+def test_mermaid_detector_ignores_prose_mentions_and_requires_real_fences() -> None:
+    prose = "| Cumple | 2 bloques ```` ```mermaid ```` con `flowchart` |"
+    assert not _has_mermaid_fence(prose)
+    assert not _has_mermaid_fence("Use `" + FENCE + "mermaid` to open a diagram.")
+    real = FENCE + "mermaid" + "\n" + "flowchart LR" + "\n" + "  A --> B" + "\n" + FENCE + "\n"
+    assert _has_mermaid_fence(real)
+    assert _has_mermaid_fence("text" + "\n" + "\n" + real + "\n" + "more")
 
 
 def test_mermaid_present_in_readme_and_architecture() -> None:
@@ -264,27 +285,28 @@ def test_readme_eval_figures_match_summary() -> None:
     m = s["metrics"]
     text = README.read_text("utf-8")
     rows = _table_rows(text)
-    row = next(r for r in rows if r[0] == "Casos de evaluación")[1]
-    assert f"{s['passed']} de {s['total']}" in row
+    row = next(r for r in rows if r[0] == "Evaluation cases")[1]
+    assert f"{s['passed']} of {s['total']}" in row
     assert f"{m['aprobados']['pct']}%" in row
     assert f"top-3 {m['retrieval_top3']['passed']}/{m['retrieval_top3']['total']}" in row
-    assert f"rechazo {m['rechazo']['passed']}/{m['rechazo']['total']}" in row
-    assert f"clasificación {m['clasificacion']['passed']}/{m['clasificacion']['total']}" in row
-    assert f"seguridad {m['seguridad']['passed']}/{m['seguridad']['total']}" in row
-    lat = next(r for r in rows if r[0].startswith("Latencia"))[1]
+    assert f"refusal {m['rechazo']['passed']}/{m['rechazo']['total']}" in row
+    assert f"classification {m['clasificacion']['passed']}/{m['clasificacion']['total']}" in row
+    assert f"security {m['seguridad']['passed']}/{m['seguridad']['total']}" in row
+    lat = next(r for r in rows if r[0].startswith("Latency per case"))[1]
     assert f"p50 {s['latency_ms']['p50']} ms" in lat
     assert f"p95 {s['latency_ms']['p95']} ms" in lat
-    assert f"{s['passed']}/{s['total']} cases pass" in text
+    cases_row = next(r for r in rows if r[0] == "Cases passed")  # generated RESULTS table
+    assert f"{s['passed']}/{s['total']}" in cases_row[1]
     failed = [k for k, v in s["cases"].items() if v != "pasó"]
     assert s["thresholds_met"] is (s["exit_code"] == 0)
     if not failed:
-        assert "Casos fallidos: ninguno." in text
+        assert "Failed cases: none." in text
         assert s["known_failures_hit"] == [] and s["exit_code"] == 0
-        assert "código 3" not in text
+        assert "exit code 3" not in text
     else:
         for case in failed:
-            assert case in _section(text, "Límites conocidos")
-        assert f"código {s['exit_code']}" in text
+            assert case in _section(text, "Status and limits")
+        assert f"exit code {s['exit_code']}" in text
         assert sorted(s["known_failures_hit"] + s["new_failures"]) == sorted(failed)
 
 
