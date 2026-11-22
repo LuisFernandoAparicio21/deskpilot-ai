@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import csv
+import difflib
 import logging
 import math
 import re
+import unicodedata
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -183,7 +186,7 @@ def _settings(tmp_path: Path, **overrides: Any) -> Settings:
 
 def test_repo_config_enables_the_reranker_with_documented_values(tmp_path: Path) -> None:
     rerank = _repo_settings(tmp_path).retrieval.rerank
-    assert rerank.enabled and rerank.min_score == 0.004 and rerank.candidates == 3
+    assert rerank.enabled and rerank.min_score == 0.01 and rerank.candidates == 3
     assert rerank.model == "BAAI/bge-reranker-v2-m3-int8"
 
 
@@ -327,6 +330,171 @@ def test_heldout_mixes_spanish_and_english() -> None:
     assert sum(bool(english.search(r["pregunta"])) for r in rows) >= 10
 
 
+# --- one passage per forward pass (int8 scores depend on the batch) -----------------------
+
+Q1 = "no puedo entrar a mi cuenta, se me bloqueo la contrasena"
+ALONE_Q1, BATCHED_Q1 = 0.0481, 0.0192  # measured with the real int8 model for Q1 + KB-002
+OLD_MIN = 0.02  # the previous config value: 0.0192 was vetoed, 0.0481 was not
+
+
+def _logit(p: float) -> float:
+    return math.log(p / (1.0 - p))
+
+
+class BatchSensitiveModel:
+    """Stands in for the int8 cross-encoder: the score of a passage depends on the batch size."""
+
+    def __init__(self, alone: float, batched: float) -> None:
+        self.alone, self.batched = alone, batched
+        self.calls: list[tuple[str, list[str]]] = []
+
+    def rerank(self, query: str, documents: Sequence[str]) -> list[float]:
+        self.calls.append((query, list(documents)))
+        p = self.alone if len(documents) == 1 else self.batched
+        return [_logit(p)] * len(documents)
+
+
+def _fastembed(model: BatchSensitiveModel) -> FastEmbedReranker:
+    reranker = FastEmbedReranker("fake-model")
+    reranker._model = model  # type: ignore[assignment]
+    return reranker
+
+
+def test_reranker_scores_exactly_one_passage_per_call() -> None:
+    model = BatchSensitiveModel(ALONE_Q1, BATCHED_Q1)
+    scores = _fastembed(model).score(Q1, ["KB-002 a", "KB-004 b", "KB-006 c"])
+    assert [len(docs) for _, docs in model.calls] == [1, 1, 1]
+    assert [docs[0] for _, docs in model.calls] == ["KB-002 a", "KB-004 b", "KB-006 c"]
+    assert scores == [pytest.approx(ALONE_Q1)] * 3
+
+
+def test_reranker_with_no_passages_makes_no_call() -> None:
+    model = BatchSensitiveModel(ALONE_Q1, BATCHED_Q1)
+    assert _fastembed(model).score(Q1, []) == []
+    assert model.calls == []
+
+
+@pytest.mark.parametrize("others", [0, 1, 2, 7])
+def test_score_of_a_passage_does_not_depend_on_the_other_passages(others: int) -> None:
+    model = BatchSensitiveModel(ALONE_Q1, BATCHED_Q1)
+    reranker = _fastembed(model)
+    isolated = reranker.score(Q1, ["KB-002 a"])[0]
+    accompanied = reranker.score(Q1, ["KB-002 a", *[f"KB-0{i} x" for i in range(others)]])[0]
+    assert isolated == accompanied == pytest.approx(ALONE_Q1)
+
+
+def _retriever_with_model(model: BatchSensitiveModel, min_score: float) -> Retriever:
+    return _retriever(COS, _fastembed(model), min_score=min_score)  # type: ignore[arg-type]
+
+
+def test_q1_without_accents_is_answered_with_the_isolated_score(tmp_path: Path) -> None:
+    model = BatchSensitiveModel(ALONE_Q1, BATCHED_Q1)
+    retriever = _retriever_with_model(model, 0.01)
+    result = retriever.search(Q1)
+    assert result.rerank_score == pytest.approx(ALONE_Q1) and not result.vetoed
+    answer = AnswerService(retriever, NoLLM(), _repo_settings(tmp_path)).answer(Q1)
+    assert answer.status == "answered"
+    assert answer.citations[0].article_id == "KB-002"
+
+
+def test_q1_regression_isolated_score_passes_where_the_batched_one_was_vetoed() -> None:
+    # With the old batched scoring 0.0192 < 0.02 vetoed Q1; scoring alone gives 0.0481 >= 0.02.
+    assert BATCHED_Q1 < OLD_MIN <= ALONE_Q1
+    assert (
+        not _retriever_with_model(BatchSensitiveModel(ALONE_Q1, BATCHED_Q1), OLD_MIN)
+        .search(Q1)
+        .vetoed
+    )
+    # A model that really scored 0.0192 is still vetoed at that threshold: the veto is intact.
+    assert (
+        _retriever_with_model(BatchSensitiveModel(BATCHED_Q1, BATCHED_Q1), OLD_MIN)
+        .search(Q1)
+        .vetoed
+    )
+
+
+def test_score_exactly_equal_to_min_score_is_not_vetoed() -> None:
+    fake = FakeReranker({"KB-002": 0.01, "KB-004": 0.0001, "KB-006": 0.0001})
+    assert not _retriever(COS, fake, min_score=0.01).search(QUERY).vetoed
+    below = FakeReranker({"KB-002": 0.0099, "KB-004": 0.0001, "KB-006": 0.0001})
+    assert _retriever(COS, below, min_score=0.01).search(QUERY).vetoed
+
+
+def test_disabled_rerank_keeps_the_previous_behaviour(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, rerank={"enabled": False})
+    assert build_reranker(settings) is None
+    answer = AnswerService(_retriever(COS, None), NoLLM(), settings).answer(Q1)
+    assert answer.status == "answered"
+
+
+# --- robustness to query variants (fake reranker that reads the query) --------------------
+
+IN_DOMAIN = {
+    "KB-002": [
+        "No puedo iniciar sesión, olvidé mi contraseña",
+        "Se me bloqueó la cuenta después de varios intentos",
+    ]
+}
+THRESHOLD = 0.01
+
+
+def _fold(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text.lower())
+    return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+
+def _typo(text: str) -> str:
+    """Deterministic typo: swap the two middle characters of every word of 6+ letters."""
+    words = []
+    for word in text.split():
+        if len(word) >= 6:
+            mid = len(word) // 2
+            word = word[: mid - 1] + word[mid] + word[mid - 1] + word[mid + 1 :]
+        words.append(word)
+    return " ".join(words)
+
+
+class FuzzyQueryReranker(FakeReranker):
+    """Scores 0.05 when the (folded, fuzzy) query tokens match the in-domain text, else 1e-4."""
+
+    def __init__(self, reference: str) -> None:
+        super().__init__({})
+        self.reference = set(_fold(reference).replace(",", "").split())
+
+    def score(self, query: str, passages: list[str]) -> list[float]:
+        self.calls.append((query, passages))
+        tokens = _fold(query).replace(",", "").split()
+        hits = sum(
+            bool(difflib.get_close_matches(t, self.reference, n=1, cutoff=0.8)) for t in tokens
+        )
+        return [0.05 if hits / len(tokens) >= 0.5 else 0.0001 for _ in passages]
+
+
+VARIANTS: dict[str, Callable[[str], str]] = {
+    "original": lambda q: q,
+    "lowercase": str.lower,
+    "uppercase": str.upper,
+    "unaccented": _fold,
+    "typo": _typo,
+    "unaccented_typo": lambda q: _typo(_fold(q)),
+}
+
+
+@pytest.mark.parametrize("variant", VARIANTS)
+@pytest.mark.parametrize("query", [q for qs in IN_DOMAIN.values() for q in qs])
+def test_in_domain_variants_are_not_vetoed(query: str, variant: str) -> None:
+    fake = FuzzyQueryReranker(" ".join(IN_DOMAIN["KB-002"]))
+    text = VARIANTS[variant](query)
+    result = _retriever(COS, fake, min_score=THRESHOLD).search(text)
+    assert result.rerank_score is not None and result.rerank_score >= THRESHOLD
+    assert not result.vetoed
+
+
+def test_out_of_domain_query_is_still_vetoed_by_the_same_fake() -> None:
+    fake = FuzzyQueryReranker(" ".join(IN_DOMAIN["KB-002"]))
+    assert _retriever(COS, fake, min_score=THRESHOLD).search("receta de paella valenciana").vetoed
+
+
 # --- optional, with the real model (run with: pytest -m slow) ---------------------------------
 
 
@@ -343,3 +511,16 @@ def test_real_model_separates_relevant_from_irrelevant(tmp_path: Path) -> None:
         ],
     )
     assert relevant > MIN > 0 and relevant > irrelevant
+
+
+@pytest.mark.slow
+def test_real_model_answers_q1_without_accents_with_kb002() -> None:
+    from src.api.app import build_services
+
+    services = build_services(load_settings())
+    try:
+        answer = services.answers.answer(Q1)
+    finally:
+        services.close()
+    assert answer.status == "answered"
+    assert answer.citations[0].article_id == "KB-002"
