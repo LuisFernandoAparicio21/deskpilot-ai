@@ -210,8 +210,12 @@ def test_feature_doc_template_required_sections() -> None:
     text = _text(SKILL_DIR / "templates" / "feature-doc.md")
     headings = " | ".join(re.findall(r"^## (.+)$", text, re.MULTILINE)).lower()
     parts = (
-        "qué", "specs", "pruebas realizadas", "resultados reales",
-        "cómo verificar", "limitaciones",
+        "qué",
+        "specs",
+        "pruebas realizadas",
+        "resultados reales",
+        "cómo verificar",
+        "limitaciones",
     )
     for part in parts:
         assert part in headings, part
