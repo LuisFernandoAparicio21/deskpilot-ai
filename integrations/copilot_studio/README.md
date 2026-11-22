@@ -13,3 +13,4 @@ Definición Swagger 2.0 (JSON) de las 4 herramientas del agente: `buscar_solucio
 - Seguridad: `apiKey` en la cabecera `X-API-Key`; esquema `https`; `/health` no se incluye (no es una herramienta).
 - Volver a exportar cada vez que cambie la API. Validado con `openapi-spec-validator` (solo para verificar, no es dependencia) y pesa menos de 1 MB.
 - Puntos "verificar en pantalla" (rechazo de YAML, tamaño máximo propio, `https` obligatorio) en `docs/research/copilot-studio-openapi-requirements.md`.
+- Detalle, pruebas y verificación paso a paso: [docs/features/openapi-export.md](../../docs/features/openapi-export.md). Los pasos de importación en Copilot Studio irán en `docs/MANUAL_STEPS.md` (T25, pendiente).

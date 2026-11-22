@@ -243,8 +243,8 @@ Criterios de aceptación:
 **API, MCP y despliegue (por PR)**
 - T16 [CÓDIGO] [ALTO RIESGO] FastAPI: /health, X-API-Key, errores, request_id, timeouts, buscar_solucion, consultar_estado_ticket, metricas_area, repositorio local/fabric, `main.py serve` — subagente: api-engineer — cubre S8, S17 — commit: 846d541 (PR #20)
 - T17 [CÓDIGO] [ALTO RIESGO] crear_ticket con clasificación de categoría/prioridad y persistencia — subagente: api-engineer — cubre S9 — commit: merge del PR #22
-- T18 [CÓDIGO] Servidor MCP con las 4 herramientas — subagente: api-engineer — cubre S10 — commit:
-- T19 [CÓDIGO] `main.py export-openapi` → openapi.yaml compatible con Copilot Studio + Dockerfile + .dockerignore verificados — subagente: api-engineer — cubre S8, S17 — commit:
+- T18 [CÓDIGO] Servidor MCP con las 4 herramientas — subagente: api-engineer — cubre S10 — commit: merge del PR #24
+- T19 [CÓDIGO] `main.py export-openapi` → openapi.json (Swagger 2.0) compatible con Copilot Studio; Dockerfile + .dockerignore pasaron a T19b (rama feat/t19b-dockerfile, pendiente de verificar) — subagente: api-engineer — cubre S8, S17 — commit:
 
 **Agente, pruebas y documentación (por PR)**
 - T20 [CÓDIGO] integrations/copilot_studio: instrucciones, temas, frases ES/EN, escalamiento — subagente: copilot-studio-designer — cubre S11 — commit:
@@ -993,7 +993,15 @@ El usuario entregó el documento de requerimientos v1.0 con la indicación liter
 - Mismo ciclo: api-engineer implementó `POST /tickets` (redacción de datos sensibles, clasificación por reglas con LLM opcional validado, SLA, persistencia en `tickets_nuevos`), qa-tester escribió 206 tests en 5 archivos y security-verifier dio **APROBADO** tras los ciclos de corrección. 1034 tests, 98.79% de cobertura.
 - Hallazgos: M1 el LLM podía degradar un P1 de reglas (corregido: un P1 de reglas nunca cambia); M2 riesgo residual de unicidad de `ticket_id` en el Warehouse (PK NOT ENFORCED, ~1/900k por par concurrente), aceptado como riesgo conocido; baja: una contraseña sin separador no se redacta. Detalle en `docs/features/crear-ticket.md`.
 
-### L17 — T18 servidor MCP (api-engineer + qa-tester + security-verifier) · PR por definir
+### L17 — T18 servidor MCP (api-engineer + qa-tester + security-verifier) · PR #24
 - Mismo ciclo: api-engineer implementó `python main.py mcp` (4 herramientas sobre la capa de servicio de la API; stdio por defecto, HTTP streamable con API key), qa-tester escribió 122 tests en 4 archivos y security-verifier dio **APROBADO**. Suite completa: 1156 tests, 98.72% de cobertura.
 - QA encontró 3 bugs, corregidos: argumentos extra aceptados, eco de `categoria`/`canal` inválidos y mensaje de config que nombraba `serve`. Hallazgos bajos aceptados: símbolos privados de `app.py` y `_tool_manager` del SDK, `--host 0.0.0.0` sin aviso ni TLS, `X-API-Key` gana sobre Bearer, falta test de Host/Origin inválido.
 - SDK `mcp` 2.3.0: `FastMCP` pasó a `MCPServer` (anotado en `docs/sources.md`). Verificado con clientes reales por stdio y HTTP (401 sin llave); `data/deskpilot.db` intacta. Detalle en `docs/features/mcp-server.md`.
+
+### L18 — T18 cierre (api-engineer + qa-tester + security-verifier) · PR #24 mergeada
+- security-verifier dio **APROBADO**. QA encontró 3 bugs, corregidos: argumentos extra aceptados, eco de `categoria`/`canal` inválidos y mensaje de config que nombraba `serve`. Mergeada el 2026-11-21 (commit de T18 = merge del PR #24). Detalle en L17.
+
+### L19 — T19 export-openapi (api-engineer + qa-tester) · documentada
+- `main.py export-openapi` genera Swagger 2.0 JSON para Copilot Studio; 1200 pruebas pasan, 1 omitida (validador externo opcional), cobertura 98.33%. Validado con `openapi-spec-validator` 0.9.0 en un venv temporal. Detalle en `docs/features/openapi-export.md`.
+- **Incidencia de disco**: el disco C: se llenó al construir la imagen Docker. Se purgó el pip cache (6 GB) y Docker se moverá a D:, pendiente. El Dockerfile y `.dockerignore` se separaron como T19b (rama `feat/t19b-dockerfile`), sin verificar en Docker.
+- **Limitación**: D: es lento y rompe 2 tests de concurrencia SQLite por el timeout de 5 s; no es un fallo de lógica.
