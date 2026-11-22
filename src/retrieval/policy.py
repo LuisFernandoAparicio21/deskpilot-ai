@@ -50,14 +50,15 @@ _PATTERNS: dict[EscalationReason, re.Pattern[str]] = {
 }
 
 
-def _normalize(text: str) -> str:
+def normalize_text(text: str) -> str:
+    """Lower case without accents, for keyword matching."""
     ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
     return ascii_text.lower()
 
 
 def escalation_reason(query: str) -> EscalationReason | None:
     """Why ``query`` must be escalated (RN-03), or None."""
-    normalized = _normalize(query)
+    normalized = normalize_text(query)
     for reason, pattern in _PATTERNS.items():
         if pattern.search(normalized):
             return reason

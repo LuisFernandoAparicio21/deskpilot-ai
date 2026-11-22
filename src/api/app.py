@@ -4,6 +4,7 @@ Routes (all but ``/health`` need ``X-API-Key``):
 
 - ``GET  /health``                  state of the API, database and vector index (RF-26)
 - ``POST /buscar_solucion``         cited answer from the knowledge base (RF-04, RF-05)
+- ``POST /tickets``                 create a ticket, classified and redacted (RF-16, RF-10)
 - ``GET  /tickets/{ticket_id}``     status of a ticket (RF-17)
 - ``GET  /metricas``                metrics of an ``area`` or ``sucursal`` (RF-19)
 
@@ -43,12 +44,17 @@ from src.api.schemas import (
     BuscarSolucionRequest,
     BuscarSolucionResponse,
     CitationOut,
+    CrearTicketRequest,
+    CrearTicketResponse,
     ErrorResponse,
     HealthResponse,
     TicketStatusResponse,
+    build_create_request,
     build_search_request,
 )
 from src.api.security import require_api_key
+from src.api.ticket_service import TicketCreator, TicketService
+from src.llm import NoLLM
 from src.retrieval.answer_service import Answer, AnswerService
 from src.utils.config import Settings
 from src.utils.config import require_api_key as settings_api_key
@@ -88,6 +94,7 @@ class ApiServices:
     repository: TicketRepository
     index_probe: IndexProbe
     mode: str = "local"
+    tickets: TicketCreator | None = None
     closers: list[Callable[[], None]] = field(default_factory=list)
 
     def close(self) -> None:
@@ -104,7 +111,9 @@ def build_services(settings: Settings) -> ApiServices:
 
     store = CurrentStore.from_settings(settings)
     retriever = Retriever.from_settings(settings, build_embedder(settings), store.get)
-    answers = AnswerService(retriever, build_llm(settings), settings)
+    llm = build_llm(settings)
+    answers = AnswerService(retriever, llm, settings)
+    repository = build_repository(settings)
 
     def probe() -> str | None:
         store.get()
@@ -112,9 +121,10 @@ def build_services(settings: Settings) -> ApiServices:
 
     return ApiServices(
         answers=answers,
-        repository=build_repository(settings),
+        repository=repository,
         index_probe=probe,
         mode=settings.app.mode,
+        tickets=TicketService(repository, llm, settings),
         closers=[store.close],
     )
 
@@ -219,6 +229,7 @@ _DEGRADED = HealthResponse(status="degraded")
 
 def _build_router(settings: Settings, api_key: str) -> APIRouter:
     search_model = build_search_request(settings.api.max_query_chars)
+    create_model = build_create_request(settings.api.max_description_chars)
     router = APIRouter(dependencies=[Depends(require_api_key(api_key))], responses=_ERRORS)
 
     @router.post(
@@ -241,6 +252,28 @@ def _build_router(settings: Settings, api_key: str) -> APIRouter:
                 503, "index_unavailable", "The knowledge base index is not ready."
             ) from None
         return _to_response(answer)
+
+    @router.post(
+        "/tickets",
+        operation_id="crear_ticket",
+        summary="Create a ticket, classified by category and priority",
+        response_model=CrearTicketResponse,
+        status_code=201,
+    )
+    async def crear_ticket(
+        body: create_model,  # type: ignore[valid-type]
+        services: Services,
+        runner: Runner,
+    ) -> CrearTicketResponse:
+        request: CrearTicketRequest = body
+        creator = services.tickets
+        assert creator is not None
+        try:
+            return await runner.run(creator.create, request)
+        except RepositoryUnavailableError:
+            raise ApiError(
+                503, "database_unavailable", "The ticket database is unavailable."
+            ) from None
 
     @router.get(
         "/tickets/{ticket_id}",
@@ -304,6 +337,8 @@ def create_app(settings: Settings, services: ApiServices | None = None) -> FastA
     """
     api_key = settings_api_key(settings).get_secret_value()
     resolved = services if services is not None else build_services(settings)
+    if resolved.tickets is None:  # injected services without a creator: rules only
+        resolved.tickets = TicketService(resolved.repository, NoLLM(), settings)
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:

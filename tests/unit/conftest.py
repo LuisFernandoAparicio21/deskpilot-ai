@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
 from src.api import ApiServices, create_app
-from src.api.repository import MetricScope
+from src.api.repository import MetricScope, NewTicket
 from src.api.schemas import AreaMetricsResponse, TicketStatusResponse
 from src.retrieval.answer_service import Answer, Citation
 from src.utils.config import Secrets, Settings, load_settings
@@ -56,6 +56,7 @@ class FakeRepository:
         self.ping_ok = True
         self.ticket_calls: list[str] = []
         self.metric_calls: list[tuple[MetricScope, str]] = []
+        self.created: list[NewTicket] = []
 
     def get_ticket_status(self, ticket_id: str) -> TicketStatusResponse | None:
         self.ticket_calls.append(ticket_id)
@@ -90,6 +91,12 @@ class FakeRepository:
             avg_horas_resolucion=5.5,
             top_categorias=[],
         )
+
+    def create_ticket(self, ticket: NewTicket) -> str:
+        if self.error is not None:
+            raise self.error
+        self.created.append(ticket)
+        return f"TCK-{100_000 + len(self.created):06d}"
 
     def ping(self) -> bool:
         self.pings += 1

@@ -14,11 +14,16 @@ from typing import Annotated, Literal, get_args
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, create_model
 from pydantic.functional_validators import AfterValidator
 
+from src.ingestion.ticket_generator import CANALES
 from src.retrieval.answer_service import KNOWN_CATEGORIES, AnswerMode, AnswerStatus
 
 Categoria = Literal["Accesos", "Comunicaciones", "Conectividad", "Hardware", "Software", "General"]
 if set(get_args(Categoria)) != set(KNOWN_CATEGORIES):  # keep the OpenAPI enum in sync
     raise RuntimeError("Categoria does not match the knowledge base categories")
+
+Canal = Literal["portal", "correo", "teléfono", "Teams"]
+if set(get_args(Canal)) != set(CANALES):  # keep the OpenAPI enum in sync with the dataset
+    raise RuntimeError("Canal does not match the ticket channels")
 
 TICKET_ID_PATTERN = r"^[A-Za-z0-9_-]{1,32}$"
 AREA_MAX_CHARS = 64
@@ -105,6 +110,65 @@ class TicketStatusResponse(BaseModel):
     sla_cumplido: bool | None
 
 
+AreaName = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=AREA_MAX_CHARS),
+    AfterValidator(_is_name),
+]
+
+
+class CrearTicketRequest(_Strict):
+    """Input of ``crear_ticket``; ``build_create_request`` sets the configured max length."""
+
+    descripcion: Annotated[
+        str,
+        StringConstraints(min_length=5),
+        AfterValidator(_no_control_chars),
+        Field(description="Problem described by the employee. Never include passwords or PINs."),
+    ]
+    sucursal: AreaName = Field(description="Branch of the employee.")
+    area: AreaName = Field(description="Area of the employee.")
+    canal: Canal = Field(default="Teams", description="Channel the request came from.")
+
+
+def build_create_request(max_chars: int) -> type[CrearTicketRequest]:
+    """``CrearTicketRequest`` with ``descripcion`` limited to ``max_chars`` characters."""
+    model: type[CrearTicketRequest] = create_model(
+        "CrearTicketRequest",
+        __base__=CrearTicketRequest,
+        descripcion=(
+            Annotated[
+                str,
+                StringConstraints(min_length=5, max_length=max_chars),
+                AfterValidator(_no_control_chars),
+            ],
+            Field(
+                description="Problem described by the employee. Never include passwords or PINs."
+            ),
+        ),
+    )
+    return model
+
+
+class CrearTicketResponse(BaseModel):
+    """The created ticket (RF-16); never echoes the description."""
+
+    ticket_id: str
+    estado: Literal["abierto"]
+    categoria: str
+    subcategoria: str
+    prioridad: Literal["P1", "P2", "P3", "P4"]
+    sla_horas: int
+    fecha_apertura: datetime
+    fecha_limite_sla: datetime
+    escalado: bool = Field(description="True when RN-03 requires a human (always P1).")
+    motivo_escalamiento: Literal["fraud", "unauthorized_access", "cash_system", "article"] | None
+    sensitive_data_warning: bool = Field(
+        description="True when sensitive data was found and redacted before saving (RN-05)."
+    )
+    mode: Literal["rules", "llm"]
+
+
 class CategoryCount(BaseModel):
     categoria: str
     tickets: int = Field(ge=0)
@@ -122,13 +186,6 @@ class AreaMetricsResponse(BaseModel):
     )
     avg_horas_resolucion: float | None
     top_categorias: list[CategoryCount]
-
-
-AreaName = Annotated[
-    str,
-    StringConstraints(strip_whitespace=True, min_length=1, max_length=AREA_MAX_CHARS),
-    AfterValidator(_is_name),
-]
 
 
 class ComponentHealth(BaseModel):
