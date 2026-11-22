@@ -20,11 +20,11 @@ import json
 import logging
 import re
 from collections.abc import Awaitable
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, TypeVar, get_args
 
 import anyio
 import uvicorn
-from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field, TypeAdapter, ValidationError
 from starlette.datastructures import Headers
@@ -72,6 +72,19 @@ MSG_METRICS_404 = "No tickets found for that name."
 MSG_EXACTLY_ONE = "Provide exactly one of area or sucursal."
 
 _AREA = TypeAdapter(AreaName)
+MSG_UNEXPECTED_ARGS = "Invalid arguments: unexpected fields."
+
+
+class _StrictMCPServer(MCPServer[Any]):
+    """Rejects unknown arguments like the REST models (``extra=forbid``), echoing nothing."""
+
+    async def call_tool(
+        self, name: str, arguments: dict[str, Any], context: Context[Any, Any] | None = None
+    ) -> Any:
+        tool = self._tool_manager.get_tool(name)
+        if tool is not None and not set(arguments) <= set(tool.parameters.get("properties", {})):
+            raise ToolError(f"Error executing tool {name}: {MSG_UNEXPECTED_ARGS}")
+        return await super().call_tool(name, arguments, context)
 
 
 def _invalid(exc: ValidationError) -> ToolError:
@@ -108,8 +121,11 @@ def build_mcp_server(settings: Settings, services: ApiServices | None = None) ->
     query_hint = {"maxLength": settings.api.max_query_chars}
     description_hint = {"maxLength": settings.api.max_description_chars}
     id_hint = {"pattern": TICKET_ID_PATTERN}
+    # Literal fields are typed ``str`` for the same reason: the REST models validate them.
+    categoria_hint = {"enum": list(get_args(Categoria))}
+    canal_hint = {"enum": list(get_args(Canal))}
 
-    server: MCPServer[Any] = MCPServer(
+    server: MCPServer[Any] = _StrictMCPServer(
         SERVER_NAME, instructions=INSTRUCTIONS, version="0.1.0", log_level=settings.app.log_level
     )
 
@@ -123,12 +139,16 @@ def build_mcp_server(settings: Settings, services: ApiServices | None = None) ->
             ),
         ],
         categoria: Annotated[
-            Categoria | None, Field(description="Optional knowledge base category filter.")
+            str | None,
+            Field(
+                description="Optional knowledge base category filter.",
+                json_schema_extra=categoria_hint,
+            ),
         ] = None,
     ) -> BuscarSolucionResponse:
         """Search the knowledge base and answer with citations, or say it does not know."""
         try:
-            request = search_model(query=query, categoria=categoria)
+            request = search_model.model_validate({"query": query, "categoria": categoria})
         except ValidationError as exc:
             raise _invalid(exc) from None
         answer = await _guarded(
@@ -183,12 +203,15 @@ def build_mcp_server(settings: Settings, services: ApiServices | None = None) ->
         ],
         sucursal: Annotated[str, Field(description="Branch of the employee.")],
         area: Annotated[str, Field(description="Area of the employee.")],
-        canal: Annotated[Canal, Field(description="Channel the request came from.")] = "Teams",
+        canal: Annotated[
+            str,
+            Field(description="Channel the request came from.", json_schema_extra=canal_hint),
+        ] = "Teams",
     ) -> CrearTicketResponse:
         """Create a ticket, classified by category and priority (writes data)."""
         try:
-            request = create_model(
-                descripcion=descripcion, sucursal=sucursal, area=area, canal=canal
+            request = create_model.model_validate(
+                {"descripcion": descripcion, "sucursal": sucursal, "area": area, "canal": canal}
             )
         except ValidationError as exc:
             raise _invalid(exc) from None
@@ -233,7 +256,7 @@ class ApiKeyMiddleware:
 
 def build_http_app(server: MCPServer[Any], settings: Settings, host: str, path: str) -> ASGIApp:
     """Streamable HTTP ASGI app of ``server`` behind the API key (fails fast without a key)."""
-    api_key = settings_api_key(settings).get_secret_value()
+    api_key = settings_api_key(settings, "mcp --transport http").get_secret_value()
     app = server.streamable_http_app(
         streamable_http_path=path,
         host=host,
