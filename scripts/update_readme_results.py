@@ -23,7 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -66,7 +66,53 @@ def load_summary(path: Path) -> dict[str, Any]:
         raise InputError(f"{path} is not valid JSON. Run again: python main.py eval") from exc
     if not isinstance(data, dict) or not {"metrics", "latency_ms", "total"} <= data.keys():
         raise InputError(f"{path} lacks metrics/latency_ms/total. Run again: python main.py eval")
+    problem = _schema_problem(data)
+    if problem:
+        raise InputError(f"{path} is malformed ({problem}). Run again: python main.py eval")
     return data
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+METRIC_FIELDS: dict[str, Callable[[Any], bool]] = {
+    "passed": _is_number,
+    "total": _is_number,
+    "pct": _is_number,
+    "threshold_pct": _is_number,
+    "met": lambda v: isinstance(v, bool),
+}
+
+
+def _schema_problem(data: dict[str, Any]) -> str | None:
+    """First schema violation in the summary, or None. Values are never echoed."""
+    metrics, latency = data["metrics"], data["latency_ms"]
+    if not isinstance(metrics, dict):
+        return "metrics must be an object"
+    for key, m in metrics.items():
+        if key not in METRIC_LABELS:
+            continue
+        if not isinstance(m, dict):
+            return f"metrics.{key} must be an object"
+        for field, check in METRIC_FIELDS.items():
+            if field not in m:
+                return f"metrics.{key} lacks '{field}'"
+            if not check(m[field]):
+                return f"metrics.{key}.{field} has the wrong type"
+    if not isinstance(latency, dict):
+        return "latency_ms must be an object"
+    for field in ("p50", "p95"):
+        if field not in latency:
+            return f"latency_ms lacks '{field}'"
+        if not _is_number(latency[field]):
+            return f"latency_ms.{field} has the wrong type"
+    if not (_is_number(data["total"])):
+        return "total must be a number"
+    cases = data.get("cases", {})
+    if not isinstance(cases, dict):
+        return "cases must be an object"
+    return None
 
 
 def read_copilot_results(path: Path) -> tuple[int, int] | None:
@@ -148,7 +194,7 @@ def render_block(summary: dict[str, Any], copilot: tuple[int, int] | None) -> st
 def replace_block(readme: str, block: str) -> str:
     """Return ``readme`` with the marked block replaced; keeps the file's line endings."""
     start, end = readme.find(START), readme.find(END)
-    if start == -1 or end == -1 or end < start or readme.count(START) != 1:
+    if readme.count(START) != 1 or readme.count(END) != 1 or end < start:
         raise InputError(
             f"README.md needs exactly one {START} ... {END} pair (START before END). "
             "Add them where the results section should show the generated block."
