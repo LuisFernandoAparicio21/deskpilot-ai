@@ -9,6 +9,7 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Added
 
+- Runbook de auditoría final (FA-1, rama `docs/final-audit-checklist`): `docs/final-audit-checklist.md` (441 líneas, secciones 0–6: preparación, auditoría de seguridad con la skill vulnerability-scanner, evaluadores OSS, servicios externos, revisión independiente, consolidación y sign-off) y skill `.claude/skills/final-audit/SKILL.md`. Se ejecuta después de la Fase C. Investigación de la skill en `docs/research/vulnerability-scanner-skill.md` y de los evaluadores en `docs/evaluations/oss-evaluators.md`.
 - Plan de automatización de la Fase C (PL-13, rama `chore/phase-c-plan`): `docs/phase-c-plan.md` con el reparto de los pasos manuales, las features PC-1 a PC-13, la checklist reducida y los puntos de control; sección "Phase C automation (planned)" en el roadmap.
 - Skill de proyecto `feature-loop` (`.claude/skills/feature-loop/`) con el ciclo a–f, plantillas y referencias; `docs/features/feature-loop-skill.md` y `docs/research/project-skills.md` (PL-12).
 

@@ -64,7 +64,7 @@ Orden: bloque 1 (PL-1), bloque 2 (PL-2, PL-3), bloque 3 (PL-4 y correcciones PL-
 | PL-10 | readme-redesign | chore/readme-redesign | README único en inglés (notas bilingües, resumen en español), reordenado según la investigación de criterios para reclutadores (docs/research/readme-outline.md); absorbe PL-9 | S13, S14 | docs-writer (qa-tester valida) | mergeada | #62 | 2026-11-22 |
 | PL-11 | release-v0.1.1 | chore/release-v0.1.1 | Release v0.1.1: .github/SECURITY.md, CHANGELOG 0.1.1 y notas de release | S13, S15 | docs-writer | mergeada | #64 | 2026-11-22 |
 | PL-12 | feature-loop-skill | feat/feature-loop-skill | Skill de proyecto `feature-loop` (.claude/skills/) con el ciclo a–f, plantillas y referencias; investigación del formato de skills | S13 | docs-writer | mergeada | #66 | 2026-11-22 |
-| PL-13 | phase-c-plan | chore/phase-c-plan | Plan de automatización de la Fase C (docs/phase-c-plan.md): reparto de los 46 pasos, features PC-n, checklist reducida (~2 h) y puntos de control; investigación R1-R7 | S18, S22 | planner (researcher: R1-R7) | documentada | - | - |
+| PL-13 | phase-c-plan | chore/phase-c-plan | Plan de automatización de la Fase C (docs/phase-c-plan.md): reparto de los 46 pasos, features PC-n, checklist reducida (~2 h) y puntos de control; investigación R1-R7 | S18, S22 | planner (researcher: R1-R7) | mergeada | #68 | 2026-11-22 |
 
 ## Fase manual (usuario)
 Las ejecuta el usuario siguiendo `docs/MANUAL_STEPS.md` (T25). Dependen de T16-T25.
@@ -100,3 +100,10 @@ Plan completo en [docs/phase-c-plan.md](phase-c-plan.md). Reduce la fase manual 
 | PC-11 | demo-runner [ALTO RIESGO] | feat/pc-11-demo-runner | Comando de demo local: arranca `serve` y recorre salud, búsqueda ES/EN, ticket y escalamiento con pausas y `--dry-run` (depende de PC-5) | S8, S14, S16 | api-engineer | pendiente | - | - |
 | PC-12 | local-captures [ALTO RIESGO] | feat/pc-12-local-captures | Capturas automáticas de lo local (salida de comandos renderizada con Playwright y Edge); opcional (depende de PC-4, PC-11) | S14, S22 | api-engineer | pendiente | - | - |
 | PC-13 | evidence-final (T36) [ALTO RIESGO] | feat/t36-evidencia-real | Evidencia real en README, business-case, testing-procedure y validation-status.json; ejecuta T36 (depende de PC-4, PC-8, PC-9, PC-10) | S22 | docs-writer + security-verifier | pendiente | - | - |
+
+## Final audit (after Phase C)
+Runbook de auditoría final: [docs/final-audit-checklist.md](final-audit-checklist.md). Se ejecuta con la skill `.claude/skills/final-audit`, una sección y un subagente a la vez.
+
+| # | Feature | Rama | Descripción | Specs/RF | Subagente desarrollador | Estado | PR | Fecha |
+|---|---|---|---|---|---|---|---|---|
+| FA-1 | final-audit | docs/final-audit-checklist | Runbook `docs/final-audit-checklist.md` + skill `.claude/skills/final-audit` | - | docs-writer | documentada | - | 2026-11-24 |
